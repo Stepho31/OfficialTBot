@@ -1,0 +1,10 @@
+{
+  "name": "trading-system-vercel-api",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "@vercel/kv": "^1.0.1",
+    "raw-body": "^2.5.2",
+    "stripe": "^15.12.0"
+  }
+}

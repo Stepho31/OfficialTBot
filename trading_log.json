@@ -1,0 +1,5801 @@
+[
+  {
+    "symbol": "UNKNOWN",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 147.347,
+    "exit_price": "Manual",
+    "side": "unknown",
+    "trade_id": "3036",
+    "manual_closure": true,
+    "timestamp": "2025-08-12T20:58:54.813486"
+  },
+  {
+    "symbol": "UNKNOWN",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.17209,
+    "exit_price": "Manual",
+    "side": "unknown",
+    "trade_id": "3044",
+    "manual_closure": true,
+    "timestamp": "2025-08-12T20:58:54.815125"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.16805,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3502",
+    "manual_closure": true,
+    "timestamp": "2025-08-12T21:43:03.087517"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.16826,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3510",
+    "manual_closure": true,
+    "timestamp": "2025-08-13T02:40:13.313249"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.17097,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3523",
+    "manual_closure": true,
+    "timestamp": "2025-08-13T06:39:45.841488"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.17169,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3531",
+    "manual_closure": true,
+    "timestamp": "2025-08-13T17:39:18.639171"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.16999,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3553",
+    "manual_closure": true,
+    "timestamp": "2025-08-14T21:48:38.196030"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.16579,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3559",
+    "manual_closure": true,
+    "timestamp": "2025-08-15T08:40:23.320876"
+  },
+  {
+    "symbol": "EUR_USD",
+    "result": {
+      "status": "STOP LOSS HIT",
+      "message": "SL hit at 1.16595 (-37.5 pips)"
+    },
+    "entry_price": 1.1697,
+    "exit_price": 1.16595,
+    "side": "buy",
+    "pips_profit": -37.5,
+    "profit_amount": -0.01,
+    "position_size": 29164,
+    "partial_profit_taken": false,
+    "trailing_stop_used": false,
+    "timestamp": "2025-08-18T11:51:29.634987"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "STOP LOSS HIT",
+      "message": "SL hit at 1.16595 (-37.5 pips)"
+    },
+    "score": 0.9,
+    "timestamp": "2025-08-18T11:51:31.044505"
+  },
+  {
+    "symbol": "UNKNOWN",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 147.347,
+    "exit_price": "Manual",
+    "side": "unknown",
+    "trade_id": "3036",
+    "manual_closure": true,
+    "timestamp": "2025-08-19T21:58:02.435855"
+  },
+  {
+    "symbol": "UNKNOWN",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.17209,
+    "exit_price": "Manual",
+    "side": "unknown",
+    "trade_id": "3044",
+    "manual_closure": true,
+    "timestamp": "2025-08-19T21:58:02.437980"
+  },
+  {
+    "symbol": "UNKNOWN",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 147.347,
+    "exit_price": "Manual",
+    "side": "unknown",
+    "trade_id": "3036",
+    "manual_closure": true,
+    "timestamp": "2025-08-23T08:38:35.769751"
+  },
+  {
+    "symbol": "UNKNOWN",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.17209,
+    "exit_price": "Manual",
+    "side": "unknown",
+    "trade_id": "3044",
+    "manual_closure": true,
+    "timestamp": "2025-08-23T08:38:35.773494"
+  },
+  {
+    "symbol": "GBPUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.35089,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3633",
+    "manual_closure": true,
+    "timestamp": "2025-08-25T21:04:35.971175"
+  },
+  {
+    "symbol": "UNKNOWN",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 147.347,
+    "exit_price": "Manual",
+    "side": "unknown",
+    "trade_id": "3036",
+    "manual_closure": true,
+    "timestamp": "2025-08-25T21:25:23.412476"
+  },
+  {
+    "symbol": "UNKNOWN",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.17209,
+    "exit_price": "Manual",
+    "side": "unknown",
+    "trade_id": "3044",
+    "manual_closure": true,
+    "timestamp": "2025-08-25T21:25:23.415234"
+  },
+  {
+    "symbol": "NZD_USD",
+    "result": {
+      "status": "TRAILING STOP HIT",
+      "message": "Trailing SL hit at 0.58527 (15.1 pips)"
+    },
+    "entry_price": 0.58376,
+    "exit_price": 0.58527,
+    "side": "buy",
+    "pips_profit": 15.1,
+    "profit_amount": 0.0,
+    "position_size": 1000,
+    "partial_profit_taken": false,
+    "trailing_stop_used": true,
+    "timestamp": "2025-08-26T20:19:53.035795"
+  },
+  {
+    "symbol": "NZDUSD",
+    "result": {
+      "status": "TRAILING STOP HIT",
+      "message": "Trailing SL hit at 0.58527 (15.1 pips)"
+    },
+    "score": 0.95,
+    "timestamp": "2025-08-26T20:19:54.540945"
+  },
+  {
+    "symbol": "GBP_USD",
+    "result": {
+      "status": "STOP LOSS HIT",
+      "message": "SL hit at 1.35008 (-48.5 pips)"
+    },
+    "entry_price": 1.34523,
+    "exit_price": 1.35008,
+    "side": "sell",
+    "pips_profit": -48.5,
+    "profit_amount": -0.0,
+    "position_size": 1000,
+    "partial_profit_taken": false,
+    "trailing_stop_used": false,
+    "timestamp": "2025-08-29T09:56:27.944703"
+  },
+  {
+    "symbol": "GBPUSD",
+    "result": {
+      "status": "STOP LOSS HIT",
+      "message": "SL hit at 1.35008 (-48.5 pips)"
+    },
+    "score": 0.95,
+    "timestamp": "2025-08-29T09:56:29.501599"
+  },
+  {
+    "symbol": "USDCHF",
+    "result": {
+      "status": "CLOSED_EXTERNALLY",
+      "message": "Trade was closed externally"
+    },
+    "score": 0.92,
+    "timestamp": "2025-09-05T07:30:22.077944"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.1735,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3857",
+    "manual_closure": true,
+    "timestamp": "2025-09-07T22:16:58.768430"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.17735,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3869",
+    "manual_closure": true,
+    "timestamp": "2025-09-09T07:35:45.369990"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "CLOSED_EXTERNALLY",
+      "message": "Trade was closed externally"
+    },
+    "score": 0.92,
+    "timestamp": "2025-09-09T09:03:24.994001"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.16968,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3885",
+    "manual_closure": true,
+    "timestamp": "2025-09-15T22:44:06.612945"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-16T19:57:06.606458",
+      "end_time": "2025-09-16T19:57:07.721862",
+      "duration_minutes": 0.01859006666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-16T19:57:07.721947",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-16T20:27:07.867193",
+      "end_time": "2025-09-16T20:27:08.554192",
+      "duration_minutes": 0.011449983333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-16T20:27:08.554683",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-16T21:39:27.895077",
+      "end_time": "2025-09-16T21:39:51.803817",
+      "duration_minutes": 0.398479,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-16T21:39:51.803914",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-16T23:21:37.258390",
+      "end_time": "2025-09-16T23:21:38.512751",
+      "duration_minutes": 0.02090601666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-16T23:21:38.512852",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-16T23:51:45.518191",
+      "end_time": "2025-09-16T23:51:46.250382",
+      "duration_minutes": 0.012203183333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-16T23:51:46.250501",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T00:21:46.455337",
+      "end_time": "2025-09-17T00:21:47.716302",
+      "duration_minutes": 0.02101608333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T00:21:47.716377",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T00:51:47.882751",
+      "end_time": "2025-09-17T00:51:48.624779",
+      "duration_minutes": 0.012367133333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T00:51:48.625077",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T01:21:48.875355",
+      "end_time": "2025-09-17T01:21:49.966068",
+      "duration_minutes": 0.01817855,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T01:21:49.966443",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T01:51:50.119555",
+      "end_time": "2025-09-17T01:51:50.843568",
+      "duration_minutes": 0.012066883333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T01:51:50.843709",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T02:21:51.070198",
+      "end_time": "2025-09-17T02:21:52.105779",
+      "duration_minutes": 0.017259683333333335,
+      "opportunities_found": 2,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T02:21:52.105855",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T02:51:52.486678",
+      "end_time": "2025-09-17T02:51:53.643376",
+      "duration_minutes": 0.0192783,
+      "opportunities_found": 2,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T02:51:53.643481",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T03:21:53.866367",
+      "end_time": "2025-09-17T03:21:55.370678",
+      "duration_minutes": 0.02507185,
+      "opportunities_found": 2,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T03:21:55.370776",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T03:51:55.499005",
+      "end_time": "2025-09-17T03:51:56.597868",
+      "duration_minutes": 0.018314383333333333,
+      "opportunities_found": 2,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T03:51:56.597943",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T04:21:56.853452",
+      "end_time": "2025-09-17T04:21:57.934491",
+      "duration_minutes": 0.01801731666666667,
+      "opportunities_found": 2,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T04:21:57.934879",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T04:51:58.068486",
+      "end_time": "2025-09-17T04:51:58.800214",
+      "duration_minutes": 0.012195466666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T04:51:58.800501",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T05:21:59.000712",
+      "end_time": "2025-09-17T05:22:00.145014",
+      "duration_minutes": 0.0190717,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T05:22:00.145301",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T05:52:00.296538",
+      "end_time": "2025-09-17T05:52:01.417272",
+      "duration_minutes": 0.0186789,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T05:52:01.417331",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T06:22:01.638347",
+      "end_time": "2025-09-17T06:22:08.101181",
+      "duration_minutes": 0.1077139,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T06:22:08.101269",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T06:52:08.266489",
+      "end_time": "2025-09-17T06:52:09.424740",
+      "duration_minutes": 0.019304183333333332,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T06:52:09.424820",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T07:22:09.617977",
+      "end_time": "2025-09-17T07:22:11.143581",
+      "duration_minutes": 0.025426733333333333,
+      "opportunities_found": 2,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T07:22:11.143683",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T07:52:11.306207",
+      "end_time": "2025-09-17T07:52:12.500833",
+      "duration_minutes": 0.01991043333333333,
+      "opportunities_found": 2,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T07:52:12.500927",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T08:22:12.724569",
+      "end_time": "2025-09-17T08:22:19.490007",
+      "duration_minutes": 0.11275729999999999,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T08:22:19.490105",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T08:52:19.620189",
+      "end_time": "2025-09-17T08:52:20.386828",
+      "duration_minutes": 0.012777316666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T08:52:20.386905",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T09:22:20.704514",
+      "end_time": "2025-09-17T09:22:22.025479",
+      "duration_minutes": 0.022016083333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T09:22:22.025693",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T09:52:22.195511",
+      "end_time": "2025-09-17T09:52:22.960324",
+      "duration_minutes": 0.012746883333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T09:52:22.960678",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T10:22:23.206331",
+      "end_time": "2025-09-17T10:22:29.454837",
+      "duration_minutes": 0.10414176666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T10:22:29.455122",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T10:52:29.619828",
+      "end_time": "2025-09-17T10:52:30.360261",
+      "duration_minutes": 0.01234055,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T10:52:30.360573",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T11:22:30.643213",
+      "end_time": "2025-09-17T11:22:32.024927",
+      "duration_minutes": 0.02302856666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T11:22:32.025268",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T11:52:32.207493",
+      "end_time": "2025-09-17T11:52:33.020377",
+      "duration_minutes": 0.013548066666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T11:52:33.020730",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T12:22:33.297012",
+      "end_time": "2025-09-17T12:22:57.392804",
+      "duration_minutes": 0.40159653333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T12:22:57.392909",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T12:52:57.567350",
+      "end_time": "2025-09-17T12:52:58.395402",
+      "duration_minutes": 0.013800866666666666,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T12:52:58.395702",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-17T13:22:58.697106",
+      "end_time": "2025-09-17T13:23:00.044454",
+      "duration_minutes": 0.0224558,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T13:23:00.044688",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T13:53:00.280543",
+      "end_time": "2025-09-17T13:53:01.167873",
+      "duration_minutes": 0.014788833333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T13:53:01.167980",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T14:23:01.409400",
+      "end_time": "2025-09-17T14:23:03.400069",
+      "duration_minutes": 0.033177816666666665,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T14:23:03.400130",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T14:53:03.560653",
+      "end_time": "2025-09-17T14:53:04.368874",
+      "duration_minutes": 0.013470349999999999,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T14:53:04.369229",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T15:23:04.628980",
+      "end_time": "2025-09-17T15:23:06.144631",
+      "duration_minutes": 0.02526085,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T15:23:06.144968",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T15:53:06.293062",
+      "end_time": "2025-09-17T15:53:07.105101",
+      "duration_minutes": 0.013533983333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T15:53:07.105240",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T16:23:07.422612",
+      "end_time": "2025-09-17T16:23:31.391600",
+      "duration_minutes": 0.39948313333333335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T16:23:31.391699",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-17T16:53:31.562019",
+      "end_time": "2025-09-17T16:53:55.132701",
+      "duration_minutes": 0.39284470000000005,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T16:53:55.132808",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T17:23:55.361214",
+      "end_time": "2025-09-17T17:23:56.761844",
+      "duration_minutes": 0.023343833333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T17:23:56.762122",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T17:53:56.931190",
+      "end_time": "2025-09-17T17:53:57.805833",
+      "duration_minutes": 0.014577383333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T17:53:57.805877",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T18:23:58.064490",
+      "end_time": "2025-09-17T18:24:06.027001",
+      "duration_minutes": 0.13270851666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T18:24:06.027319",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T18:54:06.221489",
+      "end_time": "2025-09-17T18:54:07.042407",
+      "duration_minutes": 0.013681966666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T18:54:07.042717",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T19:24:07.302695",
+      "end_time": "2025-09-17T19:24:08.784437",
+      "duration_minutes": 0.024695699999999998,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T19:24:08.784530",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T19:54:08.938370",
+      "end_time": "2025-09-17T19:54:09.755449",
+      "duration_minutes": 0.013617983333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T19:54:09.755576",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T20:24:10.055329",
+      "end_time": "2025-09-17T20:24:11.549595",
+      "duration_minutes": 0.024904433333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T20:24:11.549943",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T20:54:11.738413",
+      "end_time": "2025-09-17T20:54:12.561478",
+      "duration_minutes": 0.01371775,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T20:54:12.561623",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T21:24:12.835288",
+      "end_time": "2025-09-17T21:24:14.167279",
+      "duration_minutes": 0.02219985,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T21:24:14.168292",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T21:54:14.338168",
+      "end_time": "2025-09-17T21:54:15.186736",
+      "duration_minutes": 0.0141428,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T21:54:15.186814",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T22:24:15.425507",
+      "end_time": "2025-09-17T22:24:16.562736",
+      "duration_minutes": 0.018953816666666668,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T22:24:16.562822",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T22:54:16.718717",
+      "end_time": "2025-09-17T22:54:17.444163",
+      "duration_minutes": 0.012090766666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T22:54:17.444524",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T23:24:17.672286",
+      "end_time": "2025-09-17T23:24:23.814716",
+      "duration_minutes": 0.10237383333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T23:24:23.814872",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-17T23:54:23.967904",
+      "end_time": "2025-09-17T23:54:24.674009",
+      "duration_minutes": 0.011768416666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-17T23:54:24.675132",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T00:24:24.933130",
+      "end_time": "2025-09-18T00:24:26.027840",
+      "duration_minutes": 0.018245166666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T00:24:26.027975",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T00:54:36.214054",
+      "end_time": "2025-09-18T00:54:37.130385",
+      "duration_minutes": 0.015272183333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T00:54:37.130435",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T01:24:37.320173",
+      "end_time": "2025-09-18T01:24:38.485132",
+      "duration_minutes": 0.019415983333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T01:24:38.485178",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T01:54:38.638295",
+      "end_time": "2025-09-18T01:54:39.349607",
+      "duration_minutes": 0.011855200000000002,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T01:54:39.350006",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T02:24:39.597358",
+      "end_time": "2025-09-18T02:24:40.699934",
+      "duration_minutes": 0.018376266666666665,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T02:24:40.700059",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T02:54:40.829707",
+      "end_time": "2025-09-18T02:54:41.501652",
+      "duration_minutes": 0.011199083333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T02:54:41.501738",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T03:24:41.699924",
+      "end_time": "2025-09-18T03:24:42.780415",
+      "duration_minutes": 0.018008183333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T03:24:42.780552",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T03:54:42.925387",
+      "end_time": "2025-09-18T03:54:43.665774",
+      "duration_minutes": 0.012339783333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T03:54:43.665902",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T04:24:43.929279",
+      "end_time": "2025-09-18T04:24:45.029915",
+      "duration_minutes": 0.018343933333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T04:24:45.030050",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T04:54:45.193540",
+      "end_time": "2025-09-18T04:54:45.902877",
+      "duration_minutes": 0.011822283333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T04:54:45.903244",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T05:24:46.137105",
+      "end_time": "2025-09-18T05:24:47.282129",
+      "duration_minutes": 0.019083733333333335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T05:24:47.282258",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T05:54:47.464170",
+      "end_time": "2025-09-18T05:54:48.196719",
+      "duration_minutes": 0.01220915,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T05:54:48.196982",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T06:24:48.417159",
+      "end_time": "2025-09-18T06:24:49.502372",
+      "duration_minutes": 0.018086883333333335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T06:24:49.502459",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T06:47:51.733641",
+      "end_time": "2025-09-18T06:47:52.851207",
+      "duration_minutes": 0.0186261,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T06:47:52.851651",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T06:49:33.201630",
+      "end_time": "2025-09-18T06:49:34.288702",
+      "duration_minutes": 0.018117866666666666,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T06:49:34.289032",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-18T06:51:48.497265",
+      "end_time": "2025-09-18T06:51:49.954081",
+      "duration_minutes": 0.024280266666666668,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T06:51:49.954173",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T07:21:50.096079",
+      "end_time": "2025-09-18T07:21:50.789065",
+      "duration_minutes": 0.011549766666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T07:21:50.789208",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T07:51:51.047050",
+      "end_time": "2025-09-18T07:51:52.225806",
+      "duration_minutes": 0.01964593333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T07:51:52.226142",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T08:21:52.383493",
+      "end_time": "2025-09-18T08:21:53.183565",
+      "duration_minutes": 0.013334533333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T08:21:53.183652",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T08:51:53.428183",
+      "end_time": "2025-09-18T08:51:54.781351",
+      "duration_minutes": 0.022552799999999998,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T08:51:54.781692",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T09:21:54.954609",
+      "end_time": "2025-09-18T09:21:55.820724",
+      "duration_minutes": 0.01443525,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T09:21:55.820771",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T09:51:56.038422",
+      "end_time": "2025-09-18T09:51:57.476611",
+      "duration_minutes": 0.023969816666666664,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T09:51:57.476992",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T10:21:57.728691",
+      "end_time": "2025-09-18T10:21:58.575183",
+      "duration_minutes": 0.0141082,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T10:21:58.575296",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T10:51:58.923900",
+      "end_time": "2025-09-18T10:52:00.206168",
+      "duration_minutes": 0.021371133333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T10:52:00.206587",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T11:22:00.374295",
+      "end_time": "2025-09-18T11:22:01.115108",
+      "duration_minutes": 0.012346883333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T11:22:01.115439",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T11:52:01.367584",
+      "end_time": "2025-09-18T11:52:02.683313",
+      "duration_minutes": 0.021928816666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T11:52:02.683644",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T12:22:02.908757",
+      "end_time": "2025-09-18T12:22:03.965658",
+      "duration_minutes": 0.017615016666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T12:22:03.965735",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T12:52:04.177377",
+      "end_time": "2025-09-18T12:52:05.436086",
+      "duration_minutes": 0.020978483333333336,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T12:52:05.436222",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T13:22:05.607534",
+      "end_time": "2025-09-18T13:22:06.549534",
+      "duration_minutes": 0.0157,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T13:22:06.549646",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T13:52:06.777353",
+      "end_time": "2025-09-18T13:52:08.104220",
+      "duration_minutes": 0.02211445,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T13:52:08.104552",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T14:22:08.251383",
+      "end_time": "2025-09-18T14:22:09.035773",
+      "duration_minutes": 0.013073166666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T14:22:09.035866",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T14:52:09.292837",
+      "end_time": "2025-09-18T14:52:10.808664",
+      "duration_minutes": 0.025263783333333335,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T14:52:10.809004",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T15:22:10.962656",
+      "end_time": "2025-09-18T15:22:11.688364",
+      "duration_minutes": 0.012095133333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T15:22:11.688479",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T15:52:11.925851",
+      "end_time": "2025-09-18T15:52:13.265126",
+      "duration_minutes": 0.02232125,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T15:52:13.265519",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-18T16:22:13.430910",
+      "end_time": "2025-09-18T16:22:14.700825",
+      "duration_minutes": 0.02116525,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T16:22:14.700917",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-18T16:52:14.923884",
+      "end_time": "2025-09-18T16:52:16.630995",
+      "duration_minutes": 0.02845185,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T16:52:16.631091",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T17:22:16.774543",
+      "end_time": "2025-09-18T17:22:17.574300",
+      "duration_minutes": 0.013329283333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T17:22:17.574736",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T17:52:17.818768",
+      "end_time": "2025-09-18T17:52:19.034467",
+      "duration_minutes": 0.020261650000000003,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T17:52:19.034513",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T18:22:19.186886",
+      "end_time": "2025-09-18T18:22:20.086956",
+      "duration_minutes": 0.015001166666666668,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T18:22:20.087029",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T18:52:20.306477",
+      "end_time": "2025-09-18T18:52:21.452112",
+      "duration_minutes": 0.019093916666666665,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T18:52:21.452192",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T19:22:21.601120",
+      "end_time": "2025-09-18T19:22:22.360604",
+      "duration_minutes": 0.012658066666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T19:22:22.360917",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T19:52:22.576763",
+      "end_time": "2025-09-18T19:52:23.716981",
+      "duration_minutes": 0.019003633333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T19:52:23.717566",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T20:22:23.900861",
+      "end_time": "2025-09-18T20:22:24.682411",
+      "duration_minutes": 0.013025833333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T20:22:24.682864",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T20:50:36.534975",
+      "end_time": "2025-09-18T20:50:37.813473",
+      "duration_minutes": 0.0213083,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T20:50:37.813603",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T21:00:48.326910",
+      "end_time": "2025-09-18T21:00:50.091268",
+      "duration_minutes": 0.02940596666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T21:00:50.091330",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T21:05:29.435833",
+      "end_time": "2025-09-18T21:05:30.664482",
+      "duration_minutes": 0.020477483333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T21:05:30.664527",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T21:34:43.475523",
+      "end_time": "2025-09-18T21:34:45.687340",
+      "duration_minutes": 0.03686361666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T21:34:45.687435",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-18T22:05:12.281676",
+      "end_time": "2025-09-18T22:05:13.078287",
+      "duration_minutes": 0.01327685,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T22:05:13.078728",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T22:35:13.316360",
+      "end_time": "2025-09-18T22:35:15.355737",
+      "duration_minutes": 0.03398961666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T22:35:15.356042",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-18T23:05:15.564815",
+      "end_time": "2025-09-18T23:05:41.037360",
+      "duration_minutes": 0.42454241666666664,
+      "opportunities_found": 1,
+      "trades_executed": 1,
+      "trades_skipped": 0,
+      "executed_trades": [
+        {
+          "symbol": "EURUSD",
+          "direction": "buy",
+          "opportunity_score": 69.0,
+          "trade_details": {
+            "instrument": "EUR_USD",
+            "side": "buy",
+            "entry_price": 1.17884,
+            "tp_price": 1.18919,
+            "sl_price": 1.17349,
+            "trade_id": "3905",
+            "position_size": 1000,
+            "risk_reward_ratio": 1.9455909943714595,
+            "atr": 0.0029625069581960804,
+            "meta": {}
+          },
+          "execution_time": "2025-09-18T23:05:41.037337"
+        }
+      ]
+    },
+    "timestamp": "2025-09-18T23:05:41.037402",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-18T23:35:41.255840",
+      "end_time": "2025-09-18T23:35:43.036516",
+      "duration_minutes": 0.029677933333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-18T23:35:43.036825",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T00:05:43.234292",
+      "end_time": "2025-09-19T00:05:44.050681",
+      "duration_minutes": 0.013606483333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T00:05:44.051080",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T00:35:44.264928",
+      "end_time": "2025-09-19T00:35:46.087207",
+      "duration_minutes": 0.030371316666666665,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T00:35:46.087310",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T01:05:46.231430",
+      "end_time": "2025-09-19T01:05:46.911161",
+      "duration_minutes": 0.01132885,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T01:05:46.911428",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T01:35:47.133531",
+      "end_time": "2025-09-19T01:35:53.774664",
+      "duration_minutes": 0.11068555,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T01:35:53.774758",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T02:05:53.906650",
+      "end_time": "2025-09-19T02:05:54.615030",
+      "duration_minutes": 0.011806333333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T02:05:54.615400",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T02:35:54.835734",
+      "end_time": "2025-09-19T02:35:56.677898",
+      "duration_minutes": 0.030702733333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T02:35:56.678634",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T03:05:56.831572",
+      "end_time": "2025-09-19T03:05:57.688523",
+      "duration_minutes": 0.014282516666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T03:05:57.688609",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T03:35:57.885797",
+      "end_time": "2025-09-19T03:35:59.642949",
+      "duration_minutes": 0.029285866666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T03:35:59.643253",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T04:05:59.799637",
+      "end_time": "2025-09-19T04:06:00.573760",
+      "duration_minutes": 0.01290205,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T04:06:00.574044",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T04:36:00.779882",
+      "end_time": "2025-09-19T04:36:02.438148",
+      "duration_minutes": 0.027637766666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T04:36:02.438496",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T05:06:02.589393",
+      "end_time": "2025-09-19T05:06:03.262316",
+      "duration_minutes": 0.011215383333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T05:06:03.262752",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T05:36:03.497632",
+      "end_time": "2025-09-19T05:36:05.156842",
+      "duration_minutes": 0.0276535,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T05:36:05.157249",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T06:06:05.301366",
+      "end_time": "2025-09-19T06:06:06.021985",
+      "duration_minutes": 0.012010316666666666,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T06:06:06.022149",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T06:36:06.255675",
+      "end_time": "2025-09-19T06:36:07.813305",
+      "duration_minutes": 0.0259605,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T06:36:07.813395",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "symbol": "EURUSD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.17884,
+    "exit_price": "Manual",
+    "side": "buy",
+    "trade_id": "3905",
+    "manual_closure": true,
+    "timestamp": "2025-09-19T07:06:07.955122"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T07:06:07.959557",
+      "end_time": "2025-09-19T07:06:08.724961",
+      "duration_minutes": 0.012756733333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T07:06:08.725049",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-19T07:36:08.946134",
+      "end_time": "2025-09-19T07:36:11.035453",
+      "duration_minutes": 0.034821983333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T07:36:11.035503",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-19T08:06:11.188002",
+      "end_time": "2025-09-19T08:06:12.672863",
+      "duration_minutes": 0.024747683333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T08:06:12.672912",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T08:36:12.912529",
+      "end_time": "2025-09-19T08:51:58.324135",
+      "duration_minutes": 15.7568601,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T08:51:58.324228",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T09:21:58.491007",
+      "end_time": "2025-09-19T09:21:59.361898",
+      "duration_minutes": 0.01451485,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T09:21:59.362233",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-19T09:51:59.615481",
+      "end_time": "2025-09-19T09:52:02.118334",
+      "duration_minutes": 0.041714216666666665,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T09:52:02.118415",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-19T10:22:02.333833",
+      "end_time": "2025-09-19T10:22:03.879414",
+      "duration_minutes": 0.025759683333333335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T10:22:03.879495",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-19T10:52:04.116208",
+      "end_time": "2025-09-19T10:52:06.504565",
+      "duration_minutes": 0.03980595,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T10:52:06.504653",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-19T11:22:06.686823",
+      "end_time": "2025-09-19T11:22:32.511709",
+      "duration_minutes": 0.43041476666666667,
+      "opportunities_found": 1,
+      "trades_executed": 1,
+      "trades_skipped": 0,
+      "executed_trades": [
+        {
+          "symbol": "EURUSD",
+          "direction": "buy",
+          "opportunity_score": 70.3,
+          "trade_details": {
+            "instrument": "EUR_USD",
+            "side": "buy",
+            "entry_price": 1.1743,
+            "tp_price": 1.18574,
+            "sl_price": 1.16842,
+            "trade_id": "3911",
+            "position_size": 1000,
+            "risk_reward_ratio": 1.945578231292575,
+            "atr": 0.0032679391168778894,
+            "meta": {}
+          },
+          "execution_time": "2025-09-19T11:22:32.511686"
+        }
+      ]
+    },
+    "timestamp": "2025-09-19T11:22:32.511750",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T11:52:32.784317",
+      "end_time": "2025-09-19T11:52:34.716848",
+      "duration_minutes": 0.03220885,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T11:52:34.717113",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T12:22:34.906605",
+      "end_time": "2025-09-19T12:22:35.944513",
+      "duration_minutes": 0.017298466666666668,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T12:22:35.944631",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T12:52:36.204806",
+      "end_time": "2025-09-19T12:52:38.155539",
+      "duration_minutes": 0.03251221666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T12:52:38.155886",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T13:22:38.344458",
+      "end_time": "2025-09-19T13:22:39.279373",
+      "duration_minutes": 0.015581916666666668,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T13:22:39.279424",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T13:52:39.496864",
+      "end_time": "2025-09-19T13:52:46.288905",
+      "duration_minutes": 0.11320068333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T13:52:46.289106",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T14:22:46.502116",
+      "end_time": "2025-09-19T14:22:47.370195",
+      "duration_minutes": 0.014467983333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T14:22:47.370547",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T14:52:47.611847",
+      "end_time": "2025-09-19T15:08:42.099857",
+      "duration_minutes": 15.9081335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T15:08:42.099913",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-19T15:38:42.326447",
+      "end_time": "2025-09-19T15:38:43.264971",
+      "duration_minutes": 0.015642066666666666,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T15:38:43.265015",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T16:08:43.585057",
+      "end_time": "2025-09-19T16:08:45.500338",
+      "duration_minutes": 0.03192135,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T16:08:45.500424",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T16:38:45.682737",
+      "end_time": "2025-09-19T16:38:46.513045",
+      "duration_minutes": 0.013838466666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T16:38:46.513121",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T17:08:46.742525",
+      "end_time": "2025-09-19T17:08:48.509567",
+      "duration_minutes": 0.0294507,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T17:08:48.509951",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T17:38:48.684575",
+      "end_time": "2025-09-19T17:38:49.398359",
+      "duration_minutes": 0.0118964,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T17:38:49.398849",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T18:08:49.683184",
+      "end_time": "2025-09-19T18:08:51.438085",
+      "duration_minutes": 0.02924835,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T18:08:51.438447",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T18:38:51.604420",
+      "end_time": "2025-09-19T18:38:52.426341",
+      "duration_minutes": 0.013698683333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T18:38:52.426466",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T19:08:52.676338",
+      "end_time": "2025-09-19T19:08:54.268358",
+      "duration_minutes": 0.026533666666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T19:08:54.268495",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T19:38:54.453225",
+      "end_time": "2025-09-19T19:38:55.317055",
+      "duration_minutes": 0.014397166666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T19:38:55.317156",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T20:08:55.535320",
+      "end_time": "2025-09-19T20:08:57.579342",
+      "duration_minutes": 0.03406703333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T20:08:57.579495",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T20:38:57.746400",
+      "end_time": "2025-09-19T20:38:58.559059",
+      "duration_minutes": 0.013544316666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T20:38:58.559437",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T21:08:58.821669",
+      "end_time": "2025-09-19T21:09:00.482488",
+      "duration_minutes": 0.027680316666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T21:09:00.482666",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T21:39:00.629183",
+      "end_time": "2025-09-19T21:39:01.968594",
+      "duration_minutes": 0.022323516666666664,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T21:39:01.968643",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T22:09:02.222443",
+      "end_time": "2025-09-19T22:09:03.977956",
+      "duration_minutes": 0.02925855,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T22:09:03.978004",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T22:39:04.200529",
+      "end_time": "2025-09-19T22:39:04.970046",
+      "duration_minutes": 0.012825283333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T22:39:04.970318",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T23:09:05.191315",
+      "end_time": "2025-09-19T23:09:06.972980",
+      "duration_minutes": 0.029694416666666668,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T23:09:06.973124",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-19T23:39:07.166579",
+      "end_time": "2025-09-19T23:39:07.958389",
+      "duration_minutes": 0.013196833333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-19T23:39:07.958472",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T00:09:08.235543",
+      "end_time": "2025-09-20T00:09:09.980782",
+      "duration_minutes": 0.029087316666666665,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T00:09:09.981102",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T00:39:10.129844",
+      "end_time": "2025-09-20T00:39:10.841247",
+      "duration_minutes": 0.011856716666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T00:39:10.841607",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T01:09:11.104553",
+      "end_time": "2025-09-20T01:09:12.815456",
+      "duration_minutes": 0.02851505,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T01:09:12.815813",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T01:39:12.971462",
+      "end_time": "2025-09-20T01:39:13.707728",
+      "duration_minutes": 0.0122711,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T01:39:13.707839",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T02:09:13.902947",
+      "end_time": "2025-09-20T02:09:15.563812",
+      "duration_minutes": 0.027681083333333335,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T02:09:15.563884",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T02:39:15.719115",
+      "end_time": "2025-09-20T02:39:16.397054",
+      "duration_minutes": 0.011298983333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T02:39:16.398249",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T03:09:16.627552",
+      "end_time": "2025-09-20T03:09:28.195894",
+      "duration_minutes": 0.1928057,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T03:09:28.196270",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T03:39:28.355610",
+      "end_time": "2025-09-20T03:39:29.042148",
+      "duration_minutes": 0.011442299999999999,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T03:39:29.042298",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T04:09:29.290511",
+      "end_time": "2025-09-20T04:09:35.831200",
+      "duration_minutes": 0.10901148333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T04:09:35.831614",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T04:39:36.003685",
+      "end_time": "2025-09-20T04:39:36.683053",
+      "duration_minutes": 0.0113228,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T04:39:36.683425",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T05:09:36.929016",
+      "end_time": "2025-09-20T05:09:38.411615",
+      "duration_minutes": 0.024709983333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T05:09:38.411717",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T05:39:38.590519",
+      "end_time": "2025-09-20T05:39:39.288527",
+      "duration_minutes": 0.011633466666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T05:39:39.288748",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T06:09:39.519095",
+      "end_time": "2025-09-20T06:09:41.751954",
+      "duration_minutes": 0.037214316666666664,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T06:09:41.752039",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T06:39:41.911114",
+      "end_time": "2025-09-20T06:39:42.664681",
+      "duration_minutes": 0.01255945,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T06:39:42.664955",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T07:09:42.880565",
+      "end_time": "2025-09-20T07:09:44.409807",
+      "duration_minutes": 0.025487366666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T07:09:44.409918",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T07:39:44.543473",
+      "end_time": "2025-09-20T07:39:45.262005",
+      "duration_minutes": 0.011975533333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T07:39:45.262101",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T08:09:45.457723",
+      "end_time": "2025-09-20T08:09:47.125469",
+      "duration_minutes": 0.027795766666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T08:09:47.125621",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T08:39:47.259968",
+      "end_time": "2025-09-20T08:39:47.967848",
+      "duration_minutes": 0.011798,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T08:39:47.968198",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T09:09:48.045016",
+      "end_time": "2025-09-20T09:09:48.594413",
+      "duration_minutes": 0.009156616666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T09:09:48.594743",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T09:39:48.640341",
+      "end_time": "2025-09-20T09:39:48.936160",
+      "duration_minutes": 0.004930316666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T09:39:48.936230",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T10:09:49.000679",
+      "end_time": "2025-09-20T10:09:49.571972",
+      "duration_minutes": 0.00952155,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T10:09:49.572296",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T10:39:49.630424",
+      "end_time": "2025-09-20T10:39:49.908282",
+      "duration_minutes": 0.0046309666666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T10:39:49.908442",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T11:09:49.969832",
+      "end_time": "2025-09-20T11:09:50.563603",
+      "duration_minutes": 0.009896183333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T11:09:50.563692",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T11:39:50.617716",
+      "end_time": "2025-09-20T11:39:50.895472",
+      "duration_minutes": 0.004629266666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T11:39:50.895775",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T12:09:50.974465",
+      "end_time": "2025-09-20T12:09:51.546678",
+      "duration_minutes": 0.009536883333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T12:09:51.546827",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T12:39:51.599022",
+      "end_time": "2025-09-20T12:39:51.874143",
+      "duration_minutes": 0.00458535,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T12:39:51.874229",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T13:09:51.939614",
+      "end_time": "2025-09-20T13:09:52.510083",
+      "duration_minutes": 0.009507816666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T13:09:52.510387",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T13:39:52.552928",
+      "end_time": "2025-09-20T13:39:52.824103",
+      "duration_minutes": 0.004519583333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T13:39:52.824401",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T14:09:52.885282",
+      "end_time": "2025-09-20T14:09:53.413739",
+      "duration_minutes": 0.008807616666666665,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T14:09:53.414112",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T14:39:53.468578",
+      "end_time": "2025-09-20T14:39:53.750655",
+      "duration_minutes": 0.004701283333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T14:39:53.751072",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T15:09:53.825663",
+      "end_time": "2025-09-20T15:09:54.421357",
+      "duration_minutes": 0.009928233333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T15:09:54.421709",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T15:39:54.469606",
+      "end_time": "2025-09-20T15:39:54.735433",
+      "duration_minutes": 0.00443045,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T15:39:54.735790",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T16:09:54.811224",
+      "end_time": "2025-09-20T16:09:55.423566",
+      "duration_minutes": 0.010205700000000002,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T16:09:55.423896",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T16:39:55.470396",
+      "end_time": "2025-09-20T16:39:55.741153",
+      "duration_minutes": 0.004512616666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T16:39:55.741493",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T17:09:55.816790",
+      "end_time": "2025-09-20T17:09:56.402533",
+      "duration_minutes": 0.009762383333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T17:09:56.402959",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T17:39:56.463142",
+      "end_time": "2025-09-20T17:39:56.754993",
+      "duration_minutes": 0.004864183333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T17:39:56.755106",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T18:09:56.774682",
+      "end_time": "2025-09-20T18:09:56.863268",
+      "duration_minutes": 0.0014764333333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T18:09:56.863637",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T18:39:56.891537",
+      "end_time": "2025-09-20T18:39:56.918444",
+      "duration_minutes": 0.00044845000000000003,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T18:39:56.918578",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T19:09:56.943833",
+      "end_time": "2025-09-20T19:09:57.037818",
+      "duration_minutes": 0.0015664166666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T19:09:57.038085",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T19:39:57.057314",
+      "end_time": "2025-09-20T19:39:57.086211",
+      "duration_minutes": 0.0004816166666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T19:39:57.086314",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T20:09:57.113034",
+      "end_time": "2025-09-20T20:09:57.197354",
+      "duration_minutes": 0.0014053333333333335,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T20:09:57.197657",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T20:39:57.225122",
+      "end_time": "2025-09-20T20:39:57.255446",
+      "duration_minutes": 0.0005054,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T20:39:57.255556",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T21:09:57.281261",
+      "end_time": "2025-09-20T21:09:57.349066",
+      "duration_minutes": 0.0011300833333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T21:09:57.349401",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T21:39:57.381816",
+      "end_time": "2025-09-20T21:39:57.410172",
+      "duration_minutes": 0.0004726,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T21:39:57.410276",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T22:09:57.432845",
+      "end_time": "2025-09-20T22:09:57.511806",
+      "duration_minutes": 0.0013160166666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T22:09:57.512140",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T22:39:57.541203",
+      "end_time": "2025-09-20T22:39:57.571090",
+      "duration_minutes": 0.0004981166666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T22:39:57.571195",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T23:09:57.596033",
+      "end_time": "2025-09-20T23:09:57.690721",
+      "duration_minutes": 0.0015781333333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T23:09:57.691062",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-20T23:39:57.715038",
+      "end_time": "2025-09-20T23:39:57.746584",
+      "duration_minutes": 0.0005257666666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-20T23:39:57.746690",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T00:09:57.777017",
+      "end_time": "2025-09-21T00:09:57.862076",
+      "duration_minutes": 0.00141765,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T00:09:57.862390",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T00:39:57.888762",
+      "end_time": "2025-09-21T00:39:57.916428",
+      "duration_minutes": 0.0004611,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T00:39:57.916529",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T01:09:57.937946",
+      "end_time": "2025-09-21T01:09:58.022237",
+      "duration_minutes": 0.00140485,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T01:09:58.022810",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T01:39:58.051029",
+      "end_time": "2025-09-21T01:39:58.080437",
+      "duration_minutes": 0.0004901333333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T01:39:58.080540",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T02:09:58.105693",
+      "end_time": "2025-09-21T02:09:58.187148",
+      "duration_minutes": 0.0013575833333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T02:09:58.187529",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T02:39:58.218290",
+      "end_time": "2025-09-21T02:39:58.249049",
+      "duration_minutes": 0.00051265,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T02:39:58.249108",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T03:09:58.275676",
+      "end_time": "2025-09-21T03:09:58.342173",
+      "duration_minutes": 0.0011082833333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T03:09:58.342506",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T03:39:58.371189",
+      "end_time": "2025-09-21T03:39:58.400937",
+      "duration_minutes": 0.0004958,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T03:39:58.401041",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T04:09:58.428107",
+      "end_time": "2025-09-21T04:09:58.528216",
+      "duration_minutes": 0.0016684833333333335,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T04:09:58.528637",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T04:39:58.546910",
+      "end_time": "2025-09-21T04:39:58.580672",
+      "duration_minutes": 0.0005627,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T04:39:58.580925",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T05:09:58.613461",
+      "end_time": "2025-09-21T05:09:58.677697",
+      "duration_minutes": 0.0010706000000000001,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T05:09:58.678032",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T05:39:58.708544",
+      "end_time": "2025-09-21T05:39:58.760744",
+      "duration_minutes": 0.00087,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T05:39:58.761011",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T06:09:58.792254",
+      "end_time": "2025-09-21T06:09:58.886253",
+      "duration_minutes": 0.00156665,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T06:09:58.886753",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T06:39:58.913347",
+      "end_time": "2025-09-21T06:39:58.944345",
+      "duration_minutes": 0.0005166333333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T06:39:58.944429",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T07:09:58.970937",
+      "end_time": "2025-09-21T07:09:59.053449",
+      "duration_minutes": 0.0013752,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T07:09:59.053773",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T07:39:59.087503",
+      "end_time": "2025-09-21T07:39:59.114268",
+      "duration_minutes": 0.0004460833333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T07:39:59.114379",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T08:09:59.131195",
+      "end_time": "2025-09-21T08:09:59.207725",
+      "duration_minutes": 0.0012755,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T08:09:59.208019",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T08:39:59.235674",
+      "end_time": "2025-09-21T08:39:59.264013",
+      "duration_minutes": 0.00047231666666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T08:39:59.264114",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T09:09:59.291742",
+      "end_time": "2025-09-21T09:09:59.385085",
+      "duration_minutes": 0.0015557166666666665,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T09:09:59.385484",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T09:39:59.407161",
+      "end_time": "2025-09-21T09:39:59.435586",
+      "duration_minutes": 0.00047375,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T09:39:59.435690",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T10:09:59.462121",
+      "end_time": "2025-09-21T10:09:59.526289",
+      "duration_minutes": 0.0010694666666666668,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T10:09:59.526796",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T10:39:59.548392",
+      "end_time": "2025-09-21T10:39:59.581301",
+      "duration_minutes": 0.0005484833333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T10:39:59.581495",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T11:09:59.602048",
+      "end_time": "2025-09-21T11:09:59.658456",
+      "duration_minutes": 0.0009401333333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T11:09:59.658845",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T11:39:59.684924",
+      "end_time": "2025-09-21T11:39:59.714729",
+      "duration_minutes": 0.00049675,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T11:39:59.714830",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T12:09:59.738643",
+      "end_time": "2025-09-21T12:09:59.821687",
+      "duration_minutes": 0.0013840666666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T12:09:59.821954",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T12:39:59.854452",
+      "end_time": "2025-09-21T12:39:59.884587",
+      "duration_minutes": 0.00050225,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T12:39:59.884688",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T13:09:59.910491",
+      "end_time": "2025-09-21T13:10:00.021845",
+      "duration_minutes": 0.0018559,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T13:10:00.021943",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T13:40:00.039693",
+      "end_time": "2025-09-21T13:40:00.066530",
+      "duration_minutes": 0.00044728333333333335,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T13:40:00.066648",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T14:10:00.090671",
+      "end_time": "2025-09-21T14:10:00.174601",
+      "duration_minutes": 0.0013988333333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T14:10:00.174970",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T14:40:00.208407",
+      "end_time": "2025-09-21T14:40:00.235764",
+      "duration_minutes": 0.00045595,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T14:40:00.235868",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T15:10:00.261089",
+      "end_time": "2025-09-21T15:10:00.343472",
+      "duration_minutes": 0.00137305,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T15:10:00.343818",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T15:40:00.370049",
+      "end_time": "2025-09-21T15:40:00.399778",
+      "duration_minutes": 0.0004954833333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T15:40:00.399951",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T16:10:00.425248",
+      "end_time": "2025-09-21T16:10:00.518466",
+      "duration_minutes": 0.0015536333333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T16:10:00.518877",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T16:40:00.540737",
+      "end_time": "2025-09-21T16:40:00.567419",
+      "duration_minutes": 0.0004447,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T16:40:00.567525",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T17:10:00.590763",
+      "end_time": "2025-09-21T17:10:00.672834",
+      "duration_minutes": 0.00136785,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T17:10:00.673094",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T17:40:00.713514",
+      "end_time": "2025-09-21T17:40:00.739782",
+      "duration_minutes": 0.0004378,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T17:40:00.739879",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-21T18:09:53.770466",
+      "end_time": "2025-09-21T18:09:53.823837",
+      "duration_minutes": 0.0008895166666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T18:09:53.824151",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T18:10:29.252234",
+      "end_time": "2025-09-21T18:10:31.115679",
+      "duration_minutes": 0.031057416666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T18:10:31.115840",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T18:40:31.293312",
+      "end_time": "2025-09-21T18:40:32.084369",
+      "duration_minutes": 0.013184283333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T18:40:32.084703",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T19:10:32.330652",
+      "end_time": "2025-09-21T19:10:34.008628",
+      "duration_minutes": 0.027966266666666666,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T19:10:34.008776",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T19:40:34.175350",
+      "end_time": "2025-09-21T19:40:34.937211",
+      "duration_minutes": 0.012697683333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T19:40:34.937560",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T20:10:35.182930",
+      "end_time": "2025-09-21T20:10:36.850613",
+      "duration_minutes": 0.027794716666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T20:10:36.850926",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T20:40:37.001542",
+      "end_time": "2025-09-21T20:40:37.810978",
+      "duration_minutes": 0.0134906,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T20:40:37.811060",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T21:10:38.048706",
+      "end_time": "2025-09-21T21:10:39.753822",
+      "duration_minutes": 0.028418600000000002,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T21:10:39.753911",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T21:40:39.916754",
+      "end_time": "2025-09-21T21:40:40.720650",
+      "duration_minutes": 0.013398266666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T21:40:40.720769",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T22:10:40.977541",
+      "end_time": "2025-09-21T22:10:42.673937",
+      "duration_minutes": 0.028273266666666668,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T22:10:42.674017",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T22:40:42.850741",
+      "end_time": "2025-09-21T22:40:43.560735",
+      "duration_minutes": 0.011833233333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T22:40:43.560839",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T23:10:45.483572",
+      "end_time": "2025-09-21T23:10:47.234785",
+      "duration_minutes": 0.029186883333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T23:10:47.235213",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-21T23:40:47.453047",
+      "end_time": "2025-09-21T23:40:48.281371",
+      "duration_minutes": 0.013805399999999999,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-21T23:40:48.281512",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T00:10:48.525471",
+      "end_time": "2025-09-22T00:10:55.124735",
+      "duration_minutes": 0.10998773333333332,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T00:10:55.124839",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T00:40:55.281666",
+      "end_time": "2025-09-22T00:40:56.049267",
+      "duration_minutes": 0.01279335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T00:40:56.049608",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T01:10:56.291034",
+      "end_time": "2025-09-22T01:10:58.087081",
+      "duration_minutes": 0.029934116666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T01:10:58.087169",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T01:40:58.249995",
+      "end_time": "2025-09-22T01:40:58.937054",
+      "duration_minutes": 0.011450983333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T01:40:58.937138",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T02:10:59.150374",
+      "end_time": "2025-09-22T02:11:00.709728",
+      "duration_minutes": 0.02598923333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T02:11:00.709832",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T02:41:00.847703",
+      "end_time": "2025-09-22T02:41:01.579232",
+      "duration_minutes": 0.01219215,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T02:41:01.579605",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T03:11:01.792198",
+      "end_time": "2025-09-22T03:11:03.485103",
+      "duration_minutes": 0.028215083333333335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T03:11:03.485199",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T03:41:03.632958",
+      "end_time": "2025-09-22T03:41:04.346259",
+      "duration_minutes": 0.011888349999999999,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T03:41:04.347250",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T04:11:04.690852",
+      "end_time": "2025-09-22T04:11:06.436478",
+      "duration_minutes": 0.029093766666666666,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T04:11:06.436557",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T04:41:06.593926",
+      "end_time": "2025-09-22T04:41:07.271916",
+      "duration_minutes": 0.011299833333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T04:41:07.272050",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T05:11:07.486874",
+      "end_time": "2025-09-22T05:11:09.156991",
+      "duration_minutes": 0.027835283333333335,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T05:11:09.157036",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T05:41:09.286037",
+      "end_time": "2025-09-22T05:41:09.966202",
+      "duration_minutes": 0.011336083333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T05:41:09.966322",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T06:11:10.182262",
+      "end_time": "2025-09-22T06:11:11.803219",
+      "duration_minutes": 0.02701595,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T06:11:11.803360",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T06:41:11.963727",
+      "end_time": "2025-09-22T06:41:12.661647",
+      "duration_minutes": 0.011632,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T06:41:12.661751",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T07:11:12.953546",
+      "end_time": "2025-09-22T07:11:14.521133",
+      "duration_minutes": 0.026126450000000002,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T07:11:14.521257",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T07:41:14.692436",
+      "end_time": "2025-09-22T07:41:15.543656",
+      "duration_minutes": 0.014187,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T07:41:15.543728",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T08:11:17.069069",
+      "end_time": "2025-09-22T08:11:18.797002",
+      "duration_minutes": 0.028798883333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T08:11:18.797089",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T08:41:19.078049",
+      "end_time": "2025-09-22T08:41:19.889398",
+      "duration_minutes": 0.013522483333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T08:41:19.889485",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T09:11:20.148090",
+      "end_time": "2025-09-22T09:11:22.129967",
+      "duration_minutes": 0.033031283333333335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T09:11:22.130079",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T09:41:22.352542",
+      "end_time": "2025-09-22T09:41:23.120475",
+      "duration_minutes": 0.012798883333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T09:41:23.120804",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T10:11:23.414430",
+      "end_time": "2025-09-22T10:11:30.375532",
+      "duration_minutes": 0.11601836666666668,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T10:11:30.375671",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T10:41:30.566411",
+      "end_time": "2025-09-22T10:41:31.338505",
+      "duration_minutes": 0.012868233333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T10:41:31.338939",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T11:11:31.648391",
+      "end_time": "2025-09-22T11:11:33.626201",
+      "duration_minutes": 0.0329635,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T11:11:33.626609",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T11:41:34.846117",
+      "end_time": "2025-09-22T11:41:35.598247",
+      "duration_minutes": 0.0125355,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T11:41:35.598598",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-22T12:11:35.903627",
+      "end_time": "2025-09-22T12:11:42.900769",
+      "duration_minutes": 0.11661903333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T12:11:42.900912",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T12:41:43.148469",
+      "end_time": "2025-09-22T12:41:43.987660",
+      "duration_minutes": 0.013986516666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T12:41:43.988753",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T13:11:44.204686",
+      "end_time": "2025-09-22T13:11:46.261705",
+      "duration_minutes": 0.03428365,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T13:11:46.262065",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T13:41:46.468373",
+      "end_time": "2025-09-22T13:41:47.285520",
+      "duration_minutes": 0.013619116666666665,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T13:41:47.285622",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T14:11:47.599079",
+      "end_time": "2025-09-22T14:11:49.802989",
+      "duration_minutes": 0.03673183333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T14:11:49.803071",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T14:41:49.985444",
+      "end_time": "2025-09-22T14:41:50.864459",
+      "duration_minutes": 0.01465025,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T14:41:50.864601",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T15:11:51.090896",
+      "end_time": "2025-09-22T15:11:53.402166",
+      "duration_minutes": 0.03852116666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T15:11:53.402608",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T15:41:53.585455",
+      "end_time": "2025-09-22T15:41:54.401664",
+      "duration_minutes": 0.013603483333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T15:41:54.402020",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T16:11:54.638325",
+      "end_time": "2025-09-22T16:11:56.650737",
+      "duration_minutes": 0.0335402,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T16:11:56.650891",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T16:41:58.433626",
+      "end_time": "2025-09-22T16:41:59.210133",
+      "duration_minutes": 0.012941783333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T16:41:59.210518",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T17:11:59.566602",
+      "end_time": "2025-09-22T17:12:02.944559",
+      "duration_minutes": 0.05629928333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T17:12:02.944696",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T17:42:03.161069",
+      "end_time": "2025-09-22T17:42:04.001247",
+      "duration_minutes": 0.014002966666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T17:42:04.001627",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T18:12:04.308078",
+      "end_time": "2025-09-22T18:12:06.086691",
+      "duration_minutes": 0.02964355,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T18:12:06.086853",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T18:42:06.267985",
+      "end_time": "2025-09-22T18:42:07.077391",
+      "duration_minutes": 0.0134901,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T18:42:07.077759",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T19:12:07.355950",
+      "end_time": "2025-09-22T19:12:09.546596",
+      "duration_minutes": 0.036510766666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T19:12:09.546721",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T19:42:09.766032",
+      "end_time": "2025-09-22T19:42:10.629626",
+      "duration_minutes": 0.014393233333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T19:42:10.630010",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T20:12:10.879199",
+      "end_time": "2025-09-22T20:12:13.189013",
+      "duration_minutes": 0.038496899999999994,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T20:12:13.189388",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T20:42:13.365666",
+      "end_time": "2025-09-22T20:42:14.145020",
+      "duration_minutes": 0.012989233333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T20:42:14.145360",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T21:12:14.440761",
+      "end_time": "2025-09-22T21:12:16.404013",
+      "duration_minutes": 0.03272086666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T21:12:16.404156",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T21:42:16.652690",
+      "end_time": "2025-09-22T21:42:17.462582",
+      "duration_minutes": 0.013498199999999998,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T21:42:17.462717",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T22:12:17.737132",
+      "end_time": "2025-09-22T22:12:19.430973",
+      "duration_minutes": 0.028230683333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T22:12:19.431380",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T22:42:19.611183",
+      "end_time": "2025-09-22T22:42:20.467071",
+      "duration_minutes": 0.0142648,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T22:42:20.467155",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T23:12:20.730602",
+      "end_time": "2025-09-22T23:12:22.366309",
+      "duration_minutes": 0.027261783333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T23:12:22.366395",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-22T23:42:22.543129",
+      "end_time": "2025-09-22T23:42:23.344382",
+      "duration_minutes": 0.013354216666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-22T23:42:23.344706",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T00:12:23.587810",
+      "end_time": "2025-09-23T00:12:25.304584",
+      "duration_minutes": 0.0286129,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T00:12:25.304667",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T00:42:25.466019",
+      "end_time": "2025-09-23T00:42:26.205245",
+      "duration_minutes": 0.012320433333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T00:42:26.205386",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T01:12:26.455446",
+      "end_time": "2025-09-23T01:12:33.189823",
+      "duration_minutes": 0.11223961666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T01:12:33.190149",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T01:42:33.363864",
+      "end_time": "2025-09-23T01:42:34.043231",
+      "duration_minutes": 0.011322783333333334,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T01:42:34.043325",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T02:12:34.274785",
+      "end_time": "2025-09-23T02:12:35.916451",
+      "duration_minutes": 0.027361100000000003,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T02:12:35.916544",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T02:42:36.083762",
+      "end_time": "2025-09-23T02:42:36.783029",
+      "duration_minutes": 0.01165445,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T02:42:36.783231",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-23T03:12:37.022482",
+      "end_time": "2025-09-23T03:12:38.603448",
+      "duration_minutes": 0.026349433333333335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T03:12:38.603576",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-23T03:42:38.758452",
+      "end_time": "2025-09-23T03:42:39.463831",
+      "duration_minutes": 0.011756316666666666,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T03:42:39.463935",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T04:12:39.726046",
+      "end_time": "2025-09-23T04:12:45.922255",
+      "duration_minutes": 0.10327014999999999,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T04:12:45.922315",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T04:42:46.073772",
+      "end_time": "2025-09-23T04:42:46.761616",
+      "duration_minutes": 0.011464066666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T04:42:46.761745",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T05:12:46.994601",
+      "end_time": "2025-09-23T05:12:48.594661",
+      "duration_minutes": 0.026667666666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T05:12:48.594760",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T05:42:48.782988",
+      "end_time": "2025-09-23T05:42:49.562506",
+      "duration_minutes": 0.012991966666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T05:42:49.562673",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T06:12:49.812042",
+      "end_time": "2025-09-23T06:13:01.541608",
+      "duration_minutes": 0.19549276666666668,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T06:13:01.541713",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T06:43:01.686685",
+      "end_time": "2025-09-23T06:43:02.399446",
+      "duration_minutes": 0.01187935,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T06:43:02.399499",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-23T07:13:02.655306",
+      "end_time": "2025-09-23T07:13:04.274146",
+      "duration_minutes": 0.026980666666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T07:13:04.274231",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-23T07:43:04.472797",
+      "end_time": "2025-09-23T07:43:05.325042",
+      "duration_minutes": 0.014204083333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T07:43:05.325388",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-23T08:13:05.626521",
+      "end_time": "2025-09-23T08:13:17.419536",
+      "duration_minutes": 0.19655025,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T08:13:17.419621",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-23T08:43:17.938072",
+      "end_time": "2025-09-23T08:43:18.705313",
+      "duration_minutes": 0.01278735,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T08:43:18.705654",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-23T09:13:18.963403",
+      "end_time": "2025-09-23T09:13:21.269637",
+      "duration_minutes": 0.038437233333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 1,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T09:13:21.269710",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-23T09:43:21.439815",
+      "end_time": "2025-09-23T09:43:46.984074",
+      "duration_minutes": 0.42573765,
+      "opportunities_found": 1,
+      "trades_executed": 1,
+      "trades_skipped": 0,
+      "executed_trades": [
+        {
+          "symbol": "USDCAD",
+          "direction": "sell",
+          "opportunity_score": 65.45,
+          "trade_details": {
+            "instrument": "USD_CAD",
+            "side": "sell",
+            "entry_price": 1.3825,
+            "tp_price": 1.37515,
+            "sl_price": 1.3863,
+            "trade_id": "3919",
+            "position_size": 1000,
+            "risk_reward_ratio": 1.941952506596163,
+            "atr": 0.002102890250643282,
+            "meta": {}
+          },
+          "execution_time": "2025-09-23T09:43:46.984052"
+        }
+      ]
+    },
+    "timestamp": "2025-09-23T09:43:46.984123",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-23T10:13:52.010510",
+      "end_time": "2025-09-23T10:13:53.970253",
+      "duration_minutes": 0.032662383333333336,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T10:13:53.970359",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-23T10:43:57.807678",
+      "end_time": "2025-09-23T10:43:58.963081",
+      "duration_minutes": 0.019256716666666666,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T10:43:58.963165",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-23T11:13:59.254829",
+      "end_time": "2025-09-23T11:14:01.266728",
+      "duration_minutes": 0.03353165,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T11:14:01.267078",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-23T11:44:13.223109",
+      "end_time": "2025-09-23T11:44:14.005674",
+      "duration_minutes": 0.013042749999999999,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-23T11:44:14.005995",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "completed",
+      "start_time": "2025-09-23T12:14:18.232310",
+      "end_time": "2025-09-23T12:14:44.229986",
+      "duration_minutes": 0.4332946,
+      "opportunities_found": 1,
+      "trades_executed": 1,
+      "trades_skipped": 0,
+      "executed_trades": [
+        {
+          "symbol": "AUDUSD",
+          "direction": "sell",
+          "opportunity_score": 66.0,
+          "trade_details": {
+            "instrument": "AUD_USD",
+            "side": "sell",
+            "entry_price": 0.66047,
+            "tp_price": 0.65459,
+            "sl_price": 0.6635,
+            "trade_id": "3923",
+            "position_size": 1000,
+            "risk_reward_ratio": 1.940594059405954,
+            "atr": 0.0016806100211484729,
+            "meta": {}
+          },
+          "execution_time": "2025-09-23T12:14:44.229964"
+        }
+      ]
+    },
+    "timestamp": "2025-09-23T12:14:44.230029",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "symbol": "USDCAD",
+    "result": {
+      "status": "MANUALLY_CLOSED",
+      "message": "Trade closed manually"
+    },
+    "entry_price": 1.3825,
+    "exit_price": "Manual",
+    "side": "sell",
+    "trade_id": "3919",
+    "manual_closure": true,
+    "timestamp": "2025-09-24T03:44:56.974465"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T03:45:00.949427",
+      "end_time": "2025-09-24T03:45:07.289790",
+      "duration_minutes": 0.10567271666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T03:45:07.289853",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T04:15:08.066716",
+      "end_time": "2025-09-24T04:15:08.782649",
+      "duration_minutes": 0.011932216666666667,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T04:15:08.783005",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T04:45:08.978974",
+      "end_time": "2025-09-24T04:45:10.743229",
+      "duration_minutes": 0.02940425,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T04:45:10.743555",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T05:15:11.003898",
+      "end_time": "2025-09-24T05:15:11.740374",
+      "duration_minutes": 0.0122746,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T05:15:11.740740",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T05:45:11.933323",
+      "end_time": "2025-09-24T05:45:18.157090",
+      "duration_minutes": 0.10372944999999999,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T05:45:18.157197",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T06:15:22.301726",
+      "end_time": "2025-09-24T06:15:23.033260",
+      "duration_minutes": 0.012192233333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T06:15:23.033381",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T06:45:23.203169",
+      "end_time": "2025-09-24T06:45:25.274240",
+      "duration_minutes": 0.034517849999999996,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T06:45:25.274355",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T07:15:25.564159",
+      "end_time": "2025-09-24T07:15:26.262006",
+      "duration_minutes": 0.011630783333333334,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T07:15:26.262145",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T07:45:26.421234",
+      "end_time": "2025-09-24T07:45:33.183582",
+      "duration_minutes": 0.11270580000000001,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T07:45:33.183959",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T08:15:33.460372",
+      "end_time": "2025-09-24T08:15:34.180392",
+      "duration_minutes": 0.012000333333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T08:15:34.180734",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T08:45:34.341283",
+      "end_time": "2025-09-24T08:45:36.209524",
+      "duration_minutes": 0.03113735,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T08:45:36.209828",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T09:15:36.462436",
+      "end_time": "2025-09-24T09:15:37.271101",
+      "duration_minutes": 0.01347775,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T09:15:37.272477",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T09:45:37.458639",
+      "end_time": "2025-09-24T09:45:39.389092",
+      "duration_minutes": 0.032174216666666665,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T09:45:39.389213",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T10:15:39.660535",
+      "end_time": "2025-09-24T10:15:40.520511",
+      "duration_minutes": 0.014332933333333332,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T10:15:40.520608",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T10:45:40.739153",
+      "end_time": "2025-09-24T10:45:42.655706",
+      "duration_minutes": 0.03194255,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T10:45:42.655757",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T11:15:42.897499",
+      "end_time": "2025-09-24T11:15:43.665424",
+      "duration_minutes": 0.01279875,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T11:15:43.665781",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T11:45:43.862898",
+      "end_time": "2025-09-24T11:45:46.344207",
+      "duration_minutes": 0.04135515,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T11:45:46.344287",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T12:15:46.632275",
+      "end_time": "2025-09-24T12:15:47.501072",
+      "duration_minutes": 0.01447995,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T12:15:47.501463",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T12:45:47.677265",
+      "end_time": "2025-09-24T12:45:49.752499",
+      "duration_minutes": 0.034587233333333335,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T12:45:49.752839",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T13:15:50.024034",
+      "end_time": "2025-09-24T13:15:50.774273",
+      "duration_minutes": 0.012503983333333333,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T13:15:50.774377",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T13:45:50.959848",
+      "end_time": "2025-09-24T13:45:53.066357",
+      "duration_minutes": 0.035108483333333336,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T13:45:53.066815",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T14:15:53.373126",
+      "end_time": "2025-09-24T14:15:54.203272",
+      "duration_minutes": 0.013835766666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T14:15:54.203684",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T14:45:54.394618",
+      "end_time": "2025-09-24T14:45:56.434157",
+      "duration_minutes": 0.03399231666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T14:45:56.434545",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T15:15:56.730460",
+      "end_time": "2025-09-24T15:15:57.480811",
+      "duration_minutes": 0.01250585,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T15:15:57.480967",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T15:45:57.649538",
+      "end_time": "2025-09-24T15:46:04.541641",
+      "duration_minutes": 0.11486838333333332,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T15:46:04.542019",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T16:16:04.831627",
+      "end_time": "2025-09-24T16:16:05.571632",
+      "duration_minutes": 0.012333416666666668,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T16:16:05.571782",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T16:46:05.855372",
+      "end_time": "2025-09-24T16:46:07.857975",
+      "duration_minutes": 0.03337671666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T16:46:07.858313",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T17:16:08.375664",
+      "end_time": "2025-09-24T17:16:09.269435",
+      "duration_minutes": 0.014896183333333333,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T17:16:09.269602",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T17:46:09.449848",
+      "end_time": "2025-09-24T17:46:11.454185",
+      "duration_minutes": 0.033405616666666665,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T17:46:11.454238",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T18:16:11.697285",
+      "end_time": "2025-09-24T18:16:12.588360",
+      "duration_minutes": 0.01485125,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T18:16:12.588734",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T18:46:12.790494",
+      "end_time": "2025-09-24T18:46:14.717441",
+      "duration_minutes": 0.032115783333333335,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T18:46:14.717836",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T19:16:15.010081",
+      "end_time": "2025-09-24T19:16:15.821237",
+      "duration_minutes": 0.013519266666666667,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T19:16:15.821341",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T19:46:16.021334",
+      "end_time": "2025-09-24T19:46:22.889678",
+      "duration_minutes": 0.11447239999999999,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T19:46:22.889783",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T20:16:23.190171",
+      "end_time": "2025-09-24T20:16:23.999842",
+      "duration_minutes": 0.013494516666666668,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T20:16:23.999975",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T20:46:24.204146",
+      "end_time": "2025-09-24T20:46:30.624915",
+      "duration_minutes": 0.10701281666666666,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T20:46:30.624974",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "all_filtered",
+      "start_time": "2025-09-24T21:16:30.898680",
+      "end_time": "2025-09-24T21:16:31.767342",
+      "duration_minutes": 0.014477700000000001,
+      "opportunities_found": 1,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T21:16:31.767771",
+    "symbol": "UNKNOWN"
+  },
+  {
+    "type": "session_summary",
+    "result": {
+      "session_result": "no_opportunities",
+      "start_time": "2025-09-24T21:46:31.924510",
+      "end_time": "2025-09-24T21:46:39.155750",
+      "duration_minutes": 0.12052066666666666,
+      "opportunities_found": 0,
+      "trades_executed": 0,
+      "trades_skipped": 0,
+      "executed_trades": []
+    },
+    "timestamp": "2025-09-24T21:46:39.156023",
+    "symbol": "UNKNOWN"
+  }
+]
