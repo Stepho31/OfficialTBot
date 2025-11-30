@@ -22,4 +22,5 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run your app (headless via xvfb)
-CMD ["xvfb-run", "-a", "python3", "start_automated_trading.py"]
+CMD ["python", "-u", "start_automated_trading.py"]
+
