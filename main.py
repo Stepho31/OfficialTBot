@@ -164,6 +164,35 @@ def _default_spread_pips(sym: str) -> float:
         return 0.8
 
 
+def log_render_debug_info():
+    """Debug helper to verify script is running on Render."""
+    print("\n" + "=" * 60)
+    print("🔍 RENDER DEBUG MODE ENABLED")
+    print("=" * 60)
+    
+    # Current working directory
+    cwd = os.getcwd()
+    print(f"📁 Current working directory: {cwd}")
+    
+    # DRY_RUN and TRADING_MODE values
+    print(f"🧪 DRY_RUN: {DRY_RUN}")
+    trading_mode = os.getenv("TRADING_MODE", "Not set")
+    print(f"📊 TRADING_MODE: {trading_mode}")
+    
+    # Required env vars (check presence only, don't print values)
+    print("\n🔑 Environment Variables Status:")
+    required_vars = {
+        "OANDA_API_KEY": os.getenv("OANDA_API_KEY"),
+        "OANDA_ACCOUNT_ID": os.getenv("OANDA_ACCOUNT_ID"),
+        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
+    }
+    for var_name, var_value in required_vars.items():
+        status = "✅" if var_value else "❌"
+        print(f"  {status} {var_name}")
+    
+    print("=" * 60 + "\n")
+
+
 def main():
     # Extra clarity for Render logs
     now = datetime.now(timezone.utc).isoformat()
@@ -594,4 +623,11 @@ def main():
 
 
 if __name__ == "__main__":
+    print("[BOT] Script initializing...")
+    print("[BOT] Environment loaded.")
+    
+    # Render debug helper (only if RENDER_DEBUG env var is set to "true")
+    if os.getenv("RENDER_DEBUG", "").lower() == "true":
+        log_render_debug_info()
+    
     main()
