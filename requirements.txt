@@ -43,3 +43,4 @@ stripe==10.10.0
 # vercel-wsgi==0.8.1
 SQLAlchemy>=2.0
 psycopg2-binary>=2.9.0
+playwright
