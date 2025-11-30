@@ -25,7 +25,6 @@ from idea_guard import filter_fresh_ideas_by_registry, evaluate_trade_gate, reco
 # NEW: Smart planner
 from smart_layer import plan_trade
 import oandapyV20.endpoints.pricing as pricing
-from autopip_client import AutopipClient
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -212,24 +211,51 @@ def main():
     
     user_id_env = os.getenv("AUTOPIP_USER_ID")
     if user_id_env:
+        # If AUTOPIP_USER_ID is set, we MUST connect to the API to verify entitlements
+        # and get broker credentials. This is a user's account - we can't trade without
+        # dashboard connectivity.
         try:
+            from autopip_client import AutopipClient
             autopip_user_id = int(user_id_env)
+            print(f"[BOT] 🔗 Connecting to dashboard for user {autopip_user_id}...")
             autopip_client = AutopipClient()
+            
+            # Verify entitlements - user must be allowed to trade
+            print("[BOT] 📋 Checking trading entitlements...")
             entitlements = autopip_client.get_entitlements(autopip_user_id)
             if not entitlements.get("canTrade"):
                 print("[BOT] 🚫 Trading disabled by entitlement rules.")
                 return
+            
+            # Get broker credentials - required to trade on user's account
+            print("[BOT] 🔑 Fetching broker credentials...")
             broker_creds = autopip_client.get_broker(autopip_user_id)
             oanda_api_key = broker_creds.get("oandaApiKey")
             oanda_account_id = broker_creds.get("oandaAccountId")
-            if oanda_api_key:
-                os.environ["OANDA_API_KEY"] = oanda_api_key
-            if oanda_account_id:
-                os.environ["OANDA_ACCOUNT_ID"] = oanda_account_id
+            
+            if not oanda_api_key or not oanda_account_id:
+                print("[BOT] ❌ Broker credentials not available. Cannot trade without dashboard connection.")
+                print("[BOT] Please ensure your broker account is connected in the dashboard.")
+                return
+            
+            os.environ["OANDA_API_KEY"] = oanda_api_key
+            os.environ["OANDA_ACCOUNT_ID"] = oanda_account_id
+            print("[BOT] ✅ Dashboard connection successful. Trading enabled.")
+            
+        except ImportError as e:
+            print(f"[BOT] ❌ Cannot import API client: {e}")
+            print("[BOT] 🛑 Cannot trade without dashboard connection when AUTOPIP_USER_ID is set.")
+            print("[BOT] This is a user account - dashboard must be accessible to verify entitlements and get credentials.")
+            return
         except Exception as exc:
-            print(f"[BOT] ⚠️ Autopip API integration disabled: {exc}")
-            autopip_client = None
-            autopip_user_id = None
+            print(f"[BOT] ❌ Failed to connect to dashboard: {exc}")
+            print("[BOT] 🛑 Cannot trade without dashboard connection when AUTOPIP_USER_ID is set.")
+            print("[BOT] Please ensure:")
+            print("  - AUTOPIP_API_BASE_URL is set correctly")
+            print("  - BOT_API_KEY is set correctly")
+            print("  - Dashboard API is accessible")
+            print("  - User has valid entitlements and broker credentials")
+            return
 
     trade_ideas = get_trade_ideas()
     print(f"[BOT] Fetched {len(trade_ideas)} trade ideas.")

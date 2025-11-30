@@ -658,6 +658,9 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                         "oandaAccountId": account_id,
                     })
                     print(f"[DB] ✅ Trade {trade_id} saved to database for user {user_id}")
+                except ImportError as e:
+                    print(f"[DB] ⚠️ Optional API integration failed: {e}")
+                    print("[DB] Continuing without syncing trades to the dashboard.")
                 except Exception as db_error:
                     print(f"[DB] ❌ Error saving trade to database: {db_error}")
             else:

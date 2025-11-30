@@ -549,6 +549,9 @@ def send_signal(signal: Dict) -> None:
                     print(f"[broadcast] ✅ Sent signal to user {user_id} ({user_email})")
                 else:
                     print(f"[broadcast] ⚠️ User {user_id} not found in Tier-2 users")
+            except ImportError as e:
+                print(f"[broadcast] ⚠️ Optional API integration failed: {e}")
+                print("[broadcast] Continuing without syncing trades to the dashboard.")
             except Exception as e:
                 print(f"[broadcast] ⚠️ Error sending per-user signal: {e}")
         else:

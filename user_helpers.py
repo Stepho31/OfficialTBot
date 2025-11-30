@@ -6,8 +6,6 @@ import os
 from typing import List, Dict, Optional
 from dataclasses import dataclass
 
-from autopip_client import AutopipClient
-
 
 @dataclass
 class Tier2User:
@@ -28,6 +26,7 @@ def get_tier2_users_for_automation() -> List[Tier2User]:
         Returns empty list if API is unavailable or no users found.
     """
     try:
+        from autopip_client import AutopipClient
         client = AutopipClient()
         users_data = client.get_tier2_users()
         
@@ -49,6 +48,10 @@ def get_tier2_users_for_automation() -> List[Tier2User]:
         print(f"[USER_HELPERS] ✅ Found {len(result)} Tier-2 users eligible for automation")
         return result
         
+    except ImportError as e:
+        print(f"[USER_HELPERS] ⚠️ Optional API integration failed: {e}")
+        print("[USER_HELPERS] Continuing without syncing trades to the dashboard.")
+        return []
     except Exception as e:
         print(f"[USER_HELPERS] ❌ Error fetching Tier-2 users: {e}")
         return []

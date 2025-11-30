@@ -16,7 +16,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import SQLAlchemyError
 
-# Import models from the API
+# Import models from the API (optional - will gracefully degrade if unavailable)
 # We need to add the API directory to the Python path
 import sys
 from pathlib import Path
@@ -29,13 +29,20 @@ api_path = workspace_root / "OfficialTBot-api"
 if str(api_path) not in sys.path:
     sys.path.insert(0, str(api_path))
 
+# Try to import models, but don't crash if unavailable
+_models_available = False
 try:
     from app.models import Trade, Account, BrokerCredential, User
+    _models_available = True
 except ImportError as e:
-    logging.error(f"Failed to import models from API: {e}")
-    logging.error(f"API path: {api_path}")
-    logging.error(f"Python path: {sys.path}")
-    raise
+    # Log but don't raise - this module will gracefully degrade
+    logging.warning(f"Database persistence models not available: {e}")
+    logging.warning("Database persistence features will be disabled. Continuing without syncing trades to database.")
+    # Create dummy classes to prevent NameError
+    Trade = None
+    Account = None
+    BrokerCredential = None
+    User = None
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -49,6 +56,10 @@ _SessionLocal = None
 def get_db_connection():
     """Initialize database connection using DATABASE_URL from environment."""
     global _engine, _SessionLocal
+    
+    if not _models_available:
+        logger.warning("Database models not available, cannot initialize connection")
+        return None
     
     if _engine is None:
         database_url = os.getenv("DATABASE_URL")
@@ -66,9 +77,11 @@ def get_db_connection():
     return _SessionLocal
 
 
-def get_db_session() -> Session:
+def get_db_session() -> Optional[Session]:
     """Get a database session."""
     SessionLocal = get_db_connection()
+    if SessionLocal is None:
+        return None
     return SessionLocal()
 
 
@@ -82,7 +95,14 @@ def lookup_user_and_account(oanda_account_id: str) -> Optional[Tuple[int, int]]:
     Returns:
         Tuple of (user_id, account_id) if found, None otherwise
     """
+    if not _models_available:
+        logger.warning("Database models not available, cannot lookup user and account")
+        return None
+    
     db = get_db_session()
+    if db is None:
+        return None
+    
     try:
         # First, find the BrokerCredential by OANDA account_id
         broker_cred = db.execute(
@@ -170,7 +190,14 @@ def save_trade_open(
     Returns:
         True if saved successfully, False otherwise
     """
+    if not _models_available:
+        logger.warning("Database models not available, cannot save trade")
+        return False
+    
     db = get_db_session()
+    if db is None:
+        return False
+    
     try:
         # Check if trade already exists
         existing_trade = db.execute(
@@ -240,7 +267,14 @@ def save_trade_close(
     Returns:
         True if updated successfully, False otherwise
     """
+    if not _models_available:
+        logger.warning("Database models not available, cannot save trade close")
+        return False
+    
     db = get_db_session()
+    if db is None:
+        return False
+    
     try:
         # Find the trade
         trade = db.execute(

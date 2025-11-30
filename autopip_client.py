@@ -6,10 +6,11 @@ from typing import Any, Dict, List, Optional
 
 class AutopipClient:
     def __init__(self) -> None:
-        self.base_url = (os.getenv("API_BASE_URL") or "").rstrip("/")
+        base = os.getenv("AUTOPIP_API_BASE_URL")
+        if not base:
+            raise RuntimeError("AUTOPIP_API_BASE_URL is not set")
+        self.base_url = base.rstrip("/")
         self.bot_key = os.getenv("BOT_API_KEY")
-        if not self.base_url:
-            raise RuntimeError("API_BASE_URL is required for AutopipClient")
         if not self.bot_key:
             raise RuntimeError("BOT_API_KEY is required for AutopipClient")
 
