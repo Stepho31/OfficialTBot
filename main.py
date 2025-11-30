@@ -182,13 +182,14 @@ def log_render_debug_info():
     # Required env vars (check presence only, don't print values)
     print("\n🔑 Environment Variables Status:")
     required_vars = {
-        "OANDA_API_KEY": os.getenv("OANDA_API_KEY"),
-        "OANDA_ACCOUNT_ID": os.getenv("OANDA_ACCOUNT_ID"),
         "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY"),
     }
     for var_name, var_value in required_vars.items():
         status = "✅" if var_value else "❌"
         print(f"  {status} {var_name}")
+    
+    # Note: OANDA credentials are supplied dynamically at runtime from user dashboard
+    print("\nℹ️  Note: OANDA_API_KEY and OANDA_ACCOUNT_ID are supplied dynamically at runtime")
     
     print("=" * 60 + "\n")
 
