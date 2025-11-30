@@ -140,38 +140,18 @@ def main():
     # Display configuration
     display_startup_info()
     
-    # Confirm start
+    # Confirm mode (non-interactive)
     print("\n" + "=" * 50)
     
     if os.getenv('DRY_RUN', 'false').lower() == 'true':
         print("🔬 DRY RUN MODE - No real trades will be placed")
     else:
-        print("💰 LIVE TRADING MODE - Real trades will be placed!")
-        
-        response = input("\nAre you sure you want to start live trading? (yes/no): ")
-        if response.lower() not in ['yes', 'y']:
-            print("❌ Startup cancelled by user.")
-            sys.exit(0)
+        # Always run live trading on servers like Render
+        print("💰 LIVE TRADING MODE - Real trades will be placed! (auto-confirmed)")
     
     print("\n🎬 Starting automated trading system...")
-    print("Press Ctrl+C to stop the system gracefully")
+    print("Press Ctrl+C to stop the system gracefully (when running locally)")
     print("=" * 50)
-    
-    # Get credentials from AutopipClient if AUTOPIP_USER_ID is set
-    user_id_env = os.getenv("AUTOPIP_USER_ID")
-    if user_id_env:
-        try:
-            from autopip_client import AutopipClient
-            autopip_user_id = int(user_id_env)
-            autopip_client = AutopipClient()
-            broker_creds = autopip_client.get_broker(autopip_user_id)
-            if broker_creds.get("oandaApiKey"):
-                os.environ["OANDA_API_KEY"] = broker_creds["oandaApiKey"]
-            if broker_creds.get("oandaAccountId"):
-                os.environ["OANDA_ACCOUNT_ID"] = broker_creds["oandaAccountId"]
-        except Exception as exc:
-            print(f"⚠️ Autopip credential injection failed: {exc}")
-            print("Falling back to environment variables if available.")
     
     # Import and start the automated trader
     try:
