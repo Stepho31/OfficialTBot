@@ -14,8 +14,6 @@ load_dotenv()
 def check_environment():
     """Check if all required environment variables are set"""
     required_vars = [
-        "OANDA_API_KEY",
-        "OANDA_ACCOUNT_ID", 
         "OPENAI_API_KEY"
     ]
     
@@ -26,6 +24,8 @@ def check_environment():
         "EMAIL_USER",
         "EMAIL_PASSWORD",
         "EMAIL_TO"
+        "OANDA_API_KEY",
+        "OANDA_ACCOUNT_ID",
     ]
     
     missing_required = []
