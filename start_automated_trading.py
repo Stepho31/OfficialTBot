@@ -157,6 +157,22 @@ def main():
     print("Press Ctrl+C to stop the system gracefully")
     print("=" * 50)
     
+    # Get credentials from AutopipClient if AUTOPIP_USER_ID is set
+    user_id_env = os.getenv("AUTOPIP_USER_ID")
+    if user_id_env:
+        try:
+            from autopip_client import AutopipClient
+            autopip_user_id = int(user_id_env)
+            autopip_client = AutopipClient()
+            broker_creds = autopip_client.get_broker(autopip_user_id)
+            if broker_creds.get("oandaApiKey"):
+                os.environ["OANDA_API_KEY"] = broker_creds["oandaApiKey"]
+            if broker_creds.get("oandaAccountId"):
+                os.environ["OANDA_ACCOUNT_ID"] = broker_creds["oandaAccountId"]
+        except Exception as exc:
+            print(f"⚠️ Autopip credential injection failed: {exc}")
+            print("Falling back to environment variables if available.")
+    
     # Import and start the automated trader
     try:
         from automated_trader import AutomatedTrader

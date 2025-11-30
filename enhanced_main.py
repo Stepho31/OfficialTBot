@@ -146,7 +146,8 @@ class EnhancedTradingSession:
                     
                     for j in range(rechecks):
                         gate = evaluate_trade_gate(opportunity.symbol.replace("_", ""), opportunity.direction,
-                                                   f"Auto-opportunity score={opportunity.score}")
+                                                   f"Auto-opportunity score={opportunity.score}",
+                                                   api_key=user.oanda_api_key, account_id=user.oanda_account_id)
                         if not gate.get("allow", False):
                             print(f"[ENHANCED] 🚫 User {user.user_id}: Gate blocked on recheck {j+1}: {gate.get('blocks')}")
                             self._send_admin_rejection_notification(opportunity, f"Gate blocked: {gate.get('blocks')} (recheck {j+1})", user)
@@ -328,7 +329,7 @@ class EnhancedTradingSession:
             trade_idea = self._create_trade_idea_text(opportunity)
 
             # Idea gate (cooldown/time & price + structure confirmation + stale repost)
-            gate = evaluate_trade_gate(symbol, direction, trade_idea)
+            gate = evaluate_trade_gate(symbol, direction, trade_idea, api_key=user.oanda_api_key, account_id=user.oanda_account_id)
             if not gate.get("allow", False):
                 print(f"[ENHANCED] 🚫 Idea gated. Reasons: {gate.get('blocks')}")
                 # Send admin notification for rejection
@@ -361,7 +362,7 @@ class EnhancedTradingSession:
             
             if not self.dry_run:
                 # Build smart plan with live spread for consistent exits/sizing
-                spread_pips = self._get_live_spread_pips(opportunity.symbol)
+                spread_pips = self._get_live_spread_pips(opportunity.symbol, api_key=user.oanda_api_key, account_id=user.oanda_account_id)
                 plan = plan_trade(symbol, direction, spread_pips=spread_pips or 0.8)
                 if not plan:
                     print("[ENHANCED] ❌ Smart plan could not be built. Skipping.")
@@ -453,7 +454,7 @@ class EnhancedTradingSession:
             trade_idea = self._create_trade_idea_text(opportunity)
 
             # Idea gate (cooldown/time & price + structure confirmation + stale repost)
-            gate = evaluate_trade_gate(symbol, direction, trade_idea)
+            gate = evaluate_trade_gate(symbol, direction, trade_idea, api_key=user.oanda_api_key, account_id=user.oanda_account_id)
             if not gate.get("allow", False):
                 print(f"[ENHANCED] 🚫 User {user.user_id}: Idea gated. Reasons: {gate.get('blocks')}")
                 self._send_admin_rejection_notification(opportunity, f"Gate blocked: {gate.get('blocks')}", user)
@@ -461,7 +462,7 @@ class EnhancedTradingSession:
             
             if not self.dry_run:
                 # Build smart plan with live spread for consistent exits/sizing
-                spread_pips = self._get_live_spread_pips(opportunity.symbol)
+                spread_pips = self._get_live_spread_pips(opportunity.symbol, api_key=user.oanda_api_key, account_id=user.oanda_account_id)
                 plan = plan_trade(symbol, direction, spread_pips=spread_pips or 0.8)
                 if not plan:
                     print(f"[ENHANCED] ❌ User {user.user_id}: Smart plan could not be built. Skipping.")
@@ -799,10 +800,13 @@ class EnhancedTradingSession:
         except Exception as e:
             print(f"[ENHANCED] ⚠️ Failed to send notification: {e}")
 
-    def _get_live_spread_pips(self, pair: str) -> float:
+    def _get_live_spread_pips(self, pair: str, api_key=None, account_id=None) -> float:
         try:
-            client = OandaAPI(access_token=os.getenv("OANDA_API_KEY"), environment="live")
-            account_id = os.getenv("OANDA_ACCOUNT_ID")
+            api_key = api_key or os.getenv("OANDA_API_KEY")
+            account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
+            if not api_key or not account_id:
+                return 0.8
+            client = OandaAPI(access_token=api_key, environment="live")
             r = pricing.PricingInfo(accountID=account_id, params={"instruments": pair})
             client.request(r)
             prices = r.response["prices"][0]

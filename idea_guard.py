@@ -65,9 +65,9 @@ def _now_utc() -> datetime:
     return datetime.utcnow()
 
 
-def _ensure_oanda_client() -> Tuple[Optional[oandapyV20.API], Optional[str]]:
-    token = os.getenv("OANDA_API_KEY")
-    account_id = os.getenv("OANDA_ACCOUNT_ID")
+def _ensure_oanda_client(api_key=None, account_id=None) -> Tuple[Optional[oandapyV20.API], Optional[str]]:
+    token = api_key or os.getenv("OANDA_API_KEY")
+    account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
     if not token or not account_id:
         return None, None
     try:
@@ -91,8 +91,8 @@ def format_instrument(symbol: str) -> str:
     return symbol if "_" in symbol else symbol
 
 
-def _get_current_price(instrument: str, side: str) -> Optional[float]:
-    client, account_id = _ensure_oanda_client()
+def _get_current_price(instrument: str, side: str, api_key=None, account_id=None) -> Optional[float]:
+    client, account_id = _ensure_oanda_client(api_key=api_key, account_id=account_id)
     if not client or not account_id:
         return None
     try:
@@ -131,15 +131,15 @@ def _calculate_atr_from_candles(candles: List[Dict]) -> Optional[float]:
         return None
 
 
-def _get_h4_atr(instrument: str) -> Optional[float]:
-    candles = get_oanda_data(instrument, "H4", 60)
+def _get_h4_atr(instrument: str, api_key=None, account_id=None) -> Optional[float]:
+    candles = get_oanda_data(instrument, "H4", 60, api_key=api_key, account_id=account_id)
     return _calculate_atr_from_candles(candles) if candles else None
 
 
-def _get_daily_trend(instrument: str) -> Optional[str]:
+def _get_daily_trend(instrument: str, api_key=None, account_id=None) -> Optional[str]:
     """Return 'bullish', 'bearish', or None based on EMA50 vs EMA200 on Daily."""
     try:
-        candles = get_oanda_data(instrument, HTF_TREND_GRANULARITY, 210)
+        candles = get_oanda_data(instrument, HTF_TREND_GRANULARITY, 210, api_key=api_key, account_id=account_id)
         if not candles or len(candles) < 200:
             return None
         closes = [float(c["mid"]["c"]) for c in candles]
@@ -166,10 +166,10 @@ def _calculate_ema(values: List[float], period: int) -> Optional[float]:
     return ema
 
 
-def _has_swing_break(instrument: str, direction: str) -> bool:
+def _has_swing_break(instrument: str, direction: str, api_key=None, account_id=None) -> bool:
     """Check if price recently broke prior 20-bar swing high/low on H4."""
     try:
-        candles = get_oanda_data(instrument, "H4", 60)
+        candles = get_oanda_data(instrument, "H4", 60, api_key=api_key, account_id=account_id)
         if not candles or len(candles) < 25:
             return False
         highs = [float(c["mid"]["h"]) for c in candles]
@@ -187,10 +187,10 @@ def _has_swing_break(instrument: str, direction: str) -> bool:
         return False
 
 
-def _break_and_retest(instrument: str, direction: str) -> bool:
+def _break_and_retest(instrument: str, direction: str, api_key=None, account_id=None) -> bool:
     """Simple break-and-retest heuristic on H4."""
     try:
-        candles = get_oanda_data(instrument, "H4", 80)
+        candles = get_oanda_data(instrument, "H4", 80, api_key=api_key, account_id=account_id)
         if not candles or len(candles) < 40:
             return False
         highs = [float(c["mid"]["h"]) for c in candles]
@@ -250,7 +250,7 @@ def filter_fresh_ideas_by_registry(ideas: List[Dict]) -> List[Dict]:
     return kept
 
 
-def evaluate_trade_gate(symbol: str, direction: str, idea_text: str) -> Dict:
+def evaluate_trade_gate(symbol: str, direction: str, idea_text: str, api_key=None, account_id=None) -> Dict:
     """Evaluate whether a trade should be blocked based on cooldown, freshness, and structure.
     Returns { 'allow': bool, 'blocks': [reasons] }.
     """
@@ -291,12 +291,12 @@ def evaluate_trade_gate(symbol: str, direction: str, idea_text: str) -> Dict:
             if not time_ok:
                 blocks.append(f"COOLDOWN_TIME({hours_since:.1f}h<{COOLDOWN_HOURS}h)")
         price_ok = False
-        current_price = _get_current_price(instrument, direction)
+        current_price = _get_current_price(instrument, direction, api_key=api_key, account_id=account_id)
         if current_price is not None:
             last_entry = float(last.get("entry_price", 0) or 0)
             if last_entry > 0:
                 pct_move = abs(current_price - last_entry) / last_entry * 100.0
-                atr = _get_h4_atr(instrument)
+                atr = _get_h4_atr(instrument, api_key=api_key, account_id=account_id)
                 atr_move_ok = (abs(current_price - last_entry) >= (atr * COOLDOWN_ATR_MULT)) if atr else False
                 pct_ok = pct_move >= COOLDOWN_PCT_MOVE
                 price_ok = atr_move_ok or pct_ok
@@ -311,13 +311,13 @@ def evaluate_trade_gate(symbol: str, direction: str, idea_text: str) -> Dict:
 
        # ---- Structure confirmation: SOFT TAGS ONLY ----
     structure_checks = []
-    daily_trend = _get_daily_trend(instrument)
+    daily_trend = _get_daily_trend(instrument, api_key=api_key, account_id=account_id)
     if daily_trend:
         if (direction == "buy" and daily_trend == "bullish") or (direction == "sell" and daily_trend == "bearish"):
             structure_checks.append("HTF_TREND")
-    if _has_swing_break(instrument, direction):
+    if _has_swing_break(instrument, direction, api_key=api_key, account_id=account_id):
         structure_checks.append("SWING_BREAK")
-    if _break_and_retest(instrument, direction):
+    if _break_and_retest(instrument, direction, api_key=api_key, account_id=account_id):
         structure_checks.append("BREAK_RETEST")
 
     # Do NOT block if structure_checks is empty; just tag it

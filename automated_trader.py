@@ -73,17 +73,20 @@ class AutomatedTrader:
         print(f"[AUTOMATED] 📈 Max trades per day: {self.state.max_trades_per_day}")
     
     def _initialize_client(self):
-        """Initialize OANDA API client"""
+        """Initialize OANDA API client (uses environment variables as fallback)"""
         try:
             token = os.getenv("OANDA_API_KEY")
             if not token:
-                raise ValueError("OANDA_API_KEY not found")
+                print("[AUTOMATED] ⚠️ OANDA_API_KEY not found in environment. Client will be None.")
+                print("[AUTOMATED] ℹ️ This is expected if using per-user credentials via enhanced_main.")
+                self.client = None
+                return
             
             self.client = oandapyV20.API(access_token=token, environment="live")
             print("[AUTOMATED] ✅ OANDA client initialized")
         except Exception as e:
-            print(f"[AUTOMATED] ❌ Failed to initialize OANDA client: {e}")
-            raise
+            print(f"[AUTOMATED] ⚠️ Failed to initialize OANDA client: {e}")
+            self.client = None
     
     def _load_state(self):
         """Load previous trading state"""
@@ -122,6 +125,8 @@ class AutomatedTrader:
     def detect_manual_trades(self):
         """Detect manually closed trades and update cache"""
         try:
+            if not self.client or not self.account_id:
+                return
             # Get current trades from OANDA
             r = TradesList(accountID=self.account_id)
             self.client.request(r)
@@ -334,6 +339,10 @@ class AutomatedTrader:
     def health_check(self):
         """Perform system health check"""
         try:
+            if not self.client or not self.account_id:
+                active_trades = len(get_active_trades())
+                print(f"[AUTOMATED] 💚 Health Check - Active Trades: {active_trades} (OANDA client not available)")
+                return
             # Check OANDA connection
             r = AccountDetails(self.account_id)
             self.client.request(r)

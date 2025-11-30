@@ -89,9 +89,11 @@ def check_partial_profit_taking(client, account_id, trade_id, instrument, entry_
     return False
 
 
-def monitor_trade(trade_details):
-    account_id = os.getenv("OANDA_ACCOUNT_ID")
-    token = os.getenv("OANDA_API_KEY")
+def monitor_trade(trade_details, api_key=None, account_id=None):
+    account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
+    token = api_key or os.getenv("OANDA_API_KEY")
+    if not token or not account_id:
+        raise ValueError("OANDA credentials not available for monitoring")
     client = oandapyV20.API(access_token=token, environment="live")
 
     instrument = trade_details["instrument"]

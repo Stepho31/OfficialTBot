@@ -24,11 +24,11 @@ def is_forex_pair(symbol):
         print(f"[VALIDATORS] ✅ Valid Forex symbol found: {symbol}")
     return is_valid
 
-def get_oanda_data(symbol, granularity="H4", count=50):
+def get_oanda_data(symbol, granularity="H4", count=50, api_key=None, account_id=None):
     """Get price data from OANDA for more reliable technical analysis"""
     try:
-        account_id = os.getenv("OANDA_ACCOUNT_ID")
-        token = os.getenv("OANDA_API_KEY")
+        account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
+        token = api_key or os.getenv("OANDA_API_KEY")
         
         if not token:
             print("[VALIDATORS] ❌ Missing OANDA API credentials.")

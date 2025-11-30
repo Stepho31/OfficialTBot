@@ -58,10 +58,11 @@ class MarketScanner:
     # Currency strength components for analysis
     CURRENCIES = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "NZD"]
     
-    def __init__(self):
+    def __init__(self, api_key=None, account_id=None):
         self.config = get_config()
         self.client = None
-        self.account_id = os.getenv("OANDA_ACCOUNT_ID")
+        self.account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
+        self._api_key = api_key or os.getenv("OANDA_API_KEY")
         self._initialize_client()
         self.correlation_matrix = {}
         self.currency_strength = {}
@@ -73,7 +74,7 @@ class MarketScanner:
     def _initialize_client(self):
         """Initialize OANDA client"""
         try:
-            token = os.getenv("OANDA_API_KEY")
+            token = self._api_key
             if not token:
                 raise ValueError("OANDA_API_KEY not found")
             self.client = oandapyV20.API(access_token=token, environment="live")

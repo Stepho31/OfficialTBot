@@ -128,9 +128,10 @@ def extract_direction_from_text(text: str):
     return None
 
 
-def extract_instrument_from_text(text, client):
+def extract_instrument_from_text(text, client, account_id=None):
     clean_text = text.lower().replace("/", "").replace("_", "").replace(" ", "")
-    r = AccountInstruments(accountID=os.getenv("OANDA_ACCOUNT_ID"))
+    account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
+    r = AccountInstruments(accountID=account_id)
     client.request(r)
     for item in r.response.get("instruments", []):
         symbol = item["name"]  # e.g., "USD_CAD"
@@ -140,11 +141,15 @@ def extract_instrument_from_text(text, client):
     return None
 
 
-def _default_spread_pips(sym: str) -> float:
+def _default_spread_pips(sym: str, api_key=None, account_id=None) -> float:
     """Fetch live spread in pips for symbol; fallback to 0.8 pips."""
     try:
-        client = API(access_token=os.getenv("OANDA_API_KEY"), environment="live")
-        r = pricing.PricingInfo(accountID=os.getenv("OANDA_ACCOUNT_ID"), params={"instruments": sym})
+        api_key = api_key or os.getenv("OANDA_API_KEY")
+        account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
+        if not api_key or not account_id:
+            return 0.8
+        client = API(access_token=api_key, environment="live")
+        r = pricing.PricingInfo(accountID=account_id, params={"instruments": sym})
         client.request(r)
         prices = r.response["prices"][0]
         bid = float(prices["bids"][0]["price"])
@@ -202,11 +207,25 @@ def main():
     print("[BOT] Starting trading session...")
     autopip_client = None
     autopip_user_id = None
+    oanda_api_key = None
+    oanda_account_id = None
+    
     user_id_env = os.getenv("AUTOPIP_USER_ID")
     if user_id_env:
         try:
             autopip_user_id = int(user_id_env)
             autopip_client = AutopipClient()
+            entitlements = autopip_client.get_entitlements(autopip_user_id)
+            if not entitlements.get("canTrade"):
+                print("[BOT] 🚫 Trading disabled by entitlement rules.")
+                return
+            broker_creds = autopip_client.get_broker(autopip_user_id)
+            oanda_api_key = broker_creds.get("oandaApiKey")
+            oanda_account_id = broker_creds.get("oandaAccountId")
+            if oanda_api_key:
+                os.environ["OANDA_API_KEY"] = oanda_api_key
+            if oanda_account_id:
+                os.environ["OANDA_ACCOUNT_ID"] = oanda_account_id
         except Exception as exc:
             print(f"[BOT] ⚠️ Autopip API integration disabled: {exc}")
             autopip_client = None
@@ -280,8 +299,13 @@ def main():
         return
     print(f"[BOT] ✅ Trade direction: {direction}")
 
-    client = API(access_token=os.getenv("OANDA_API_KEY"), environment="live")
-    symbol = extract_instrument_from_text(selected_idea, client)
+    api_key = oanda_api_key or os.getenv("OANDA_API_KEY")
+    account_id = oanda_account_id or os.getenv("OANDA_ACCOUNT_ID")
+    if not api_key:
+        print("[BOT] ❌ OANDA_API_KEY not available")
+        return
+    client = API(access_token=api_key, environment="live")
+    symbol = extract_instrument_from_text(selected_idea, client, account_id=account_id)
 
     print(f"[GPT] Selected Idea: {selected_idea}\nScore: {score}\nReason: {reason}")
 
@@ -364,7 +388,7 @@ def main():
         print(f"[BOT] ⚠️ Exposure guard check failed: {e}")
 
     # New: idea gate evaluation (cooldown/time & price, structure confirmation, stale repost)
-    gate = evaluate_trade_gate(symbol, direction, selected_idea)
+    gate = evaluate_trade_gate(symbol, direction, selected_idea, api_key=api_key, account_id=account_id)
     if not gate.get("allow", False):
         print(f"[BOT] 🚫 Idea gated. Reasons: {gate.get('blocks')}")
         # Send admin notification for rejection
@@ -408,25 +432,10 @@ def main():
             print(f"[BOT] ⚠️ Failed to send validation error notification: {e}")
         return
 
-    broker_account_id = os.getenv("OANDA_ACCOUNT_ID")
-    if autopip_client and autopip_user_id is not None:
-        try:
-            entitlements = autopip_client.get_entitlements(autopip_user_id)
-            if not entitlements.get("canTrade"):
-                print("[BOT] 🚫 Trading disabled by entitlement rules.")
-                return
-            broker_creds = autopip_client.get_broker(autopip_user_id)
-            broker_account_id = broker_creds.get("oandaAccountId") or broker_account_id
-            if broker_creds.get("oandaApiKey"):
-                os.environ["OANDA_API_KEY"] = broker_creds["oandaApiKey"]
-            if broker_account_id:
-                os.environ["OANDA_ACCOUNT_ID"] = broker_account_id
-        except Exception as exc:
-            print(f"[BOT] ⚠️ Unable to fetch entitlements/broker credentials: {exc}")
-            return
+    broker_account_id = oanda_account_id or os.getenv("OANDA_ACCOUNT_ID")
 
     # === SMART LAYER INTEGRATION ===
-    plan = plan_trade(symbol, direction, spread_pips=_default_spread_pips(symbol))
+    plan = plan_trade(symbol, direction, spread_pips=_default_spread_pips(symbol, api_key=api_key, account_id=account_id))
     if not plan:
         print("[BOT] ❌ Smart plan could not be built. Skipping.")
         return
@@ -457,7 +466,9 @@ def main():
                         "trail_step_pips": exits["trail_step_pips"],
                         "plan_tp2": exits["tp2"],
                         "timeframe": "H4",
-                    }
+                    },
+                    client=client,
+                    account_id=account_id
                 )
 
                 opened_at_iso = datetime.now(timezone.utc).isoformat()
@@ -531,7 +542,7 @@ def main():
                 except Exception as e:
                     print(f"[BOT] ⚠️ Failed to send signal: {e}")
 
-                result = monitor_trade(trade_details)  # monitor will read meta to do BE/trailing
+                result = monitor_trade(trade_details, api_key=api_key, account_id=account_id)  # monitor will read meta to do BE/trailing
                 # Note: send_signal handles admin notification for CLOSE (no user emails for CLOSE)
                 if autopip_client and autopip_user_id is not None and broker_account_id:
                     try:
