@@ -165,7 +165,7 @@ class MarketScanner:
                 return []
             
             # Get market data
-            candles = get_oanda_data(pair, "H4", 100)
+            candles = get_oanda_data(pair, "H4", 100, oanda_client=self.client)
             if not candles or len(candles) < 50:
                 print(f"[SCANNER] ❌ Insufficient data for {pair}")
                 return []

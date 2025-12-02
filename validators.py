@@ -118,7 +118,7 @@ def ema_trend_from_candles(candles, fast: int, slow: int) -> Optional[str]:
     except Exception:
         return None
 
-def get_momentum_signals(symbol, timeframes=["H4"]):
+def get_momentum_signals(symbol, timeframes=["H4"], oanda_client=None):
     """Get momentum signals for 4H timeframe trading"""
     signals = {}
     
@@ -132,7 +132,7 @@ def get_momentum_signals(symbol, timeframes=["H4"]):
             slow = 200; fast = 50
 
         need = slow + 25
-        candles = get_oanda_data(symbol, tf, need)
+        candles = get_oanda_data(symbol, tf, need, oanda_client=oanda_client)
         if not candles or len(candles) < slow:
             print(f"[VALIDATORS] ❌ Not enough {tf} candles for EMA trend (have={len(candles) if candles else 0}, need>={slow})")
             continue
@@ -217,7 +217,7 @@ def decide_position_size(validation_percentage: float) -> float:
         return 0.5
     return 0.0
 
-def validate_entry_conditions(symbol, side, timeframes=["H4"], trigger_ok=None):
+def validate_entry_conditions(symbol, side, timeframes=["H4"], trigger_ok=None, oanda_client=None):
     """Comprehensive entry validation across multiple conditions"""
     print(f"[VALIDATORS] 🔍 Validating {side} entry for {symbol}")
 
@@ -225,7 +225,7 @@ def validate_entry_conditions(symbol, side, timeframes=["H4"], trigger_ok=None):
         print(f"[VALIDATORS] ❌ External trigger alignment failed (H1 trigger misaligned)")
         return False
 
-    signals = get_momentum_signals(symbol, timeframes)
+    signals = get_momentum_signals(symbol, timeframes, oanda_client=oanda_client)
     if not signals:
         print("[VALIDATORS] ❌ Could not get market data for validation")
         return False
@@ -323,10 +323,10 @@ def validate_entry_conditions(symbol, side, timeframes=["H4"], trigger_ok=None):
     return is_valid
 
 
-def get_rsi(symbol, interval="4h"):
+def get_rsi(symbol, interval="4h", oanda_client=None):
     """Enhanced RSI calculation using OANDA data with Twelve Data fallback"""
     # First try OANDA data
-    candles = get_oanda_data(symbol, "H4", 30)
+    candles = get_oanda_data(symbol, "H4", 30, oanda_client=oanda_client)
     if candles:
         prices = [float(candle["mid"]["c"]) for candle in candles]
         rsi = calculate_rsi_from_data(prices)
@@ -362,10 +362,10 @@ def get_rsi(symbol, interval="4h"):
         print(f"[VALIDATORS] ❌ Error fetching RSI for {symbol}: {e}")
         return None
 
-def get_ema(symbol, interval="4h"):
+def get_ema(symbol, interval="4h", oanda_client=None):
     """Enhanced EMA calculation using OANDA data with Twelve Data fallback"""
     # First try OANDA data
-    candles = get_oanda_data(symbol, "H4", 200)
+    candles = get_oanda_data(symbol, "H4", 200, oanda_client=oanda_client)
     if candles and len(candles) >= 200:
         prices = [float(candle["mid"]["c"]) for candle in candles]
         
@@ -517,13 +517,13 @@ def calculate_adx_from_hlc(highs: List[float], lows: List[float], closes: List[f
         return None
 
 
-def get_h4_trend_adx_atr_percent(symbol: str, adx_period: int = 14, atr_period: int = 21) -> Tuple[Optional[str], Optional[float], Optional[float]]:
+def get_h4_trend_adx_atr_percent(symbol: str, adx_period: int = 14, atr_period: int = 21, oanda_client=None) -> Tuple[Optional[str], Optional[float], Optional[float]]:
     """Return (trend, adx, atr_percent) on H4.
     - trend: 'bullish' or 'bearish' from EMA50 vs EMA200
     - adx: Wilder's ADX value
     - atr_percent: ATR(atr_period)/close*100
     """
-    candles = get_oanda_data(symbol, "H4", max(atr_period, 200) + 5)
+    candles = get_oanda_data(symbol, "H4", max(atr_period, 200) + 5, oanda_client=oanda_client)
     if not candles or len(candles) < max(atr_period, 200) + 1:
         return None, None, None
     closes = [float(c["mid"]["c"]) for c in candles]
@@ -542,12 +542,12 @@ def get_h4_trend_adx_atr_percent(symbol: str, adx_period: int = 14, atr_period: 
     return trend, adx, atr_percent
 
 
-def passes_h4_hard_filters(symbol: str, side: str, relax: bool = False) -> bool:
+def passes_h4_hard_filters(symbol: str, side: str, relax: bool = False, oanda_client=None) -> bool:
     """Enforce H4 hard filters: EMA trend alignment, ADX, ATR% window.
     Never relax trend alignment. Relax ADX threshold slightly when relax=True.
     """
     print(f"[VALIDATORS] 🔒 H4 hard filters for {symbol} {side}")
-    trend, adx, atr_pct = get_h4_trend_adx_atr_percent(symbol)
+    trend, adx, atr_pct = get_h4_trend_adx_atr_percent(symbol, oanda_client=oanda_client)
     if trend is None or adx is None or atr_pct is None:
         print("[VALIDATORS] ❌ Missing H4 metrics for hard filters")
         return False

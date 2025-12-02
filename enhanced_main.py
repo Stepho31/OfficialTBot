@@ -160,13 +160,13 @@ class EnhancedTradingSession:
                             proceed = False
                             break
 
-                        if not validate_entry_conditions(opportunity.symbol.replace("_",""), opportunity.direction, timeframes=["H4","H1","M15"]):
+                        if not validate_entry_conditions(opportunity.symbol.replace("_",""), opportunity.direction, timeframes=["H4","H1","M15"], oanda_client=user_client):
                             print(f"[ENHANCED] 🚫 User {user.user_id}: Validation failed (recheck {j+1})")
                             self._send_admin_validation_error(opportunity, f"Validation failed (recheck {j+1})", user)
                             proceed = False
                             break
                             
-                        if not passes_h4_hard_filters(opportunity.symbol.replace("_",""), opportunity.direction):
+                        if not passes_h4_hard_filters(opportunity.symbol.replace("_",""), opportunity.direction, oanda_client=user_client):
                             print(f"[ENHANCED] 🚫 User {user.user_id}: Regime gate blocked (recheck {j+1})")
                             self._send_admin_validation_error(opportunity, f"Regime gate blocked (recheck {j+1})", user)
                             proceed = False
