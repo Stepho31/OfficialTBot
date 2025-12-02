@@ -24,18 +24,35 @@ def is_forex_pair(symbol):
         print(f"[VALIDATORS] ✅ Valid Forex symbol found: {symbol}")
     return is_valid
 
-def get_oanda_data(symbol, granularity="H4", count=50, api_key=None, account_id=None):
+def get_oanda_data(symbol, granularity="H4", count=50, api_key=None, account_id=None, oanda_client=None):
     """Get price data from OANDA for more reliable technical analysis.
-    Requires api_key and account_id to be provided explicitly or set in env (legacy mode)."""
+    
+    Args:
+        symbol: Trading pair symbol (e.g., EURUSD or EUR_USD)
+        granularity: Timeframe (e.g., "H4", "H1", "M10")
+        count: Number of candles to fetch
+        api_key: Optional OANDA API key (legacy mode)
+        account_id: Optional OANDA account ID (legacy mode)
+        oanda_client: Optional pre-configured oandapyV20.API client. If provided,
+                     will be used directly and environment variables will not be checked.
+    
+    Returns:
+        List of candle data or None if error/credentials missing.
+    """
     try:
-        account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
-        token = api_key or os.getenv("OANDA_API_KEY")
-        
-        if not token:
-            print("[VALIDATORS] ❌ Missing OANDA API credentials. Must be provided as parameters or set in environment (legacy mode).")
-            return None
+        # If oanda_client is provided, use it directly
+        if oanda_client is not None:
+            client = oanda_client
+        else:
+            # Fall back to legacy behavior: use provided params or env vars
+            account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
+            token = api_key or os.getenv("OANDA_API_KEY")
             
-        client = oandapyV20.API(access_token=token, environment="live")
+            if not token:
+                print("[VALIDATORS] ❌ Missing OANDA API credentials. Must be provided as parameters or set in environment (legacy mode).")
+                return None
+                
+            client = oandapyV20.API(access_token=token, environment="live")
         
         # Convert symbol format for OANDA (e.g., EURUSD -> EUR_USD)
         if "_" not in symbol:
