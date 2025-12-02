@@ -23,9 +23,9 @@ def check_environment():
         "EMAIL_PORT", 
         "EMAIL_USER",
         "EMAIL_PASSWORD",
-        "EMAIL_TO"
-        "OANDA_API_KEY",
-        "OANDA_ACCOUNT_ID",
+        "EMAIL_TO",
+        # Note: OANDA_API_KEY and OANDA_ACCOUNT_ID are no longer required at startup
+        # They are supplied dynamically per-user via AutopipClient.get_tier2_users
     ]
     
     missing_required = []

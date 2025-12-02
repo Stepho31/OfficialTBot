@@ -61,27 +61,42 @@ class MarketScanner:
     def __init__(self, api_key=None, account_id=None):
         self.config = get_config()
         self.client = None
+        # Only use env vars as fallback if credentials not provided
+        # Per-user credentials should be passed explicitly
         self.account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
         self._api_key = api_key or os.getenv("OANDA_API_KEY")
         self._initialize_client()
         self.correlation_matrix = {}
         self.currency_strength = {}
 
-        self.tradable_instruments = self._get_tradable_instruments()
-        print(f"[SCANNER] ✅ Loaded {len(self.tradable_instruments)} tradable instruments")
+        # Only fetch tradable instruments if we have credentials
+        if self.client and self.account_id:
+            self.tradable_instruments = self._get_tradable_instruments()
+            print(f"[SCANNER] ✅ Loaded {len(self.tradable_instruments)} tradable instruments")
+        else:
+            self.tradable_instruments = set()
+            print("[SCANNER] ⚠️ No OANDA credentials available - tradable instruments will be empty")
 
         
     def _initialize_client(self):
-        """Initialize OANDA client"""
+        """Initialize OANDA client (optional - credentials should be provided per-user)"""
         try:
             token = self._api_key
             if not token:
-                raise ValueError("OANDA_API_KEY not found")
+                print("[SCANNER] ⚠️ OANDA_API_KEY not provided - client will be None")
+                print("[SCANNER] ℹ️ This is expected if using per-user credentials")
+                self.client = None
+                return
+            if not self.account_id:
+                print("[SCANNER] ⚠️ OANDA_ACCOUNT_ID not provided - client will be None")
+                print("[SCANNER] ℹ️ This is expected if using per-user credentials")
+                self.client = None
+                return
             self.client = oandapyV20.API(access_token=token, environment="live")
             print("[SCANNER] ✅ OANDA client initialized")
         except Exception as e:
-            print(f"[SCANNER] ❌ Failed to initialize client: {e}")
-            raise
+            print(f"[SCANNER] ⚠️ Failed to initialize client: {e}")
+            self.client = None
 
     def _get_tradable_instruments(self):
         """Fetch tradable instruments for this OANDA account"""
@@ -635,9 +650,11 @@ class MarketScanner:
         
         print("\n" + "=" * 80)
 
-def get_market_opportunities(max_results: int = 5) -> List[MarketOpportunity]:
-    """Main function to get market opportunities"""
-    scanner = MarketScanner()
+def get_market_opportunities(max_results: int = 5, api_key=None, account_id=None) -> List[MarketOpportunity]:
+    """Main function to get market opportunities.
+    Requires api_key and account_id to be provided explicitly or set in env (legacy mode).
+    Market data is the same for all users, so any valid credentials can be used."""
+    scanner = MarketScanner(api_key=api_key, account_id=account_id)
     return scanner.scan_all_pairs(max_results)
 
 if __name__ == "__main__":

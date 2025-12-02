@@ -47,11 +47,11 @@ class AutomatedTrader:
     def __init__(self):
         self.state = TradingState()
         self.client = None
-        self.account_id = os.getenv("OANDA_ACCOUNT_ID")
+        self.account_id = None  # Will be set per-user, not from env at startup
         self.monitoring_threads = {}  # Dict to track monitoring threads per trade
         self.last_health_check = datetime.now()
         
-        # Initialize OANDA client
+        # Initialize OANDA client (optional - only if env vars are set for legacy support)
         self._initialize_client()
         
         # Load existing state if available
@@ -73,20 +73,25 @@ class AutomatedTrader:
         print(f"[AUTOMATED] 📈 Max trades per day: {self.state.max_trades_per_day}")
     
     def _initialize_client(self):
-        """Initialize OANDA API client (uses environment variables as fallback)"""
+        """Initialize OANDA API client (optional - only if env vars are set for legacy support).
+        Per-user credentials should be used instead via enhanced_main."""
         try:
             token = os.getenv("OANDA_API_KEY")
-            if not token:
-                print("[AUTOMATED] ⚠️ OANDA_API_KEY not found in environment. Client will be None.")
-                print("[AUTOMATED] ℹ️ This is expected if using per-user credentials via enhanced_main.")
+            account_id = os.getenv("OANDA_ACCOUNT_ID")
+            if not token or not account_id:
+                print("[AUTOMATED] ℹ️ OANDA credentials not found in environment.")
+                print("[AUTOMATED] ℹ️ This is expected - per-user credentials will be used via enhanced_main.")
                 self.client = None
+                self.account_id = None
                 return
             
             self.client = oandapyV20.API(access_token=token, environment="live")
-            print("[AUTOMATED] ✅ OANDA client initialized")
+            self.account_id = account_id
+            print("[AUTOMATED] ✅ OANDA client initialized (legacy mode - using env vars)")
         except Exception as e:
             print(f"[AUTOMATED] ⚠️ Failed to initialize OANDA client: {e}")
             self.client = None
+            self.account_id = None
     
     def _load_state(self):
         """Load previous trading state"""

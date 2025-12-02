@@ -327,6 +327,7 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
     """
     Place a trade using the provided OANDA client and account_id.
     If client/account_id are not provided, falls back to environment variables (legacy behavior).
+    NOTE: Per-user credentials should be passed explicitly via client and account_id parameters.
     
     Args:
         trade_idea: Trade idea text
@@ -335,21 +336,25 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
         sl_price: Stop loss price (optional)
         tp_price: Take profit price (optional)
         meta: Additional metadata dict
-        client: OANDA API client (optional, uses env if not provided)
-        account_id: OANDA account ID (optional, uses env if not provided)
+        client: OANDA API client (optional, uses env if not provided - legacy only)
+        account_id: OANDA account ID (optional, uses env if not provided - legacy only)
         user_id: User ID for database tracking (optional)
     """
     if account_id is None:
         account_id = os.getenv("OANDA_ACCOUNT_ID")
+        if not account_id:
+            raise ValueError("OANDA_ACCOUNT_ID must be provided as parameter or set in environment (legacy mode)")
     if client is None:
         token = os.getenv("OANDA_API_KEY")
+        if not token:
+            raise ValueError("OANDA_API_KEY must be provided via client parameter or set in environment (legacy mode)")
         client = oandapyV20.API(access_token=token, environment="live")
 
     side = direction.lower() if direction else infer_trade_direction(trade_idea)
     if not side:
         raise ValueError("Could not determine trade direction.")
 
-    instrument = extract_instrument(trade_idea, client)
+    instrument = extract_instrument(trade_idea, client, account_id=account_id)
     if not instrument:
         raise ValueError("Could not determine instrument/currency pair.")
 
@@ -746,9 +751,13 @@ def infer_trade_direction(text):
         return "sell"
     return None
 
-def extract_instrument(text, client):
+def extract_instrument(text, client, account_id=None):
+    """Extract instrument from text. Requires account_id to be passed explicitly or set in env."""
     cleaned_text = text.lower().replace("/", "").replace(" ", "").replace("_", "")
-    r = AccountInstruments(accountID=os.getenv("OANDA_ACCOUNT_ID"))
+    account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
+    if not account_id:
+        raise ValueError("OANDA_ACCOUNT_ID must be provided as parameter or set in environment")
+    r = AccountInstruments(accountID=account_id)
     client.request(r)
     for item in r.response['instruments']:
         symbol = item['name']  # e.g., "EUR_USD"

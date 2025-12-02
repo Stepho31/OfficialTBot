@@ -25,13 +25,14 @@ def is_forex_pair(symbol):
     return is_valid
 
 def get_oanda_data(symbol, granularity="H4", count=50, api_key=None, account_id=None):
-    """Get price data from OANDA for more reliable technical analysis"""
+    """Get price data from OANDA for more reliable technical analysis.
+    Requires api_key and account_id to be provided explicitly or set in env (legacy mode)."""
     try:
         account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
         token = api_key or os.getenv("OANDA_API_KEY")
         
         if not token:
-            print("[VALIDATORS] ❌ Missing OANDA API credentials.")
+            print("[VALIDATORS] ❌ Missing OANDA API credentials. Must be provided as parameters or set in environment (legacy mode).")
             return None
             
         client = oandapyV20.API(access_token=token, environment="live")

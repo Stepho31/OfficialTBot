@@ -90,10 +90,11 @@ def check_partial_profit_taking(client, account_id, trade_id, instrument, entry_
 
 
 def monitor_trade(trade_details, api_key=None, account_id=None):
+    """Monitor a trade. Requires api_key and account_id to be provided explicitly or set in env (legacy mode)."""
     account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
     token = api_key or os.getenv("OANDA_API_KEY")
     if not token or not account_id:
-        raise ValueError("OANDA credentials not available for monitoring")
+        raise ValueError("OANDA credentials must be provided as parameters (api_key, account_id) or set in environment (legacy mode)")
     client = oandapyV20.API(access_token=token, environment="live")
 
     instrument = trade_details["instrument"]

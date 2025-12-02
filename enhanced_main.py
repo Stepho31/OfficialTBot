@@ -76,8 +76,14 @@ class EnhancedTradingSession:
         
         # Step 2: Compute trade ideas once (shared across all users)
         # Get a reasonable number of opportunities (enough for all users)
+        # Use first user's credentials for market scanning (market data is the same for all users)
         max_opportunities = self.max_concurrent_trades * len(tier2_users) + 5
-        opportunities = get_market_opportunities(max_opportunities)
+        first_user = tier2_users[0]
+        opportunities = get_market_opportunities(
+            max_opportunities, 
+            api_key=first_user.oanda_api_key, 
+            account_id=first_user.oanda_account_id
+        )
         self.session_stats["opportunities_found"] = len(opportunities)
         
         if not opportunities:
@@ -801,10 +807,12 @@ class EnhancedTradingSession:
             print(f"[ENHANCED] ⚠️ Failed to send notification: {e}")
 
     def _get_live_spread_pips(self, pair: str, api_key=None, account_id=None) -> float:
+        """Get live spread in pips. Requires api_key and account_id to be provided explicitly or set in env (legacy mode)."""
         try:
             api_key = api_key or os.getenv("OANDA_API_KEY")
             account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
             if not api_key or not account_id:
+                # Return default if credentials not available
                 return 0.8
             client = OandaAPI(access_token=api_key, environment="live")
             r = pricing.PricingInfo(accountID=account_id, params={"instruments": pair})

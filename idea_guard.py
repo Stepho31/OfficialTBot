@@ -66,9 +66,11 @@ def _now_utc() -> datetime:
 
 
 def _ensure_oanda_client(api_key=None, account_id=None) -> Tuple[Optional[oandapyV20.API], Optional[str]]:
+    """Get OANDA client. Requires api_key and account_id to be provided explicitly or set in env (legacy mode)."""
     token = api_key or os.getenv("OANDA_API_KEY")
     account_id = account_id or os.getenv("OANDA_ACCOUNT_ID")
     if not token or not account_id:
+        # Return None instead of raising - allows graceful degradation
         return None, None
     try:
         client = oandapyV20.API(access_token=token, environment="live")
