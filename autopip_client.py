@@ -13,6 +13,11 @@ class AutopipClient:
         self.bot_key = os.getenv("BOT_API_KEY")
         if not self.bot_key:
             raise RuntimeError("BOT_API_KEY is required for AutopipClient")
+        
+        print(
+            f"[AutopipClient] Using BOT_API_KEY prefix={self.bot_key[:4]!r} "
+            f"len={len(self.bot_key)} base_url={self.base_url}"
+        )
 
     def _headers(self) -> Dict[str, str]:
         return {"x-bot-key": self.bot_key, "Content-Type": "application/json"}
