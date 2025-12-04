@@ -323,7 +323,7 @@ def calculate_units_by_allocation(balance, allocation_percent, instrument, entry
         # Fallback minimum if anything goes wrong
         return 1000
 
-def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_price=None, meta=None, client=None, account_id=None, user_id=None):
+def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_price=None, meta=None, client=None, account_id=None, user_id=None, trade_allocation=None):
     """
     Place a trade using the provided OANDA client and account_id.
     If client/account_id are not provided, falls back to environment variables (legacy behavior).
@@ -339,6 +339,7 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
         client: OANDA API client (optional, uses env if not provided - legacy only)
         account_id: OANDA account ID (optional, uses env if not provided - legacy only)
         user_id: User ID for database tracking (optional)
+        trade_allocation: Trade allocation percentage from user settings (optional, defaults to system logic)
     """
     if account_id is None:
         account_id = os.getenv("OANDA_ACCOUNT_ID")
@@ -390,36 +391,48 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
     if atr:
         print(f"[ATR] Average True Range: {atr:.5f}")
     
-    # 🔒 Position sizing: allocation-based or risk-based
-    use_allocation_percent = os.getenv("USE_ALLOCATION_PERCENT", "false").lower() == "true"
-    allocation_percent = float(os.getenv("ALLOCATION_PERCENT", "10.0"))  # default 10% if enabled
-    # Allow override via argument
-    # If risk_pct provided from smart layer, it's a fraction (0.005..0.010). Convert to percent units.
-    if risk_pct is not None:
-        try:
-            risk_percent = float(risk_pct) * 100.0
-        except Exception:
-            risk_percent = float(os.getenv("RISK_PERCENT", "1.0"))
-    else:
-        risk_percent = float(os.getenv("RISK_PERCENT", "1.0"))
-
-    if use_allocation_percent:
+    # 🔒 Position sizing: use user trade_allocation if provided, otherwise use allocation-based or risk-based
+    if trade_allocation is not None:
+        # Use user's trade_allocation setting directly
         position_size = calculate_units_by_allocation(
             balance=balance,
-            allocation_percent=allocation_percent,
+            allocation_percent=trade_allocation,
             instrument=instrument,
             entry_price=entry_price,
             account_currency=account_currency,
         )
-        sizing_mode = f"allocation {allocation_percent:.2f}%"
-    elif atr:
-        position_size = calculate_dynamic_position_size(balance, risk_percent, atr, instrument)
-        sizing_mode = f"risk {risk_percent:.2f}% via ATR"
+        sizing_mode = f"user allocation {trade_allocation:.2f}%"
     else:
-        # Fallback to percentage-based sizing (legacy behavior)
-        position_size = int(balance * 0.02)
-        position_size = max(1000, min(position_size, 50000))
-        sizing_mode = "fallback 2% of balance"
+        # Fallback to existing system logic
+        use_allocation_percent = os.getenv("USE_ALLOCATION_PERCENT", "false").lower() == "true"
+        allocation_percent = float(os.getenv("ALLOCATION_PERCENT", "10.0"))  # default 10% if enabled
+        # Allow override via argument
+        # If risk_pct provided from smart layer, it's a fraction (0.005..0.010). Convert to percent units.
+        if risk_pct is not None:
+            try:
+                risk_percent = float(risk_pct) * 100.0
+            except Exception:
+                risk_percent = float(os.getenv("RISK_PERCENT", "1.0"))
+        else:
+            risk_percent = float(os.getenv("RISK_PERCENT", "1.0"))
+
+        if use_allocation_percent:
+            position_size = calculate_units_by_allocation(
+                balance=balance,
+                allocation_percent=allocation_percent,
+                instrument=instrument,
+                entry_price=entry_price,
+                account_currency=account_currency,
+            )
+            sizing_mode = f"allocation {allocation_percent:.2f}%"
+        elif atr:
+            position_size = calculate_dynamic_position_size(balance, risk_percent, atr, instrument)
+            sizing_mode = f"risk {risk_percent:.2f}% via ATR"
+        else:
+            # Fallback to percentage-based sizing (legacy behavior)
+            position_size = int(balance * 0.02)
+            position_size = max(1000, min(position_size, 50000))
+            sizing_mode = "fallback 2% of balance"
     
     units = str(position_size) if side == "buy" else str(-position_size)
 

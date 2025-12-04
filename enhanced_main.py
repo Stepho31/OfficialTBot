@@ -26,6 +26,7 @@ from oandapyV20 import API as OandaAPI
 import oandapyV20.endpoints.pricing as pricing
 from user_helpers import get_tier2_users_for_automation, Tier2User
 from oanda_helpers import create_oanda_client, get_user_open_positions, has_user_position_on_pair, get_user_active_pairs
+from autopip_client import AutopipClient
 
 load_dotenv()
 
@@ -45,6 +46,12 @@ class EnhancedTradingSession:
             "trades_skipped": 0,
             "start_time": datetime.now()
         }
+        # Initialize API client for fetching user settings
+        try:
+            self.api_client = AutopipClient()
+        except Exception as e:
+            print(f"[ENHANCED] ⚠️ Warning: Could not initialize AutopipClient: {e}")
+            self.api_client = None
         
     def execute_trading_session(self) -> Dict:
         """
@@ -476,6 +483,17 @@ class EnhancedTradingSession:
                 exits = plan["exits"]
                 risk_pct = plan["risk_pct"]
                 
+                # Fetch user's trade_allocation setting
+                trade_allocation = None
+                if self.api_client:
+                    try:
+                        settings = self.api_client.get_user_settings(user.user_id)
+                        trade_allocation = settings.get("tradeAllocation")
+                        print(f"[ENHANCED] 📊 User {user.user_id}: Using trade_allocation={trade_allocation}%")
+                    except Exception as e:
+                        print(f"[ENHANCED] ⚠️ Could not fetch user settings for user {user.user_id}: {e}")
+                        print(f"[ENHANCED] ⚠️ Falling back to default trade sizing logic")
+                
                 # Place the actual trade using user's client and account
                 trade_details = place_trade(
                     trade_idea,
@@ -493,7 +511,8 @@ class EnhancedTradingSession:
                     },
                     client=user_client,
                     account_id=user.oanda_account_id,
-                    user_id=user.user_id
+                    user_id=user.user_id,
+                    trade_allocation=trade_allocation
                 )
                 trade_id_ok = str(trade_details.get("trade_id", "")).isdigit()
                 

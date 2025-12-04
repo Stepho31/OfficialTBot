@@ -87,3 +87,14 @@ class AutopipClient:
         data = resp.json()
         return data.get("users", [])
 
+    def get_user_settings(self, user_id: int) -> Dict[str, Any]:
+        """Fetch user settings including trade_allocation."""
+        resp = requests.get(
+            f"{self.base_url}/v1/internal/user-settings",
+            params={"userId": user_id},
+            headers={"x-bot-key": self.bot_key},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        return resp.json()
+
