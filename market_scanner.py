@@ -189,7 +189,7 @@ class MarketScanner:
                 opportunity = self._evaluate_direction(
                     pair, direction, candles, prices, highs, lows, current_price
                 )
-                if opportunity and opportunity.score >= 60:  # Minimum threshold
+                if opportunity and opportunity.score >= 55:  # Minimum threshold
                     opportunities.append(opportunity)
             
             return opportunities
@@ -615,7 +615,7 @@ class MarketScanner:
             adjusted_score = opp.score * (1 - opp.correlation_risk * 0.5)
             
             # Minimum adjusted score threshold
-            if adjusted_score >= 60:
+            if adjusted_score >= 55:
                 opp.score = adjusted_score
                 filtered.append(opp)
         

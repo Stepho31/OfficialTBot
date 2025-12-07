@@ -38,8 +38,8 @@ class EnhancedTradingSession:
         self.dry_run = os.getenv("DRY_RUN", "false").lower() == "true"
         self.max_concurrent_trades = int(os.getenv("MAX_CONCURRENT_TRADES", "3"))
         # Slightly loosen entry sensitivity by reducing threshold ~10–15%
-        self.min_opportunity_score = float(os.getenv("MIN_OPPORTUNITY_SCORE", "52.0"))
-        self.max_trades_per_session = int(os.getenv("MAX_TRADES_PER_SESSION", "2"))
+        self.min_opportunity_score = float(os.getenv("MIN_OPPORTUNITY_SCORE", "48.0"))
+        self.max_trades_per_session = int(os.getenv("MAX_TRADES_PER_SESSION", "3"))
         self.session_stats = {
             "opportunities_found": 0,
             "trades_executed": 0,
