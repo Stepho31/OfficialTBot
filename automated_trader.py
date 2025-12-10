@@ -9,7 +9,7 @@ import os
 import time
 import threading
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 import schedule
@@ -17,9 +17,10 @@ import schedule
 from main import main as execute_trading_logic
 from monitor import monitor_trade, monitor_open_trades
 from email_utils import send_email
-from trade_cache import get_active_trades, is_trade_active, add_trade, remove_trade
+from trade_cache import get_active_trades, is_trade_active, add_trade, remove_trade, sync_cache_with_broker, validate_and_cleanup_cache
 from trading_log import add_log_entry, get_weekly_performance, generate_and_save_weekly_snapshot
 from validators import validate_entry_conditions
+from db_persistence import update_trade_close_from_oanda_account
 import oandapyV20
 from oandapyV20.endpoints.trades import TradesList
 from oandapyV20.endpoints.accounts import AccountDetails
@@ -131,87 +132,94 @@ class AutomatedTrader:
         """Detect manually closed trades and update cache"""
         try:
             if not self.client or not self.account_id:
+                # Still run age-based cleanup even without broker connection
+                validate_and_cleanup_cache()
                 return
-            # Get current trades from OANDA
+            
+            # Get current trades from OANDA for thread cleanup
             r = TradesList(accountID=self.account_id)
             self.client.request(r)
             live_trades = {trade["id"]: trade for trade in r.response.get("trades", [])}
             
-            # Get cached trades
-            cached_trades = get_active_trades()
+            # Get cached trades BEFORE sync to identify what was removed
+            cached_trades_before = get_active_trades()[:]  # Create copy
             
-            # Find trades that exist in cache but not in live account
-            for cached_trade in cached_trades[:]:  # Create copy to iterate over
-                trade_id = cached_trade.get("trade_id")
-                if trade_id and trade_id not in live_trades:
-                    print(f"[AUTOMATED] 🔍 Detected manually closed trade: {trade_id}")
-                    
-                    # Log the manual closure
-                    add_log_entry({
-                        "symbol": cached_trade.get("instrument", "UNKNOWN"),
-                        "result": {"status": "MANUALLY_CLOSED", "message": "Trade closed manually"},
-                        "entry_price": cached_trade.get("entry_price", 0),
-                        "exit_price": "Manual",
-                        "side": cached_trade.get("side", "unknown"),
-                        "trade_id": trade_id,
-                        "manual_closure": True
-                    })
-                    
-                    # Update database for manually closed trade (persistence layer)
-                    try:
-                        # Try to get exit price from live trades if available
-                        exit_price = None
-                        pnl_net = None
+            # Use the centralized cache sync function
+            removed_count = sync_cache_with_broker(self.client, self.account_id)
+            
+            if removed_count > 0:
+                # Get cached trades after sync to identify removed ones
+                current_cached_trades = get_active_trades()
+                cached_trade_ids = {str(t.get("trade_id")) for t in current_cached_trades}
+                
+                # Find which trades were removed
+                for cached_trade in cached_trades_before:
+                    trade_id = cached_trade.get("trade_id")
+                    if trade_id and trade_id not in cached_trade_ids:
+                        print(f"[AUTOMATED] 🔍 Detected closed trade: {trade_id}")
                         
-                        # Try to get final trade details from OANDA
+                        # Log the closure
+                        add_log_entry({
+                            "symbol": cached_trade.get("instrument", "UNKNOWN"),
+                            "result": {"status": "CLOSED", "message": "Trade closed (detected via sync)"},
+                            "entry_price": cached_trade.get("entry_price", 0),
+                            "exit_price": "Unknown",
+                            "side": cached_trade.get("side", "unknown"),
+                            "trade_id": trade_id,
+                        })
+                        
+                        # Update database for closed trade
                         try:
-                            trade_details_req = oandapyV20.endpoints.trades.TradeDetails(accountID=self.account_id, tradeID=trade_id)
-                            self.client.request(trade_details_req)
-                            trade_data = trade_details_req.response.get("trade", {})
+                            exit_price = None
+                            pnl_net = None
                             
-                            # Get realized P/L if available
-                            realized_pl = trade_data.get("realizedPL")
-                            if realized_pl:
-                                pnl_net = float(realized_pl)
-                            
-                            # Get average close price if available
-                            close_price = trade_data.get("averageClosePrice")
-                            if close_price:
-                                exit_price = float(close_price)
-                        except Exception:
-                            # If we can't get trade details, use current price
+                            # Try to get final trade details from OANDA
                             try:
-                                instrument = cached_trade.get("instrument", "UNKNOWN")
-                                from monitor import _safe_price_from_pricing
-                                import oandapyV20.endpoints.pricing as pricing
-                                price_req = pricing.PricingInfo(accountID=self.account_id, params={"instruments": instrument})
-                                self.client.request(price_req)
-                                exit_price = _safe_price_from_pricing(price_req.response, cached_trade.get("side", "buy"), instrument)
+                                trade_details_req = oandapyV20.endpoints.trades.TradeDetails(accountID=self.account_id, tradeID=trade_id)
+                                self.client.request(trade_details_req)
+                                trade_data = trade_details_req.response.get("trade", {})
+                                
+                                # Get realized P/L if available
+                                realized_pl = trade_data.get("realizedPL")
+                                if realized_pl:
+                                    pnl_net = float(realized_pl)
+                                
+                                # Get average close price if available
+                                close_price = trade_data.get("averageClosePrice")
+                                if close_price:
+                                    exit_price = float(close_price)
                             except Exception:
-                                pass
+                                # If we can't get trade details, try current price
+                                try:
+                                    instrument = cached_trade.get("instrument", "UNKNOWN")
+                                    from monitor import _safe_price_from_pricing
+                                    import oandapyV20.endpoints.pricing as pricing
+                                    price_req = pricing.PricingInfo(accountID=self.account_id, params={"instruments": instrument})
+                                    self.client.request(price_req)
+                                    exit_price = _safe_price_from_pricing(price_req.response, cached_trade.get("side", "buy"), instrument)
+                                except Exception:
+                                    pass
+                            
+                            # Update database
+                            update_trade_close_from_oanda_account(
+                                oanda_account_id=self.account_id,
+                                external_id=str(trade_id),
+                                exit_price=exit_price,
+                                pnl_net=pnl_net,
+                                closed_at=datetime.now(timezone.utc),
+                                reason_close="CLOSED",
+                            )
+                            print(f"[DB] ✅ Closed trade {trade_id} saved to database")
+                        except Exception as db_error:
+                            print(f"[DB] ❌ Error saving closed trade to database: {db_error}")
                         
-                        # Update database
-                        update_trade_close_from_oanda_account(
-                            oanda_account_id=self.account_id,
-                            external_id=str(trade_id),
-                            exit_price=exit_price,
-                            pnl_net=pnl_net,
-                            closed_at=datetime.now(timezone.utc),
-                            reason_close="MANUALLY_CLOSED",
-                        )
-                        print(f"[DB] ✅ Manually closed trade {trade_id} saved to database")
-                    except Exception as db_error:
-                        # Log error but don't fail the detection
-                        print(f"[DB] ❌ Error saving manually closed trade to database: {db_error}")
-                    
-                    # Remove from cache and active pairs
-                    remove_trade(trade_id)
-                    instrument = cached_trade.get("instrument", "").replace("_", "")
-                    if instrument in self.state.active_pairs:
-                        self.state.active_pairs.remove(instrument)
-                        print(f"[AUTOMATED] 🧹 Removed {instrument} from active pairs")
+                        # Remove from active pairs
+                        instrument = cached_trade.get("instrument", "").replace("_", "")
+                        if instrument in self.state.active_pairs:
+                            self.state.active_pairs.remove(instrument)
+                            print(f"[AUTOMATED] 🧹 Removed {instrument} from active pairs")
             
-            # Stop monitoring threads for manually closed trades
+            # Stop monitoring threads for closed trades
             for trade_id in list(self.monitoring_threads.keys()):
                 if trade_id not in live_trades:
                     thread = self.monitoring_threads.pop(trade_id, None)
@@ -221,6 +229,11 @@ class AutomatedTrader:
                     
         except Exception as e:
             print(f"[AUTOMATED] ⚠️ Error detecting manual trades: {e}")
+            # Still try age-based cleanup on error
+            try:
+                validate_and_cleanup_cache()
+            except:
+                pass
     
     def can_place_new_trade(self, instrument: str) -> bool:
         """Check if we can place a new trade"""

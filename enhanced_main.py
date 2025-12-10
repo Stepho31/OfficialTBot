@@ -216,7 +216,27 @@ class EnhancedTradingSession:
         filtered = []
         
         for opp in opportunities:
-            # Score threshold
+            # Scalp Mode: Check if score is between 38 and min_opportunity_score
+            is_scalp_candidate = 38.0 <= opp.score < self.min_opportunity_score
+            
+            if is_scalp_candidate:
+                # Mark as scalp mode and check relaxed criteria
+                opp.scalp_mode = True
+                
+                # Scalp mode requirements: session_strength >= 0.25, correlation_risk <= 0.85
+                if opp.session_strength < 0.25:
+                    print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: Scalp candidate rejected - session strength too low ({opp.session_strength:.2f} < 0.25)")
+                    continue
+                
+                if opp.correlation_risk > 0.85:
+                    print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: Scalp candidate rejected - correlation risk too high ({opp.correlation_risk:.2f} > 0.85)")
+                    continue
+                
+                print(f"[ENHANCED] ✅ {opp.symbol} {opp.direction}: Scalp mode candidate passed (Score: {opp.score:.1f}, Session: {opp.session_strength:.2f}, Correlation: {opp.correlation_risk:.2f})")
+                filtered.append(opp)
+                continue
+            
+            # Regular mode: Score threshold
             if opp.score < self.min_opportunity_score:
                 print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: Score too low ({opp.score:.1f})")
                 continue
@@ -483,6 +503,28 @@ class EnhancedTradingSession:
                 exits = plan["exits"]
                 risk_pct = plan["risk_pct"]
                 
+                # Scalp Mode: Overwrite exits with tighter TP/SL if this is a scalp trade
+                if opportunity.scalp_mode:
+                    print(f"[ENHANCED] ⚡ User {user.user_id}: Scalp mode trade - applying tighter exits")
+                    # Get actual entry price from live market (will be set when trade is placed)
+                    # For now, use opportunity entry price as estimate
+                    entry_price = opportunity.entry_price
+                    pip_factor = self._get_pip_factor(symbol)
+                    
+                    # TP1: 5-12 pips (use 10 pips for better R:R)
+                    tp_pips = 10.0
+                    # SL: 6-10 pips (use 8 pips)
+                    sl_pips = 8.0
+                    
+                    if direction.lower() == "buy":
+                        exits["tp1"] = entry_price + (tp_pips * pip_factor)
+                        exits["sl"] = entry_price - (sl_pips * pip_factor)
+                    else:  # sell
+                        exits["tp1"] = entry_price - (tp_pips * pip_factor)
+                        exits["sl"] = entry_price + (sl_pips * pip_factor)
+                    
+                    print(f"[ENHANCED] ⚡ Scalp exits: TP1={exits['tp1']:.5f} ({tp_pips} pips), SL={exits['sl']:.5f} ({sl_pips} pips)")
+                
                 # Fetch user's trade_allocation setting
                 trade_allocation = None
                 if self.api_client:
@@ -494,6 +536,18 @@ class EnhancedTradingSession:
                         print(f"[ENHANCED] ⚠️ Could not fetch user settings for user {user.user_id}: {e}")
                         print(f"[ENHANCED] ⚠️ Falling back to default trade sizing logic")
                 
+                # Build meta dict with scalp_mode flag
+                meta_dict = {
+                    "quality_score": plan.get("quality_score"),
+                    "smart_exits": True,
+                    "trail_start_r": exits.get("trail_start_r"),
+                    "trail_step_pips": exits.get("trail_step_pips"),
+                    "plan_tp2": exits.get("tp2"),
+                    "reasons": opportunity.reasons,
+                }
+                if opportunity.scalp_mode:
+                    meta_dict["scalp_mode"] = True
+                
                 # Place the actual trade using user's client and account
                 trade_details = place_trade(
                     trade_idea,
@@ -501,14 +555,7 @@ class EnhancedTradingSession:
                     risk_pct=risk_pct,
                     sl_price=exits["sl"],
                     tp_price=exits["tp1"],
-                    meta={
-                        "quality_score": plan.get("quality_score"),
-                        "smart_exits": True,
-                        "trail_start_r": exits.get("trail_start_r"),
-                        "trail_step_pips": exits.get("trail_step_pips"),
-                        "plan_tp2": exits.get("tp2"),
-                        "reasons": opportunity.reasons,
-                    },
+                    meta=meta_dict,
                     client=user_client,
                     account_id=user.oanda_account_id,
                     user_id=user.user_id,
@@ -825,6 +872,17 @@ class EnhancedTradingSession:
         except Exception as e:
             print(f"[ENHANCED] ⚠️ Failed to send notification: {e}")
 
+    def _get_pip_factor(self, symbol: str) -> float:
+        """Get pip factor for a symbol (price units per pip)."""
+        s = symbol.upper().replace("_", "").replace("/", "")
+        if s.endswith("JPY"):  # USDJPY etc.
+            return 0.01
+        if s == "XAUUSD":
+            return 0.1
+        if s == "XAGUSD":
+            return 0.01
+        return 0.0001
+    
     def _get_live_spread_pips(self, pair: str, api_key=None, account_id=None) -> float:
         """Get live spread in pips. Requires api_key and account_id to be provided explicitly or set in env (legacy mode)."""
         try:
@@ -840,15 +898,7 @@ class EnhancedTradingSession:
             bid = float(prices["bids"][0]["price"])
             ask = float(prices["asks"][0]["price"])
             spread = max(0.0, ask - bid)
-            s = pair.upper().replace("_", "")
-            if s.endswith("JPY"):
-                pip = 0.01
-            elif s == "XAUUSD":
-                pip = 0.1
-            elif s == "XAGUSD":
-                pip = 0.01
-            else:
-                pip = 0.0001
+            pip = self._get_pip_factor(pair)
             return spread / pip if pip else 0.8
         except Exception:
             return 0.8

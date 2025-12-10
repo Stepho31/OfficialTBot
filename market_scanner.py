@@ -41,6 +41,7 @@ class MarketOpportunity:
     suggested_sl: float
     suggested_tp: float
     confidence: str  # 'high', 'medium', 'low'
+    scalp_mode: bool = False  # True if this is a scalp trade (lower score but valid structure)
 
 class MarketScanner:
     """Comprehensive market scanner for 4H forex trading"""

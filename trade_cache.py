@@ -180,3 +180,69 @@ def get_cache_stats() -> Dict:
             stats["newest_trade"] = max(timestamps).isoformat()
     
     return stats
+
+def sync_cache_with_broker(client, account_id) -> int:
+    """
+    Validate cache against live broker state and remove any closed trades.
+    
+    Args:
+        client: OANDA API client instance
+        account_id: OANDA account ID
+        
+    Returns:
+        Number of trades removed from cache
+    """
+    try:
+        import oandapyV20
+        from oandapyV20.endpoints.trades import TradesList
+        
+        # Get current trades from OANDA
+        r = TradesList(accountID=account_id)
+        client.request(r)
+        live_trades = {trade["id"]: trade for trade in r.response.get("trades", [])}
+        
+        # Get cached trades
+        cached_trades = get_active_trades()
+        removed_count = 0
+        
+        # Find trades that exist in cache but not in live account
+        for cached_trade in cached_trades[:]:  # Create copy to iterate over
+            trade_id = cached_trade.get("trade_id")
+            if trade_id and trade_id not in live_trades:
+                print(f"[CACHE] 🔍 Trade {trade_id} not found in broker - removing from cache")
+                if remove_trade(trade_id):
+                    removed_count += 1
+        
+        if removed_count > 0:
+            print(f"[CACHE] ✅ Synced cache with broker: removed {removed_count} closed trade(s)")
+        else:
+            print(f"[CACHE] ✅ Cache sync complete: all cached trades are still active")
+        
+        return removed_count
+        
+    except Exception as e:
+        print(f"[CACHE] ⚠️ Error syncing cache with broker: {e}")
+        return 0
+
+def validate_and_cleanup_cache(client=None, account_id=None):
+    """
+    Validate cache and remove any trades that are no longer open.
+    This is a safety function that can be called periodically to ensure cache integrity.
+    
+    Args:
+        client: Optional OANDA API client (if None, only age-based cleanup runs)
+        account_id: Optional OANDA account ID (required if client is provided)
+    
+    Returns:
+        Total number of trades removed
+    """
+    removed_count = 0
+    
+    # Always run age-based cleanup
+    removed_count += cleanup_stale_trades()
+    
+    # If broker credentials provided, sync with live state
+    if client and account_id:
+        removed_count += sync_cache_with_broker(client, account_id)
+    
+    return removed_count

@@ -1,20 +1,2 @@
 [
-  {
-    "symbol": "EURUSD",
-    "instrument": "EURUSD",
-    "direction": "buy",
-    "side": "buy",
-    "entry_price": 1.1743,
-    "trade_id": "3911",
-    "timestamp": "2025-09-19T11:22:31.337642"
-  },
-  {
-    "symbol": "AUDUSD",
-    "instrument": "AUDUSD",
-    "direction": "sell",
-    "side": "sell",
-    "entry_price": 0.66047,
-    "trade_id": "3923",
-    "timestamp": "2025-09-23T12:14:43.129254"
-  }
 ]
