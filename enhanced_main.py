@@ -667,17 +667,6 @@ class EnhancedTradingSession:
                     "execution_time": datetime.now().isoformat(),
                     "user_id": user.user_id,
                 }
-            else:
-                print(f"[ENHANCED] 🧪 DRY RUN: User {user.user_id}: Would execute {symbol} {direction.upper()}")
-                self._send_trade_notification_for_user(opportunity, None, "dry_run", user)
-                return {
-                    "symbol": symbol,
-                    "direction": direction,
-                    "opportunity_score": opportunity.score,
-                    "trade_details": "dry_run",
-                    "execution_time": datetime.now().isoformat(),
-                    "user_id": user.user_id,
-                }
                 
         except Exception as e:
             print(f"[ENHANCED] ❌ User {user.user_id}: Error executing opportunity {opportunity.symbol}: {e}")
