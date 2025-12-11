@@ -30,7 +30,29 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 TP_THRESHOLD = float(os.getenv("TP_THRESHOLD", 0.55))
 SL_THRESHOLD = float(os.getenv("SL_THRESHOLD", 0.3))
-DRY_RUN = os.getenv("DRY_RUN", "false").lower() == "true"
+
+# Import centralized DRY_RUN configuration
+from trading_config import get_dry_run
+
+# Get DRY_RUN with production override
+DRY_RUN = get_dry_run()
+
+# Force DRY_RUN off in production
+if os.getenv("ENVIRONMENT", "production").lower() == "production":
+    DRY_RUN = False
+
+# Prevent bot startup if DRY_RUN is still True
+if DRY_RUN:
+    raise RuntimeError(
+        "❌ Bot startup aborted: DRY_RUN is enabled. Disable DRY_RUN to execute real trades."
+    )
+
+# Add startup logging (only reached if DRY_RUN is False)
+import logging
+logger = logging.getLogger(__name__)
+mode = "LIVE TRADING"
+logger.warning(f"[STARTUP MODE] Bot running in: {mode}")
+
 CACHE_FILE = "gpt_cache.json"
 
 
@@ -663,6 +685,7 @@ def main():
 if __name__ == "__main__":
     print("[BOT] Script initializing...")
     print("[BOT] Environment loaded.")
+    print(f"[STARTUP MODE] Bot running in: LIVE TRADING")
     
     # Render debug helper (only if RENDER_DEBUG env var is set to "true")
     if os.getenv("RENDER_DEBUG", "").lower() == "true":

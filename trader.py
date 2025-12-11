@@ -583,17 +583,50 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
     if atr:
         print(f"[TRADE] ATR: {atr:.5f} | {'SL fixed %' if use_fixed_sl_percent else 'ATR-based SL' if atr else 'fixed % fallback'}")
 
+    # DIAGNOSTIC LOGGING: Pre-API call validation
+    print(f"[OANDA][PRE-CALL] Preparing to send order to OANDA API")
+    print(f"[OANDA][PRE-CALL] Account ID: {account_id}")
+    print(f"[OANDA][PRE-CALL] Client initialized: {client is not None}")
+    print(f"[OANDA][PRE-CALL] Order details: side={side}, units={units}, instrument={instrument}")
+    print(f"[OANDA][PRE-CALL] Entry price: {intended_entry_price:.5f}, TP: {tp_price:.5f}, SL: {sl_price:.5f}")
+    print(f"[OANDA][PRE-CALL] Order payload: {order}")
+
     try:
+        # DIAGNOSTIC LOGGING: Before API call
+        print(f"[OANDA][PRE-CALL] Sending order → side={side}, units={units}, price={intended_entry_price:.5f}, account={account_id}")
+        
         r = orders.OrderCreate(accountID=account_id, data=order)
+        print(f"[OANDA][PRE-CALL] OrderCreate object created, making API request...")
+        
         client.request(r)
+        print(f"[OANDA][RESPONSE] API request completed successfully")
+        print(f"[OANDA][RESPONSE] Full response: {r.response}")
+        
         trade_id = r.response.get("orderFillTransaction", {}).get("tradeOpened", {}).get("tradeID", "unknown")
         fill_price = float(r.response.get("orderFillTransaction", {}).get("price", intended_entry_price))
         
+        print(f"[OANDA][RESPONSE] Trade ID: {trade_id}, Fill Price: {fill_price:.5f}")
         print(f"[TRADE] ✅ Order filled at: {fill_price:.5f}")
 
     except oandapyV20.exceptions.V20Error as e:
+        print(f"[OANDA][ERROR] V20Error occurred during trade execution")
+        print(f"[OANDA][ERROR] Error type: {type(e).__name__}")
+        print(f"[OANDA][ERROR] Error message: {e}")
+        print(f"[OANDA][ERROR] Error code: {getattr(e, 'code', 'N/A')}")
+        print(f"[OANDA][ERROR] Error response: {e.response.text if hasattr(e, 'response') and hasattr(e.response, 'text') else 'No response body'}")
+        print(f"[OANDA][ERROR] Full error details: {e}")
+        import traceback
+        print(f"[OANDA][ERROR] Traceback:")
+        traceback.print_exc()
         print("[OANDA ERROR]", e)
         print("[OANDA ERROR BODY]", e.response.text if hasattr(e, 'response') else "No response body.")
+        raise
+    except Exception as e:
+        print(f"[OANDA][ERROR] Unexpected exception during trade execution: {type(e).__name__}")
+        print(f"[OANDA][ERROR] Error message: {e}")
+        import traceback
+        print(f"[OANDA][ERROR] Traceback:")
+        traceback.print_exc()
         raise
 
     # Compute entry spread and slippage for logging

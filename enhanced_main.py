@@ -30,12 +30,32 @@ from autopip_client import AutopipClient
 
 load_dotenv()
 
+# Import centralized DRY_RUN configuration
+from trading_config import get_dry_run
+
 class EnhancedTradingSession:
     """Enhanced trading session with market scanning"""
     
     def __init__(self):
         self.config = get_config()
-        self.dry_run = os.getenv("DRY_RUN", "false").lower() == "true"
+        # Get DRY_RUN with production override
+        self.dry_run = get_dry_run()
+        
+        # Force DRY_RUN off in production
+        if os.getenv("ENVIRONMENT", "production").lower() == "production":
+            self.dry_run = False
+        
+        # Prevent bot startup if DRY_RUN is still True
+        if self.dry_run:
+            raise RuntimeError(
+                "❌ Bot startup aborted: DRY_RUN is enabled. Disable DRY_RUN to execute real trades."
+            )
+        
+        # Add startup logging
+        import logging
+        logger = logging.getLogger(__name__)
+        mode = "LIVE TRADING"
+        logger.warning(f"[STARTUP MODE] Bot running in: {mode}")
         self.max_concurrent_trades = int(os.getenv("MAX_CONCURRENT_TRADES", "3"))
         # Slightly loosen entry sensitivity by reducing threshold ~10–15%
         self.min_opportunity_score = float(os.getenv("MIN_OPPORTUNITY_SCORE", "48.0"))
@@ -71,7 +91,9 @@ class EnhancedTradingSession:
         print("[ENHANCED] 🚀 Starting Enhanced 4H Trading Session (Per-User Mode)...")
         print(f"[ENHANCED] 📊 Max concurrent trades: {self.max_concurrent_trades}")
         print(f"[ENHANCED] 🎯 Min opportunity score: {self.min_opportunity_score}")
-        print(f"[ENHANCED] 🧪 Dry run mode: {self.dry_run}")
+        # DRY_RUN should always be False at this point due to startup abort check
+        mode = "LIVE TRADING"
+        print(f"[ENHANCED] [STARTUP MODE] Bot running in: {mode}")
         
         # Step 1: Fetch Tier-2 users eligible for automation
         tier2_users = get_tier2_users_for_automation()
@@ -493,7 +515,27 @@ class EnhancedTradingSession:
                 self._send_admin_rejection_notification(opportunity, f"Gate blocked: {gate.get('blocks')}", user)
                 return None
             
+            # DIAGNOSTIC LOGGING: Check dry-run mode
+            print(f"[ENHANCED][DIAGNOSTIC] Dry-run mode check: self.dry_run = {self.dry_run}")
+            print(f"[ENHANCED][DIAGNOSTIC] DRY_RUN env var: {os.getenv('DRY_RUN', 'not set')}")
+            
             if not self.dry_run:
+                print(f"[ENHANCED][DIAGNOSTIC] ✅ Dry-run mode is OFF - proceeding with real trade execution")
+                
+                # DIAGNOSTIC LOGGING: Validate client and account_id before proceeding
+                print(f"[ENHANCED][DIAGNOSTIC] Validating OANDA client and account_id...")
+                print(f"[ENHANCED][DIAGNOSTIC] user_client is None: {user_client is None}")
+                print(f"[ENHANCED][DIAGNOSTIC] user.oanda_account_id: {user.oanda_account_id}")
+                print(f"[ENHANCED][DIAGNOSTIC] user.oanda_api_key present: {bool(user.oanda_api_key)}")
+                
+                if user_client is None:
+                    print(f"[ENHANCED][ERROR] ❌ user_client is None - cannot proceed with trade execution")
+                    raise ValueError(f"OANDA client is None for user {user.user_id}")
+                
+                if not user.oanda_account_id:
+                    print(f"[ENHANCED][ERROR] ❌ user.oanda_account_id is empty - cannot proceed with trade execution")
+                    raise ValueError(f"OANDA account_id is empty for user {user.user_id}")
+                
                 # Build smart plan with live spread for consistent exits/sizing
                 spread_pips = self._get_live_spread_pips(opportunity.symbol, api_key=user.oanda_api_key, account_id=user.oanda_account_id)
                 plan = plan_trade(symbol, direction, spread_pips=spread_pips or 0.8)
@@ -548,6 +590,15 @@ class EnhancedTradingSession:
                 if opportunity.scalp_mode:
                     meta_dict["scalp_mode"] = True
                 
+                # DIAGNOSTIC LOGGING: Before calling place_trade
+                print(f"[ENHANCED][DIAGNOSTIC] About to call place_trade() with:")
+                print(f"[ENHANCED][DIAGNOSTIC]   - client: {type(user_client).__name__} (not None: {user_client is not None})")
+                print(f"[ENHANCED][DIAGNOSTIC]   - account_id: {user.oanda_account_id}")
+                print(f"[ENHANCED][DIAGNOSTIC]   - user_id: {user.user_id}")
+                print(f"[ENHANCED][DIAGNOSTIC]   - direction: {direction}")
+                print(f"[ENHANCED][DIAGNOSTIC]   - sl_price: {exits['sl']}")
+                print(f"[ENHANCED][DIAGNOSTIC]   - tp_price: {exits['tp1']}")
+                
                 # Place the actual trade using user's client and account
                 trade_details = place_trade(
                     trade_idea,
@@ -561,6 +612,9 @@ class EnhancedTradingSession:
                     user_id=user.user_id,
                     trade_allocation=trade_allocation
                 )
+                
+                print(f"[ENHANCED][DIAGNOSTIC] place_trade() returned: trade_id={trade_details.get('trade_id', 'N/A')}")
+                
                 trade_id_ok = str(trade_details.get("trade_id", "")).isdigit()
                 
                 if not trade_id_ok:
@@ -597,6 +651,19 @@ class EnhancedTradingSession:
                     "direction": direction,
                     "opportunity_score": opportunity.score,
                     "trade_details": trade_details,
+                    "execution_time": datetime.now().isoformat(),
+                    "user_id": user.user_id,
+                }
+            else:
+                # NOTE: This else block should never execute due to startup abort check in __init__
+                # It's kept for defensive programming but will be unreachable in normal operation
+                print(f"[ENHANCED] 🧪 DRY RUN: User {user.user_id}: Would execute {symbol} {direction.upper()}")
+                self._send_trade_notification_for_user(opportunity, None, "dry_run", user)
+                return {
+                    "symbol": symbol,
+                    "direction": direction,
+                    "opportunity_score": opportunity.score,
+                    "trade_details": "dry_run",
                     "execution_time": datetime.now().isoformat(),
                     "user_id": user.user_id,
                 }
@@ -1083,6 +1150,13 @@ class EnhancedTradingSession:
 def main():
     """Enhanced main function using market scanner"""
     try:
+        # Add startup logging
+        import logging
+        logger = logging.getLogger(__name__)
+        mode = "LIVE TRADING"
+        logger.warning(f"[STARTUP MODE] Bot running in: {mode}")
+        print(f"[STARTUP MODE] Bot running in: {mode}")
+        
         session = EnhancedTradingSession()
         result = session.execute_trading_session()
         

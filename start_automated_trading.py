@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Import centralized DRY_RUN configuration
+from trading_config import get_dry_run
+
 def check_environment():
     """Check if all required environment variables are set"""
     required_vars = [
@@ -103,7 +106,8 @@ def display_startup_info():
     print(f"  • ATR SL multiplier: {os.getenv('ATR_SL_MULTIPLIER', '1.8')}")
     print(f"  • ATR TP multiplier: {os.getenv('ATR_TP_MULTIPLIER', '3.5')}")
     print(f"  • Minimum R:R ratio: 1.6:1")
-    print(f"  • Dry run mode: {os.getenv('DRY_RUN', 'false')}")
+    # DRY_RUN should always be False at this point due to startup abort check
+    print(f"  • Dry run mode: false (enforced)")
     
     print("\n🕐 Trading Schedule:")
     print("  • European pairs: 06:00-18:00 UTC")
@@ -127,6 +131,19 @@ def main():
     print("🚀 Starting Automated 4H Forex Trading System...")
     print("=" * 50)
     
+    # Get DRY_RUN with production override
+    DRY_RUN = get_dry_run()
+    
+    # Force DRY_RUN off in production
+    if os.getenv("ENVIRONMENT", "production").lower() == "production":
+        DRY_RUN = False
+    
+    # Prevent bot startup if DRY_RUN is still True
+    if DRY_RUN:
+        raise RuntimeError(
+            "❌ Bot startup aborted: DRY_RUN is enabled. Disable DRY_RUN to execute real trades."
+        )
+    
     # Check environment
     if not check_environment():
         print("\n❌ Environment check failed. Exiting.")
@@ -143,11 +160,12 @@ def main():
     # Confirm mode (non-interactive)
     print("\n" + "=" * 50)
     
-    if os.getenv('DRY_RUN', 'false').lower() == 'true':
-        print("🔬 DRY RUN MODE - No real trades will be placed")
-    else:
-        # Always run live trading on servers like Render
-        print("💰 LIVE TRADING MODE - Real trades will be placed! (auto-confirmed)")
+    # Add startup logging
+    import logging
+    logger = logging.getLogger(__name__)
+    mode = "LIVE TRADING"
+    logger.warning(f"[STARTUP MODE] Bot running in: {mode}")
+    print(f"[STARTUP MODE] Bot running in: {mode}")
     
     print("\n🎬 Starting automated trading system...")
     print("Press Ctrl+C to stop the system gracefully (when running locally)")

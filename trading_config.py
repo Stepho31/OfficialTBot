@@ -221,3 +221,24 @@ def reload_config():
     global config
     config = TradingConfig()
     return config
+
+def get_dry_run() -> bool:
+    """
+    Get DRY_RUN setting with production override.
+    
+    Rules:
+    1. Defaults to False unless explicitly set to "true"
+    2. Always False in production environment
+    3. Returns True only if explicitly set AND not in production
+    
+    Returns:
+        bool: True if dry-run mode is enabled, False otherwise
+    """
+    # Force DRY_RUN off in production
+    environment = os.getenv("ENVIRONMENT", "production").lower()
+    if environment == "production":
+        return False
+    
+    # Default to False unless explicitly set to "true"
+    dry_run_env = os.getenv("DRY_RUN", "false").lower()
+    return dry_run_env == "true"

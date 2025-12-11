@@ -309,15 +309,10 @@ class AutomatedTrader:
                     # Execute the enhanced scanner-based trading logic instead of GPT-idea flow
                     from enhanced_main import main as enhanced_main
                     
-                    # Temporarily ensure live trading during automation
-                    original_dry_run = os.environ.get("DRY_RUN", "false")
-                    os.environ["DRY_RUN"] = "false"
-                    
                     # Run enhanced trading session
+                    # Note: DRY_RUN is now controlled centrally via trading_config.get_dry_run()
+                    # and will be False in production or if explicitly disabled
                     enhanced_main()
-                    
-                    # Restore original dry run setting
-                    os.environ["DRY_RUN"] = original_dry_run
                     
                     # Check if a new trade was placed
                     new_active_trades = get_active_trades()
