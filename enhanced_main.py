@@ -223,6 +223,25 @@ class EnhancedTradingSession:
                 
                 print(f"[ENHANCED] ✅ User {user.user_id}: Executed {user_trades_executed} trades")
                 
+                # Run reconciliation for this user to catch any missing trades
+                try:
+                    from db_persistence import reconcile_trades_from_oanda
+                    print(f"[ENHANCED] 🔄 Running reconciliation for user {user.user_id}...")
+                    reconcile_result = reconcile_trades_from_oanda(
+                        oanda_account_id=user.oanda_account_id,
+                        oanda_client=user_client,
+                        user_id=user.user_id,
+                    )
+                    if reconcile_result["trades_inserted"] > 0:
+                        print(f"[ENHANCED] ✅ Reconciliation: Inserted {reconcile_result['trades_inserted']} missing trades for user {user.user_id}")
+                    if reconcile_result["trades_updated"] > 0:
+                        print(f"[ENHANCED] ✅ Reconciliation: Updated {reconcile_result['trades_updated']} trades for user {user.user_id}")
+                    if reconcile_result["errors"]:
+                        print(f"[ENHANCED] ⚠️ Reconciliation errors for user {user.user_id}: {reconcile_result['errors']}")
+                except Exception as reconcile_err:
+                    print(f"[ENHANCED] ⚠️ Reconciliation failed for user {user.user_id}: {reconcile_err}")
+                    # Don't fail the session if reconciliation fails
+                
             except Exception as e:
                 print(f"[ENHANCED] ❌ Error processing user {user.user_id}: {e}")
                 import traceback

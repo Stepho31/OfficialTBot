@@ -406,3 +406,176 @@ def update_trade_close_from_oanda_account(
         reason_close=reason_close,
     )
 
+
+def reconcile_trades_from_oanda(
+    oanda_account_id: str,
+    oanda_client,
+    user_id: Optional[int] = None,
+    account_id: Optional[int] = None,
+) -> dict:
+    """
+    Reconcile trades from OANDA with database.
+    Fetches all open trades from OANDA and ensures they exist in the database.
+    
+    Args:
+        oanda_account_id: OANDA account ID
+        oanda_client: OANDA API client instance
+        user_id: Optional user_id (if known, avoids lookup)
+        account_id: Optional account_id (if known, avoids lookup)
+    
+    Returns:
+        dict with reconciliation results:
+        {
+            "trades_found": int,
+            "trades_inserted": int,
+            "trades_updated": int,
+            "errors": list
+        }
+    """
+    if not _models_available:
+        logger.warning("Database models not available, cannot reconcile trades")
+        return {"trades_found": 0, "trades_inserted": 0, "trades_updated": 0, "errors": ["Models not available"]}
+    
+    try:
+        import oandapyV20
+        from oandapyV20.endpoints.trades import TradesList
+    except ImportError:
+        logger.error("oandapyV20 not available for reconciliation")
+        return {"trades_found": 0, "trades_inserted": 0, "trades_updated": 0, "errors": ["oandapyV20 not available"]}
+    
+    result = {
+        "trades_found": 0,
+        "trades_inserted": 0,
+        "trades_updated": 0,
+        "errors": []
+    }
+    
+    # Lookup user_id and account_id if not provided
+    if user_id is None or account_id is None:
+        lookup_result = lookup_user_and_account(oanda_account_id)
+        if not lookup_result:
+            error_msg = f"Cannot reconcile - user/account not found for OANDA account {oanda_account_id}"
+            logger.error(error_msg)
+            result["errors"].append(error_msg)
+            return result
+        user_id, account_id = lookup_result
+    
+    db = get_db_session()
+    if db is None:
+        error_msg = "Cannot get database session for reconciliation"
+        logger.error(error_msg)
+        result["errors"].append(error_msg)
+        return result
+    
+    try:
+        # Fetch all open trades from OANDA
+        r = TradesList(accountID=oanda_account_id)
+        oanda_client.request(r)
+        oanda_trades = r.response.get("trades", [])
+        result["trades_found"] = len(oanda_trades)
+        
+        logger.info(f"[RECONCILE] Found {len(oanda_trades)} open trades on OANDA account {oanda_account_id}")
+        
+        for oanda_trade in oanda_trades:
+            trade_id = str(oanda_trade.get("id"))
+            if not trade_id:
+                continue
+            
+            try:
+                # Check if trade exists in database
+                existing_trade = db.execute(
+                    select(Trade).where(
+                        Trade.user_id == user_id,
+                        Trade.external_id == trade_id
+                    )
+                ).scalar_one_or_none()
+                
+                if existing_trade:
+                    # Trade exists - update status if needed
+                    if existing_trade.status != "OPEN" and not existing_trade.closed_at:
+                        existing_trade.status = "OPEN"
+                        existing_trade.closed_at = None
+                        db.commit()
+                        result["trades_updated"] += 1
+                        logger.info(f"[RECONCILE] Updated status for existing trade {trade_id}")
+                else:
+                    # Trade missing - insert it
+                    instrument = oanda_trade.get("instrument", "")
+                    side_units = oanda_trade.get("currentUnits", "0")
+                    try:
+                        units = abs(int(side_units)) if side_units else 0
+                        side_int = int(side_units) if side_units else 0
+                        side_str = "BUY" if side_int > 0 else "SELL" if side_int < 0 else None
+                    except (ValueError, TypeError):
+                        logger.warning(f"[RECONCILE] Invalid currentUnits for trade {trade_id}: {side_units}")
+                        units = 0
+                        side_str = None
+                    
+                    try:
+                        entry_price = float(oanda_trade.get("price", 0))
+                    except (ValueError, TypeError):
+                        logger.warning(f"[RECONCILE] Invalid price for trade {trade_id}: {oanda_trade.get('price')}")
+                        entry_price = 0.0
+                    opened_at_str = oanda_trade.get("openTime", "")
+                    
+                    # Parse opened_at timestamp
+                    opened_at = None
+                    if opened_at_str:
+                        try:
+                            # OANDA timestamps are in RFC3339 format (e.g., "2023-01-01T12:00:00.000000000Z")
+                            # Try parsing with datetime.fromisoformat first (Python 3.7+)
+                            if opened_at_str.endswith('Z'):
+                                opened_at_str = opened_at_str[:-1] + '+00:00'
+                            opened_at = datetime.fromisoformat(opened_at_str.replace('Z', '+00:00'))
+                            if opened_at.tzinfo is None:
+                                opened_at = opened_at.replace(tzinfo=timezone.utc)
+                        except Exception:
+                            # Fallback to current time if parsing fails
+                            opened_at = datetime.now(timezone.utc)
+                    else:
+                        opened_at = datetime.now(timezone.utc)
+                    
+                    # Get unrealized P/L
+                    unrealized_pl = oanda_trade.get("unrealizedPL")
+                    pnl_net = float(unrealized_pl) if unrealized_pl is not None else None
+                    
+                    # Create trade record
+                    new_trade = Trade(
+                        user_id=user_id,
+                        account_id=account_id,
+                        external_id=trade_id,
+                        instrument=instrument,
+                        side=side_str,
+                        units=units,
+                        entry_price=Decimal(str(entry_price)) if entry_price else None,
+                        opened_at=opened_at,
+                        status="OPEN",
+                        pnl_net=Decimal(str(pnl_net)) if pnl_net is not None else None,
+                        reason_open="Reconciled from OANDA",
+                    )
+                    db.add(new_trade)
+                    db.commit()
+                    result["trades_inserted"] += 1
+                    logger.info(f"[RECONCILE] Inserted missing trade {trade_id} ({instrument} {side_str} {units})")
+                    
+            except Exception as e:
+                error_msg = f"Error reconciling trade {trade_id}: {e}"
+                logger.error(error_msg)
+                result["errors"].append(error_msg)
+                db.rollback()
+                continue
+        
+        logger.info(
+            f"[RECONCILE] Reconciliation complete for account {oanda_account_id}: "
+            f"{result['trades_inserted']} inserted, {result['trades_updated']} updated"
+        )
+        
+    except Exception as e:
+        error_msg = f"Error during reconciliation: {e}"
+        logger.error(error_msg)
+        result["errors"].append(error_msg)
+    finally:
+        db.close()
+    
+    return result
+
