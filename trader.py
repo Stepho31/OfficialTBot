@@ -63,10 +63,10 @@ def _find_recent_swing_levels(symbol: str, side: str, lookback: int = 30) -> tup
     except Exception:
         return None, None
 
-def _ma_trend_direction(symbol: str) -> str:
+def _ma_trend_direction(symbol: str, oanda_client=None) -> str:
     """Return 'bullish' or 'bearish' via EMA50 vs EMA200 on H4."""
     try:
-        candles = get_oanda_data(symbol.replace("_", ""), "H4", 210)
+        candles = get_oanda_data(symbol.replace("_", ""), "H4", 210, oanda_client=oanda_client)
         if not candles or len(candles) < 200:
             return "unknown"
         closes = [float(c["mid"]["c"]) for c in candles]
@@ -197,8 +197,48 @@ def is_market_hours_favorable(instrument):
         # European-American overlap: 12:00-17:00 UTC
         return 12 <= hour <= 17
 
-def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_id=None):
-    """Enhanced validation before placing trade"""
+def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_id=None, skip_duplicate_validation=False):
+    """Enhanced validation before placing trade.
+    
+    Args:
+        client: OANDA API client (required for live trading)
+        account_id: OANDA account ID
+        instrument: Trading instrument
+        side: Trade direction ('buy' or 'sell')
+        trade_idea: Trade idea text
+        user_id: User ID for tracking (optional)
+        skip_duplicate_validation: If True, skip validation that was already done in enhanced path.
+                                   This prevents legacy validation from blocking trades after enhanced validation has passed.
+    """
+    # For live enhanced mode, if enhanced validation has already passed, skip duplicate validation
+    if skip_duplicate_validation:
+        print("[VALIDATION] ℹ️ Skipping legacy trade context build — enhanced execution active (validation already passed)")
+        # Still do basic safety checks (spread, correlation, concurrent trades) but skip technical analysis
+        # that was already done in enhanced validation
+        try:
+            # Portfolio constraints: cap concurrent trades and correlation groups
+            active_trades = get_active_trades()
+            if len(active_trades) >= get_config().risk_management.max_open_trades:
+                print(f"[VALIDATION] ❌ Max open trades reached: {len(active_trades)}")
+                return False
+            if _is_correlated_with_open(instrument, user_id=user_id):
+                print(f"[VALIDATION] ❌ Correlation lockout: existing correlated exposure present")
+                return False
+            
+            # Check spread (basic liquidity check)
+            spread, bid, ask = get_market_spread(client, account_id, instrument)
+            if spread:
+                max_spread = get_config().get_max_spread(instrument)
+                if spread > max_spread:
+                    print(f"[VALIDATION] ❌ Spread too wide: {spread:.5f} > {max_spread:.5f}")
+                    return False
+                print(f"[VALIDATION] ✅ Spread acceptable: {spread:.5f}")
+            
+            return True
+        except Exception as e:
+            print(f"[VALIDATION] Error during basic validation: {e}")
+            return False
+    
     try:
         # Config-driven favorable hours enforcement
         config = get_config()
@@ -243,8 +283,8 @@ def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_
             print(f"[VALIDATION] ✅ Spread acceptable: {spread:.5f}")
         
         # Technical confirmations: MA trend direction alignment (EMA50 vs EMA200)
-       # Technical confirmations: MA trend direction alignment (EMA50 vs EMA200)
-        trend = _ma_trend_direction(instrument)
+        # Use the provided client to fetch data instead of env vars
+        trend = _ma_trend_direction(instrument, oanda_client=client)
         relax = os.getenv("ALLOW_TREND_RELAX", "true").lower() == "true"
 
         if trend != "unknown":
@@ -262,8 +302,9 @@ def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_
 
 
         # Support/Resistance proximity: avoid chasing into nearby levels (<0.25*ATR)
+        # Use the provided client to fetch data instead of env vars
         try:
-            support, resistance = get_support_resistance_levels(instrument.replace("_", ""), 120)
+            support, resistance = get_support_resistance_levels(instrument.replace("_", ""), 120, oanda_client=client)
         except Exception:
             support, resistance = (None, None)
         atr_for_prox = calculate_atr(client, account_id, instrument) or 0.0
@@ -278,8 +319,9 @@ def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_
                 return False
 
         # Regime hard-gate: require ADX and ATR% window to avoid chop
+        # Use the provided client to fetch data instead of env vars
         try:
-            if not passes_h4_hard_filters(instrument.replace("_", ""), side):
+            if not passes_h4_hard_filters(instrument.replace("_", ""), side, oanda_client=client):
                 return False
         except Exception as _:
             # If metrics unavailable, be conservative
@@ -360,7 +402,10 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
         raise ValueError("Could not determine instrument/currency pair.")
 
     # Enhanced validation (pass user_id if available for per-user position checks)
-    if not validate_trade_entry(client, account_id, instrument, side, trade_idea, user_id=user_id):
+    # For live enhanced mode, skip duplicate validation since enhanced validation already passed
+    # This prevents legacy validation from blocking trades after enhanced validation has passed
+    skip_duplicate = (user_id is not None)  # Skip duplicate validation for per-user trades (enhanced mode)
+    if not validate_trade_entry(client, account_id, instrument, side, trade_idea, user_id=user_id, skip_duplicate_validation=skip_duplicate):
         raise ValueError("Trade validation failed - conditions not favorable")
 
     # Get current price with better timing

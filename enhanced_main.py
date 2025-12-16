@@ -417,8 +417,10 @@ class EnhancedTradingSession:
             
             if not self.dry_run:
                 # Build smart plan with live spread for consistent exits/sizing
+                # NOTE: This function appears to be legacy - _execute_opportunity_for_user is used instead
+                # If this path is used, user_client is not available, so plan_trade will use env vars (legacy mode)
                 spread_pips = self._get_live_spread_pips(opportunity.symbol, api_key=user.oanda_api_key, account_id=user.oanda_account_id)
-                plan = plan_trade(symbol, direction, spread_pips=spread_pips or 0.8)
+                plan = plan_trade(symbol, direction, spread_pips=spread_pips or 0.8, oanda_client=None)
                 if not plan:
                     print("[ENHANCED] ❌ Smart plan could not be built. Skipping.")
                     return None
@@ -537,8 +539,9 @@ class EnhancedTradingSession:
                     raise ValueError(f"OANDA account_id is empty for user {user.user_id}")
                 
                 # Build smart plan with live spread for consistent exits/sizing
+                # Pass user_client to plan_trade to use per-user credentials instead of env vars
                 spread_pips = self._get_live_spread_pips(opportunity.symbol, api_key=user.oanda_api_key, account_id=user.oanda_account_id)
-                plan = plan_trade(symbol, direction, spread_pips=spread_pips or 0.8)
+                plan = plan_trade(symbol, direction, spread_pips=spread_pips or 0.8, oanda_client=user_client)
                 if not plan:
                     print(f"[ENHANCED] ❌ User {user.user_id}: Smart plan could not be built. Skipping.")
                     return None

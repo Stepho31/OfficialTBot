@@ -426,9 +426,9 @@ def calculate_ema(prices, period):
     
     return ema
 
-def get_support_resistance_levels(symbol, lookback_periods=100):
+def get_support_resistance_levels(symbol, lookback_periods=100, oanda_client=None):
     """Calculate dynamic support and resistance levels"""
-    candles = get_oanda_data(symbol, "H4", lookback_periods)
+    candles = get_oanda_data(symbol, "H4", lookback_periods, oanda_client=oanda_client)
     if not candles:
         return None, None
     
@@ -582,19 +582,26 @@ def passes_h4_hard_filters(symbol: str, side: str, relax: bool = False, oanda_cl
     return True
 
 
-def _get_oanda_prices(symbol: str, granularity: str, count: int) -> Optional[List[Dict]]:
+def _get_oanda_prices(symbol: str, granularity: str, count: int, oanda_client=None) -> Optional[List[Dict]]:
     try:
-        return get_oanda_data(symbol, granularity, count)
+        return get_oanda_data(symbol, granularity, count, oanda_client=oanda_client)
     except Exception:
         return None
 
 
-def validate_m10_entry(symbol: str, side: str, relax: bool = False) -> bool:
+def validate_m10_entry(symbol: str, side: str, relax: bool = False, oanda_client=None) -> bool:
     """M10 entry confirmation: RSI(14), momentum alignment, pullback to EMA20 zone.
     Pullback zone width = 0.30*ATR by default (slightly wider to reduce near-miss skips).
+    
+    Args:
+        symbol: Trading pair symbol
+        side: Trade direction ('buy' or 'sell')
+        relax: Whether to use relaxed criteria
+        oanda_client: Optional OANDA API client. If provided, will be used for data fetching
+                     instead of environment variables (required for live enhanced mode).
     """
     print(f"[VALIDATORS] ⏱️ M10 entry check for {symbol} {side}")
-    candles = _get_oanda_prices(symbol, "M10", 120)
+    candles = _get_oanda_prices(symbol, "M10", 120, oanda_client=oanda_client)
     if not candles or len(candles) < 40:
         print("[VALIDATORS] ❌ Not enough M10 data")
         return False

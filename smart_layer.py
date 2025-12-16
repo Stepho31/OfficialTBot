@@ -205,19 +205,26 @@ def compute_smart_exits(symbol: str, side: str, entry_price: float, atr_price_un
 # Planner (builds context → score → risk → exits)
 # ---------------------------
 
-def build_trade_context(symbol: str, side: str, spread_pips: float = 0.8) -> Optional[TradeContext]:
+def build_trade_context(symbol: str, side: str, spread_pips: float = 0.8, oanda_client=None) -> Optional[TradeContext]:
     """
     Pull features from validators and assemble a TradeContext.
+    
+    Args:
+        symbol: Trading pair symbol
+        side: Trade direction ('buy' or 'sell')
+        spread_pips: Spread in pips
+        oanda_client: Optional OANDA API client. If provided, will be used for data fetching
+                     instead of environment variables (required for live enhanced mode).
     """
     if not is_forex_pair(symbol):
         return None
 
-    h4 = get_momentum_signals(symbol, ["H4"])
+    h4 = get_momentum_signals(symbol, ["H4"], oanda_client=oanda_client)
     if "H4" not in h4:
         return None
 
-    trend, adx, atr_pct = get_h4_trend_adx_atr_percent(symbol)
-    m10_ok = validate_m10_entry(symbol, side, relax=True)
+    trend, adx, atr_pct = get_h4_trend_adx_atr_percent(symbol, oanda_client=oanda_client)
+    m10_ok = validate_m10_entry(symbol, side, relax=True, oanda_client=oanda_client)
 
     # Safe fallbacks so we don’t choke volume
     trend = trend or "bullish"
@@ -237,15 +244,22 @@ def build_trade_context(symbol: str, side: str, spread_pips: float = 0.8) -> Opt
         spread_pips=spread_pips
     )
 
-def plan_trade(symbol: str, side: str, spread_pips: float = 0.8) -> Optional[Dict[str, Any]]:
+def plan_trade(symbol: str, side: str, spread_pips: float = 0.8, oanda_client=None) -> Optional[Dict[str, Any]]:
     """
     Main entry:
       - Build context
       - Compute Quality Score
       - Derive risk % from score
       - Compute ATR-based exits (H4 ATR% → price units)
+    
+    Args:
+        symbol: Trading pair symbol
+        side: Trade direction ('buy' or 'sell')
+        spread_pips: Spread in pips
+        oanda_client: Optional OANDA API client. If provided, will be used for data fetching
+                     instead of environment variables (required for live enhanced mode).
     """
-    ctx = build_trade_context(symbol, side, spread_pips=spread_pips)
+    ctx = build_trade_context(symbol, side, spread_pips=spread_pips, oanda_client=oanda_client)
     if ctx is None:
         print("[SMART] ❌ Could not build trade context.")
         return None
