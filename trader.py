@@ -9,7 +9,7 @@ from oandapyV20.endpoints.accounts import AccountInstruments
 import datetime
 import time
 from datetime import timezone
-from typing import Tuple
+from typing import Tuple, Optional
 
 from trade_cache import add_trade, get_active_trades
 from trading_config import get_config
