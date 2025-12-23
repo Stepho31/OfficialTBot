@@ -62,14 +62,14 @@ def update_trailing_stop(client, account_id, trade_id, new_sl_price):
 
 
 def check_partial_profit_taking(client, account_id, trade_id, instrument, entry_price, current_price, side, position_size):
-    """Take partial profits optimized for 4H trading"""
+    """Take partial profits optimized for 4H trading - reduced size to preserve trend continuation"""
     try:
         if "JPY" in instrument:
             pip_multiplier = 100
-            profit_target_pips = 30
+            profit_target_pips = 40  # Increased from 30 to reduce early profit cutting
         else:
             pip_multiplier = 10000
-            profit_target_pips = 35
+            profit_target_pips = 45  # Increased from 35 to reduce early profit cutting
 
         if side == "buy":
             pips_profit = (current_price - entry_price) * pip_multiplier
@@ -77,12 +77,12 @@ def check_partial_profit_taking(client, account_id, trade_id, instrument, entry_
             pips_profit = (entry_price - current_price) * pip_multiplier
 
         if pips_profit >= profit_target_pips:
-            partial_size = int(position_size * 0.4)  # Close 40%
+            partial_size = int(position_size * 0.25)  # Reduced from 40% to 25% to preserve more for trends
             close_data = {"units": str(partial_size)}
             close_req = TradeClose(accountID=account_id, tradeID=trade_id, data=close_data)
             client.request(close_req)
-            print(f"[MONITOR] 💰 4H Partial profit taken: {partial_size} units at {current_price} ({pips_profit:.1f} pips)")
-            print(f"[MONITOR] 📊 Remaining position: {position_size - partial_size} units")
+            print(f"[MONITOR] 💰 4H Partial profit taken: {partial_size} units (25%) at {current_price} ({pips_profit:.1f} pips)")
+            print(f"[MONITOR] 📊 Remaining position: {position_size - partial_size} units (75% preserved for trend)")
             return True
     except Exception as e:
         print(f"[MONITOR] ❌ Error taking 4H partial profit: {e}")
@@ -108,7 +108,7 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
 
     # NEW: read smart meta if provided
     meta = trade_details.get("meta", {})
-    trail_start_r = float(meta.get("trail_start_r", 1.0))      # start trailing at +1R
+    trail_start_r = float(meta.get("trail_start_r", 0.7))      # start trailing at +0.7R (reduced from 1.0R for earlier protection)
     trail_step_pips = float(meta.get("trail_step_pips", 5.0))  # gentle step increments
     plan_tp2 = meta.get("plan_tp2")
     quality_score = meta.get("quality_score")
@@ -283,30 +283,49 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
             # # (All your trailing stop, partial, and exit logic continues here...)
 
             # time.sleep(10)
-            # === Move SL to breakeven at +R ===
-            if not moved_to_break_even and risk_pips > 0 and pips_profit >= trail_start_r * risk_pips:
+            # === Move SL to breakeven earlier (at 0.7R instead of 1.0R) ===
+            # This protects winners earlier and reduces winner→loser reversals
+            be_trigger_r = 0.7  # Trigger break-even at 0.7R instead of 1.0R
+            if not moved_to_break_even and risk_pips > 0 and pips_profit >= be_trigger_r * risk_pips:
                 be_price = entry_price if side == "buy" else entry_price
                 if update_trailing_stop(client, account_id, trade_id, be_price):
                     moved_to_break_even = True
                     current_sl = be_price
-                    print(f"[MONITOR] 🛡️ Moved SL to breakeven at {be_price}")
+                    print(f"[MONITOR] 🛡️ Moved SL to breakeven at {be_price} (triggered at {be_trigger_r}R = {pips_profit:.1f} pips)")
 
-            # === Start trailing once profit continues ===
+            # === Progressive trailing: loose early, tighten as profit expands ===
             if moved_to_break_even and atr:
-                step_price = calculate_trailing_stop(entry_price, current_price, side, trail_distance)
+                # Calculate progressive trailing distance based on profit multiple
+                profit_r = pips_profit / risk_pips if risk_pips > 0 else 0
+                
+                # Progressive trailing: loose early (1.5x ATR), tighten as profit grows
+                if profit_r < 1.5:
+                    # Early stage: loose trailing (1.5x ATR)
+                    progressive_trail_mult = 1.5
+                elif profit_r < 2.5:
+                    # Mid stage: moderate trailing (1.2x ATR)
+                    progressive_trail_mult = 1.2
+                else:
+                    # Late stage: tight trailing (1.0x ATR)
+                    progressive_trail_mult = 1.0
+                
+                progressive_trail_distance = atr * progressive_trail_mult
+                step_price = calculate_trailing_stop(entry_price, current_price, side, progressive_trail_distance)
+                
                 if (side == "buy" and step_price > current_sl) or (side == "sell" and step_price < current_sl):
                     if update_trailing_stop(client, account_id, trade_id, step_price):
                         current_sl = step_price
-                        print(f"[MONITOR] 🔧 Trailing SL moved to {step_price}")
+                        print(f"[MONITOR] 🔧 Progressive trailing SL moved to {step_price} (mult={progressive_trail_mult:.1f}x, profit={profit_r:.1f}R)")
                         
-                        # === Optional partial at fixed pips or RR milestones ===
-                if not partial_profit_taken and pips_profit >= max(30 if "JPY" in instrument else 35, risk_pips):
+                        # === Reduced partial profit taking: 25% instead of 40%, higher threshold ===
+                        # This preserves more position for trend continuation
+                if not partial_profit_taken and pips_profit >= max(40 if "JPY" in instrument else 45, risk_pips * 1.5):
                     try:
-                        partial_size = max(1, int(current_units * 0.4))
+                        partial_size = max(1, int(current_units * 0.25))  # Reduced from 0.4 (40%) to 0.25 (25%)
                         close_req = TradeClose(accountID=account_id, tradeID=trade_id, data={"units": str(partial_size)})
                         client.request(close_req)
                         partial_profit_taken = True
-                        print(f"[MONITOR] 💰 Partial close {partial_size} units at {current_price}")
+                        print(f"[MONITOR] 💰 Partial close {partial_size} units (25% of position) at {current_price} ({pips_profit:.1f} pips)")
                     except Exception as e:
                         print(f"[MONITOR] ❌ Partial close failed: {e}")
 

@@ -12,6 +12,7 @@ from validators import (
     get_h4_trend_adx_atr_percent,
     validate_m10_entry,
 )
+from circuit_breaker import get_circuit_breaker_status
 
 # ---------------------------
 # Utilities & Data Structures
@@ -154,15 +155,45 @@ def compute_quality_score(ctx: TradeContext) -> float:
 def position_size_from_score(score: float, ctx: TradeContext) -> float:
     """
     Map score → account risk %. Never 0; small for weak ideas, higher for strong.
+    Includes volatility-adaptive scaling: increase participation in quiet markets, reduce during spikes.
     """
+    # Base risk from score
     if score <= 55:
-        return ctx.risk_per_trade_min
+        base_risk = ctx.risk_per_trade_min
     elif score <= 70:
-        return ctx.risk_per_trade_min + (ctx.risk_per_trade_max * 0.25 - ctx.risk_per_trade_min) * (score - 55) / 15.0
+        base_risk = ctx.risk_per_trade_min + (ctx.risk_per_trade_max * 0.25 - ctx.risk_per_trade_min) * (score - 55) / 15.0
     elif score <= 85:
-        return ctx.risk_per_trade_max * 0.25 + (ctx.risk_per_trade_max * 0.40 - ctx.risk_per_trade_max * 0.25) * (score - 70) / 15.0
+        base_risk = ctx.risk_per_trade_max * 0.25 + (ctx.risk_per_trade_max * 0.40 - ctx.risk_per_trade_max * 0.25) * (score - 70) / 15.0
     else:
-        return ctx.risk_per_trade_max * 0.40 + (ctx.risk_per_trade_max - ctx.risk_per_trade_max * 0.40) * (score - 85) / 15.0
+        base_risk = ctx.risk_per_trade_max * 0.40 + (ctx.risk_per_trade_max - ctx.risk_per_trade_max * 0.40) * (score - 85) / 15.0
+    
+    # Volatility-adaptive scaling: adjust based on ATR%
+    atr_pct = ctx.atr_pct or 1.0
+    if atr_pct < 0.5:
+        # Quiet market: increase participation by 20%
+        volatility_mult = 1.2
+    elif atr_pct < 1.5:
+        # Normal volatility: no adjustment
+        volatility_mult = 1.0
+    elif atr_pct < 3.0:
+        # Elevated volatility: reduce by 15%
+        volatility_mult = 0.85
+    else:
+        # High volatility spike: reduce by 30%
+        volatility_mult = 0.70
+    
+    adjusted_risk = base_risk * volatility_mult
+    
+    # Apply circuit breaker risk reduction if active
+    cb_status = get_circuit_breaker_status()
+    if cb_status["active"]:
+        adjusted_risk = adjusted_risk * cb_status["risk_multiplier"]
+        print(f"[SMART] ⚠️ Circuit breaker active: risk reduced by {cb_status['risk_multiplier']:.2f}x")
+    
+    # Ensure we don't go below minimum or above maximum
+    adjusted_risk = max(ctx.risk_per_trade_min * 0.5, min(adjusted_risk, ctx.risk_per_trade_max))
+    
+    return adjusted_risk
 
 # ---------------------------
 # Exits (ATR-based; BE + trail later in monitor)
@@ -197,7 +228,7 @@ def compute_smart_exits(symbol: str, side: str, entry_price: float, atr_price_un
         "tp1": tp1,
         "tp2": tp2,
         "sl_pips": sl_pips,
-        "trail_start_r": 1.0,
+        "trail_start_r": 0.7,  # Reduced from 1.0 to 0.7 for earlier break-even protection
         "trail_step_pips": max(atr_pips * 0.5, 5.0),
     }
 

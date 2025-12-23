@@ -13,9 +13,10 @@ from validators import get_oanda_data
 REGISTRY_FILE = "idea_registry.json"
 
 # Environment-configurable parameters (with sensible defaults)
-COOLDOWN_HOURS = float(os.getenv("IDEA_COOLDOWN_HOURS", "12"))
-COOLDOWN_ATR_MULT = float(os.getenv("IDEA_COOLDOWN_ATR_MULT", "1.0"))
-COOLDOWN_PCT_MOVE = float(os.getenv("IDEA_COOLDOWN_PCT_MOVE", "0.8"))  # percent
+# Reduced cooldown to allow same-day re-entry when signals remain valid
+COOLDOWN_HOURS = float(os.getenv("IDEA_COOLDOWN_HOURS", "6"))  # Reduced from 12 to 6 hours
+COOLDOWN_ATR_MULT = float(os.getenv("IDEA_COOLDOWN_ATR_MULT", "0.8"))  # Reduced from 1.0 to 0.8
+COOLDOWN_PCT_MOVE = float(os.getenv("IDEA_COOLDOWN_PCT_MOVE", "0.6"))  # Reduced from 0.8% to 0.6%
 FRESHNESS_LOOKBACK_DAYS = int(os.getenv("FRESHNESS_LOOKBACK_DAYS", "14"))
 FRESHNESS_SIMILARITY_THRESHOLD = float(os.getenv("FRESHNESS_SIMILARITY_THRESHOLD", "0.85"))
 HTF_TREND_GRANULARITY = os.getenv("HTF_TREND_GRANULARITY", "D")  # Daily

@@ -33,7 +33,7 @@ class TradingState:
     active_pairs: List[str] = None
     weekly_stats: Dict = None
     total_trades_today: int = 0
-    max_trades_per_day: int = 10
+    max_trades_per_day: int = 15  # Increased from 10 to allow more daily activity
     max_concurrent_trades: int = 3
     
     def __post_init__(self):

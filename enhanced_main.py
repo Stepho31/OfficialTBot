@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 from idea_guard import evaluate_trade_gate, record_executed_idea
 from validators import validate_entry_conditions, passes_h4_hard_filters
 from smart_layer import plan_trade
+from circuit_breaker import get_circuit_breaker_status
 from oandapyV20 import API as OandaAPI
 import oandapyV20.endpoints.pricing as pricing
 from user_helpers import get_tier2_users_for_automation, Tier2User
@@ -58,8 +59,8 @@ class EnhancedTradingSession:
         logger.warning(f"[STARTUP MODE] Bot running in: {mode}")
         self.max_concurrent_trades = int(os.getenv("MAX_CONCURRENT_TRADES", "3"))
         # Slightly loosen entry sensitivity by reducing threshold ~10–15%
-        self.min_opportunity_score = float(os.getenv("MIN_OPPORTUNITY_SCORE", "48.0"))
-        self.max_trades_per_session = int(os.getenv("MAX_TRADES_PER_SESSION", "3"))
+        self.min_opportunity_score = float(os.getenv("MIN_OPPORTUNITY_SCORE", "45.0"))  # Reduced from 48.0 to 45.0
+        self.max_trades_per_session = int(os.getenv("MAX_TRADES_PER_SESSION", "5"))  # Increased from 3 to 5
         self.session_stats = {
             "opportunities_found": 0,
             "trades_executed": 0,
@@ -94,6 +95,12 @@ class EnhancedTradingSession:
         # DRY_RUN should always be False at this point due to startup abort check
         mode = "LIVE TRADING"
         print(f"[ENHANCED] [STARTUP MODE] Bot running in: {mode}")
+        
+        # Check circuit breaker status
+        cb_status = get_circuit_breaker_status()
+        if cb_status["active"]:
+            print(f"[ENHANCED] ⚠️ Circuit breaker ACTIVE: {cb_status['reason']}")
+            print(f"[ENHANCED] ⚠️ Risk multiplier: {cb_status['risk_multiplier']:.2f}x, Frequency: {cb_status['frequency_multiplier']:.2f}x")
         
         # Step 1: Fetch Tier-2 users eligible for automation
         tier2_users = get_tier2_users_for_automation()
@@ -167,10 +174,22 @@ class EnhancedTradingSession:
                 max_new_for_user = self.max_concurrent_trades - len(user_positions)
                 user_trades_executed = 0
                 
+                # Check circuit breaker status for frequency control
+                cb_status = get_circuit_breaker_status()
+                skip_count = 0
+                
                 for i, opportunity in enumerate(user_filtered_opps[:max_new_for_user]):
                     if user_trades_executed >= self.max_trades_per_session:
                         print(f"[ENHANCED] ⚠️ User {user.user_id} reached per-session cap")
                         break
+                    
+                    # Circuit breaker frequency control: skip trades if active
+                    if cb_status["active"] and cb_status["frequency_multiplier"] < 1.0:
+                        import random
+                        if random.random() > cb_status["frequency_multiplier"]:
+                            skip_count += 1
+                            print(f"[ENHANCED] ⚠️ User {user.user_id}: Skipping opportunity {i+1} due to circuit breaker (skip {skip_count})")
+                            continue
                     
                     print(f"\n[ENHANCED] 🎯 User {user.user_id}: Processing opportunity {i+1}/{len(user_filtered_opps)}")
                     

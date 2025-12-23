@@ -9,6 +9,7 @@ from oandapyV20.endpoints.accounts import AccountInstruments
 import datetime
 import time
 from datetime import timezone
+from typing import Tuple
 
 from trade_cache import add_trade, get_active_trades
 from trading_config import get_config
@@ -21,6 +22,7 @@ from validators import (
 )
 from news_filter import is_news_blackout
 from db_persistence import save_trade_from_oanda_account
+from datetime import datetime
 
 # --- Correlation groups (prevent stacking highly correlated exposure) ---
 CORRELATION_GROUPS = [
@@ -31,9 +33,10 @@ CORRELATION_GROUPS = [
 def _normalize_symbol(symbol: str) -> str:
     return symbol.upper().replace("_", "")
 
-def _is_correlated_with_open(symbol: str, user_id=None) -> bool:
+def _is_correlated_with_open(symbol: str, user_id=None, allow_low_risk_increment: bool = True) -> bool:
     """Return True if symbol belongs to a correlation group with any active trade symbol.
     If user_id is provided, only checks trades for that user's account.
+    If allow_low_risk_increment is True, allows new trades when incremental risk is low.
     """
     try:
         active = get_active_trades()
@@ -41,10 +44,25 @@ def _is_correlated_with_open(symbol: str, user_id=None) -> bool:
         # For now, we check all active trades but this should be per-user in the future
         active_syms = {_normalize_symbol(t.get("symbol", t.get("instrument", ""))) for t in active}
         sym = _normalize_symbol(symbol)
+        
         for group in CORRELATION_GROUPS:
             members = set(group["members"])
-            if sym in members and any(a in members for a in active_syms):
+            if sym in members:
+                correlated_count = sum(1 for a in active_syms if a in members)
+                
+                # If no correlated trades, allow
+                if correlated_count == 0:
+                    continue
+                
+                # If allow_low_risk_increment is enabled, allow up to 2 correlated trades
+                # This provides diversification while controlling stacking
+                if allow_low_risk_increment and correlated_count < 2:
+                    print(f"[VALIDATION] ⚠️ Correlation warning: {correlated_count} correlated trade(s), but allowing (low incremental risk)")
+                    continue
+                
+                # Block if too many correlated trades
                 return True
+        
         return False
     except Exception:
         return False
@@ -197,6 +215,87 @@ def is_market_hours_favorable(instrument):
         # European-American overlap: 12:00-17:00 UTC
         return 12 <= hour <= 17
 
+def _check_volatility_spike(instrument: str, oanda_client=None) -> Tuple[bool, Optional[float]]:
+    """
+    Check for abnormal ATR expansion (volatility spike).
+    Returns (is_spike, current_atr_pct) where is_spike=True if ATR% > 1.5x recent average.
+    """
+    try:
+        from validators import get_h4_trend_adx_atr_percent, get_oanda_data
+        from validators import calculate_ema
+        
+        # Get current ATR%
+        trend, adx, current_atr_pct = get_h4_trend_adx_atr_percent(instrument.replace("_", ""), oanda_client=oanda_client)
+        if current_atr_pct is None:
+            return False, None
+        
+        # Get historical ATR% values (last 20 H4 candles = ~3.3 days)
+        candles = get_oanda_data(instrument.replace("_", ""), "H4", 60, oanda_client=oanda_client)
+        if not candles or len(candles) < 20:
+            return False, current_atr_pct
+        
+        # Calculate ATR% for each period
+        atr_pcts = []
+        for i in range(20, len(candles)):
+            period_candles = candles[i-20:i]
+            closes = [float(c["mid"]["c"]) for c in period_candles]
+            highs = [float(c["mid"]["h"]) for c in period_candles]
+            lows = [float(c["mid"]["l"]) for c in period_candles]
+            
+            # Calculate ATR for this period
+            tr_list = []
+            for j in range(1, len(period_candles)):
+                tr1 = highs[j] - lows[j]
+                tr2 = abs(highs[j] - closes[j-1])
+                tr3 = abs(lows[j] - closes[j-1])
+                tr_list.append(max(tr1, tr2, tr3))
+            
+            if tr_list:
+                # Simple ATR (average of TR)
+                atr = sum(tr_list) / len(tr_list)
+                atr_pct = (atr / closes[-1] * 100.0) if closes[-1] > 0 else None
+                if atr_pct:
+                    atr_pcts.append(atr_pct)
+        
+        if not atr_pcts:
+            return False, current_atr_pct
+        
+        # Calculate average ATR%
+        avg_atr_pct = sum(atr_pcts) / len(atr_pcts)
+        
+        # Check if current ATR% is > 1.5x average (spike threshold)
+        spike_threshold = avg_atr_pct * 1.5
+        is_spike = current_atr_pct > spike_threshold
+        
+        if is_spike:
+            print(f"[VALIDATION] ⚠️ Volatility spike detected: ATR%={current_atr_pct:.2f}% > {spike_threshold:.2f}% (avg={avg_atr_pct:.2f}%)")
+        
+        return is_spike, current_atr_pct
+    except Exception as e:
+        print(f"[VALIDATION] ⚠️ Error checking volatility spike: {e}")
+        return False, None
+
+
+def _is_weekend_risk_period() -> bool:
+    """
+    Check if current time is in weekend risk period (Friday 20:00 UTC - Sunday 22:00 UTC).
+    Returns True if in weekend risk period.
+    """
+    now = datetime.utcnow()
+    weekday = now.weekday()  # 0=Monday, 4=Friday, 6=Sunday
+    hour = now.hour
+    
+    # Friday after 20:00 UTC through Sunday before 22:00 UTC
+    if weekday == 4 and hour >= 20:  # Friday 20:00+
+        return True
+    if weekday == 5:  # Saturday
+        return True
+    if weekday == 6 and hour < 22:  # Sunday before 22:00
+        return True
+    
+    return False
+
+
 def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_id=None, skip_duplicate_validation=False):
     """Enhanced validation before placing trade.
     
@@ -221,8 +320,8 @@ def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_
             if len(active_trades) >= get_config().risk_management.max_open_trades:
                 print(f"[VALIDATION] ❌ Max open trades reached: {len(active_trades)}")
                 return False
-            if _is_correlated_with_open(instrument, user_id=user_id):
-                print(f"[VALIDATION] ❌ Correlation lockout: existing correlated exposure present")
+            if _is_correlated_with_open(instrument, user_id=user_id, allow_low_risk_increment=True):
+                print(f"[VALIDATION] ❌ Correlation lockout: too many correlated positions (max 2 per group)")
                 return False
             
             # Check spread (basic liquidity check)
@@ -256,6 +355,20 @@ def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_
             print(f"[VALIDATION] ❌ News blackout active for {instrument}")
             return False
         
+        # Volatility spike protection: throttle entries during abnormal ATR expansion
+        is_spike, atr_pct = _check_volatility_spike(instrument, oanda_client=client)
+        if is_spike:
+            # Allow only high-quality setups during volatility spikes (require higher score)
+            print(f"[VALIDATION] ⚠️ Volatility spike detected (ATR%={atr_pct:.2f}%), requiring exceptional setup quality")
+            # This will be checked by the enhanced validation layer (higher score threshold)
+            # For now, we just log a warning but don't block (let enhanced layer decide)
+        
+        # Weekend risk protection: reduce exposure or require higher quality
+        if _is_weekend_risk_period():
+            print(f"[VALIDATION] ⚠️ Weekend risk period detected - requiring higher quality setup")
+            # Enhanced validation layer should apply stricter criteria
+            # For now, we just log a warning but don't block (let enhanced layer decide)
+        
         # Portfolio constraints: cap concurrent trades and correlation groups
         # If user_id is provided, filter active_trades to this user's account
         active_trades = get_active_trades()
@@ -268,8 +381,8 @@ def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_
         if len(active_trades) >= get_config().risk_management.max_open_trades:
             print(f"[VALIDATION] ❌ Max open trades reached: {len(active_trades)}")
             return False
-        if _is_correlated_with_open(instrument, user_id=user_id):
-            print(f"[VALIDATION] ❌ Correlation lockout: existing correlated exposure present")
+        if _is_correlated_with_open(instrument, user_id=user_id, allow_low_risk_increment=True):
+            print(f"[VALIDATION] ❌ Correlation lockout: too many correlated positions (max 2 per group)")
             return False
 
         # Check spread
@@ -813,8 +926,9 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
             traceback.print_exc()
 
     # Provide smart trailing meta defaults so monitor can apply trailing
+    # Reduced trail_start_r from 1.0 to 0.7 for earlier protection
     meta_out = meta.copy() if isinstance(meta, dict) else {}
-    meta_out.setdefault("trail_start_r", 0.8)
+    meta_out.setdefault("trail_start_r", 0.7)  # Reduced from 0.8 to 0.7 for earlier protection
     meta_out.setdefault("trail_step_pips", 4.0)
     # Attach execution/market microstructure details for downstream logging
     try:

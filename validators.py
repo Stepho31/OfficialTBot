@@ -621,11 +621,11 @@ def validate_m10_entry(symbol: str, side: str, relax: bool = False, oanda_client
     if any(v is None for v in [rsi, ema20, atr10]):
         print("[VALIDATORS] ❌ Missing M10 indicators (RSI/EMA20/ATR10)")
         return False
-    # -------- CHANGED: widen pullback zone (allow ±1.2×ATR10 by default) --------
+    # -------- CHANGED: widen pullback zone (allow ±1.3×ATR10 by default for better acceptance) --------
     try:
-        base_zone = float(os.getenv("M10_PULLBACK_ATR_MULT", "1.2" if not relax else "1.3"))
+        base_zone = float(os.getenv("M10_PULLBACK_ATR_MULT", "1.3" if not relax else "1.4"))  # Widened from 1.2/1.3
     except Exception:
-        base_zone = 1.2 if not relax else 1.3
+        base_zone = 1.3 if not relax else 1.4
     zone_width = atr10 * base_zone
     dist_to_ema = abs(price - ema20)
     pullback_ok = dist_to_ema <= zone_width
