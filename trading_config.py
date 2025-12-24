@@ -24,7 +24,7 @@ class EntryValidation:
     """Entry validation configuration for 4H trading"""
     min_validation_score: float = 60.0  # Loosened ~10–15% to raise frequency
     max_spread_regular: float = 0.00030   # Slightly tighter to improve execution
-    max_spread_jpy: float = 0.030        # Tighter for JPY pairs
+    max_spread_jpy: float = 0.050        # Increased for JPY pairs (was 0.030) - allows normal spreads on volatile pairs like GBP_JPY
     max_spread_metals: float = 0.060      # Tighter for precious metals
     
     # 4H RSI thresholds (more specific ranges)
@@ -143,7 +143,13 @@ class TradingConfig:
     def get_max_spread(self, instrument: str) -> float:
         """Get maximum allowed spread for an instrument"""
         instrument = instrument.upper()
-        if "JPY" in instrument:
+        # Volatile cross pairs (e.g., GBP_JPY) naturally have wider spreads on 4H timeframe
+        # Apply more lenient thresholds for these pairs
+        volatile_crosses = ["GBP_JPY", "GBPJPY", "AUD_JPY", "AUDJPY", "EUR_JPY", "EURJPY", "NZD_JPY", "NZDJPY"]
+        if any(vc in instrument for vc in volatile_crosses):
+            # Allow up to 0.06 for volatile JPY crosses (1.5x normal JPY threshold)
+            return max(self.entry_validation.max_spread_jpy * 1.5, 0.06)
+        elif "JPY" in instrument:
             return self.entry_validation.max_spread_jpy
         elif any(metal in instrument for metal in ["XAU", "XAG"]):
             return self.entry_validation.max_spread_metals

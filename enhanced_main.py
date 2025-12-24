@@ -58,8 +58,9 @@ class EnhancedTradingSession:
         mode = "LIVE TRADING"
         logger.warning(f"[STARTUP MODE] Bot running in: {mode}")
         self.max_concurrent_trades = int(os.getenv("MAX_CONCURRENT_TRADES", "3"))
-        # Slightly loosen entry sensitivity by reducing threshold ~10–15%
-        self.min_opportunity_score = float(os.getenv("MIN_OPPORTUNITY_SCORE", "45.0"))  # Reduced from 48.0 to 45.0
+        # Lower threshold to allow more trades while preserving quality
+        # Technical signals validated first, sentiment/correlation applied as modifiers
+        self.min_opportunity_score = float(os.getenv("MIN_OPPORTUNITY_SCORE", "40.0"))  # Reduced from 45.0 to 40.0
         self.max_trades_per_session = int(os.getenv("MAX_TRADES_PER_SESSION", "5"))  # Increased from 3 to 5
         self.session_stats = {
             "opportunities_found": 0,
@@ -124,17 +125,20 @@ class EnhancedTradingSession:
         
         if not opportunities:
             print("[ENHANCED] 📭 No trading opportunities found meeting criteria")
+            print("[ENHANCED] 💡 Diagnostic: Scanner completed but no opportunities ≥48 score after sentiment/correlation adjustments")
             return self._get_session_summary("no_opportunities")
         
         # Filter opportunities by general criteria (score, confidence, correlation, session timing)
         # This filtering is independent of user positions
+        print(f"[ENHANCED] 🔍 Filtering {len(opportunities)} opportunities by general criteria (min_score={self.min_opportunity_score:.1f})...")
         filtered_opportunities = self._filter_opportunities_general(opportunities)
         
         if not filtered_opportunities:
             print("[ENHANCED] 🚫 All opportunities filtered out by general criteria")
+            print(f"[ENHANCED] 💡 Diagnostic: {len(opportunities)} opportunities found but none passed filters (score/confidence/correlation/session)")
             return self._get_session_summary("all_filtered")
         
-        print(f"[ENHANCED] ✅ {len(filtered_opportunities)} opportunities passed general filters")
+        print(f"[ENHANCED] ✅ {len(filtered_opportunities)} opportunities passed general filters (out of {len(opportunities)} scanned)")
         
         # Step 3: Loop through each user and execute trades per account
         all_executed_trades = []
@@ -154,7 +158,7 @@ class EnhancedTradingSession:
                 
                 # Check if user has capacity for new trades
                 if len(user_positions) >= self.max_concurrent_trades:
-                    print(f"[ENHANCED] ⚠️ User {user.user_id} at max concurrent trades ({len(user_positions)})")
+                    print(f"[ENHANCED] ⚠️ User {user.user_id}: SKIPPED - At max concurrent trades limit ({len(user_positions)}/{self.max_concurrent_trades})")
                     continue
                 
                 # Filter opportunities for this user (check against their positions)
@@ -167,8 +171,10 @@ class EnhancedTradingSession:
                 )
                 
                 if not user_filtered_opps:
-                    print(f"[ENHANCED] 📭 No opportunities for user {user.user_id} after position filtering")
+                    print(f"[ENHANCED] 📭 User {user.user_id}: No opportunities after position filtering ({len(filtered_opportunities)} available but all conflict with existing positions)")
                     continue
+                
+                print(f"[ENHANCED] 🎯 User {user.user_id}: {len(user_filtered_opps)} opportunities available (user has {len(user_positions)}/{self.max_concurrent_trades} positions, capacity for {max_new_for_user} new trades)")
                 
                 # Execute trades for this user
                 max_new_for_user = self.max_concurrent_trades - len(user_positions)
@@ -180,7 +186,7 @@ class EnhancedTradingSession:
                 
                 for i, opportunity in enumerate(user_filtered_opps[:max_new_for_user]):
                     if user_trades_executed >= self.max_trades_per_session:
-                        print(f"[ENHANCED] ⚠️ User {user.user_id} reached per-session cap")
+                        print(f"[ENHANCED] ⚠️ User {user.user_id}: SKIPPED - Reached per-session trade cap ({user_trades_executed}/{self.max_trades_per_session})")
                         break
                     
                     # Circuit breaker frequency control: skip trades if active
@@ -188,7 +194,7 @@ class EnhancedTradingSession:
                         import random
                         if random.random() > cb_status["frequency_multiplier"]:
                             skip_count += 1
-                            print(f"[ENHANCED] ⚠️ User {user.user_id}: Skipping opportunity {i+1} due to circuit breaker (skip {skip_count})")
+                            print(f"[ENHANCED] ⚠️ User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Circuit breaker active (frequency multiplier: {cb_status['frequency_multiplier']:.2f}x, reason: {cb_status.get('reason', 'N/A')})")
                             continue
                     
                     print(f"\n[ENHANCED] 🎯 User {user.user_id}: Processing opportunity {i+1}/{len(user_filtered_opps)}")
@@ -203,19 +209,21 @@ class EnhancedTradingSession:
                                                    f"Auto-opportunity score={opportunity.score}",
                                                    api_key=user.oanda_api_key, account_id=user.oanda_account_id)
                         if not gate.get("allow", False):
-                            print(f"[ENHANCED] 🚫 User {user.user_id}: Gate blocked on recheck {j+1}: {gate.get('blocks')}")
-                            self._send_admin_rejection_notification(opportunity, f"Gate blocked: {gate.get('blocks')} (recheck {j+1})", user)
+                            blocks = gate.get('blocks', [])
+                            blocks_str = ', '.join(blocks) if blocks else 'unknown reason'
+                            print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Gate blocked on recheck {j+1} (blocks: {blocks_str})")
+                            self._send_admin_rejection_notification(opportunity, f"Gate blocked: {blocks_str} (recheck {j+1})", user)
                             proceed = False
                             break
 
                         if not validate_entry_conditions(opportunity.symbol.replace("_",""), opportunity.direction, timeframes=["H4","H1","M15"], oanda_client=user_client):
-                            print(f"[ENHANCED] 🚫 User {user.user_id}: Validation failed (recheck {j+1})")
+                            print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Entry validation failed on recheck {j+1} (H4/H1/M15 conditions not met)")
                             self._send_admin_validation_error(opportunity, f"Validation failed (recheck {j+1})", user)
                             proceed = False
                             break
                             
                         if not passes_h4_hard_filters(opportunity.symbol.replace("_",""), opportunity.direction, oanda_client=user_client):
-                            print(f"[ENHANCED] 🚫 User {user.user_id}: Regime gate blocked (recheck {j+1})")
+                            print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - H4 regime/hard filters blocked on recheck {j+1}")
                             self._send_admin_validation_error(opportunity, f"Regime gate blocked (recheck {j+1})", user)
                             proceed = False
                             break
@@ -298,27 +306,33 @@ class EnhancedTradingSession:
             
             # Regular mode: Score threshold
             if opp.score < self.min_opportunity_score:
-                print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: Score too low ({opp.score:.1f})")
+                print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - Score {opp.score:.1f} below minimum threshold {self.min_opportunity_score:.1f}")
                 continue
             
             # Check confidence level
             if opp.confidence == "low":
-                print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: Low confidence, requiring higher score")
-                if opp.score < self.min_opportunity_score + 5:
+                required_score = self.min_opportunity_score + 5
+                if opp.score < required_score:
+                    print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - Low confidence requires score ≥{required_score:.1f}, got {opp.score:.1f}")
                     continue
+                print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: Low confidence but score sufficient ({opp.score:.1f} ≥ {required_score:.1f})")
             
             # Correlation risk check (enhanced)
             if opp.correlation_risk > 0.7:
-                print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: High correlation risk ({opp.correlation_risk:.2f})")
-                if opp.score < self.min_opportunity_score + 15:  # Need higher score for high correlation
+                required_score = self.min_opportunity_score + 15
+                if opp.score < required_score:
+                    print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - High correlation risk ({opp.correlation_risk:.2f}) requires score ≥{required_score:.1f}, got {opp.score:.1f}")
                     continue
+                print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: High correlation risk ({opp.correlation_risk:.2f}) but score sufficient ({opp.score:.1f} ≥ {required_score:.1f})")
             
             # Session timing check (soft gate on 4H)
             if opp.session_strength < 0.4:
-                print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: Poor session timing ({opp.session_strength:.2f})")
                 penalty = 3.0  # small soft penalty instead of hard skip
-                if opp.score + penalty < self.min_opportunity_score:
+                effective_score = opp.score - penalty
+                if effective_score < self.min_opportunity_score:
+                    print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - Poor session timing ({opp.session_strength:.2f}) reduces score to {effective_score:.1f} (below {self.min_opportunity_score:.1f})")
                     continue  # only skip if still below floor after penalty cushion
+                print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: Poor session timing ({opp.session_strength:.2f}) but score sufficient after penalty")
             
             print(f"[ENHANCED] ✅ {opp.symbol} {opp.direction}: Passed general filters (Score: {opp.score:.1f})")
             filtered.append(opp)
@@ -338,12 +352,12 @@ class EnhancedTradingSession:
             
             # Check if user already has a position on this pair
             if has_user_position_on_pair(user_client, user_account_id, opp.symbol, opp.direction):
-                print(f"[ENHANCED] ❌ User already has {opp.symbol} {opp.direction} position")
+                print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - User already has open {opp.direction} position on this pair")
                 continue
             
             # Check if user has this pair active (any direction)
             if symbol_clean in user_active_pairs:
-                print(f"[ENHANCED] ❌ User already trading {symbol_clean}")
+                print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - User already has active position on {symbol_clean} (any direction)")
                 continue
             
             filtered.append(opp)

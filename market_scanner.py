@@ -177,11 +177,9 @@ class MarketScanner:
             lows = [float(c["mid"]["l"]) for c in candles]
             current_price = prices[-1]
             
-            # Get current spread and check liquidity
+            # Get current spread - check will be done after scoring to allow technical analysis first
+            # This prevents spread from blocking valid technical setups before evaluation
             spread, bid, ask = self._get_current_spread(pair)
-            if not self._is_spread_acceptable(pair, spread):
-                print(f"[SCANNER] ❌ {pair} spread too wide: {spread}")
-                return []
             
             opportunities = []
             
@@ -190,7 +188,18 @@ class MarketScanner:
                 opportunity = self._evaluate_direction(
                     pair, direction, candles, prices, highs, lows, current_price
                 )
-                if opportunity and opportunity.score >= 55:  # Minimum threshold
+                # Lower threshold to allow more technically valid setups (48 instead of 55)
+                # Sentiment adjustments and correlation filtering will further refine
+                if opportunity and opportunity.score >= 48:
+                    # Check spread after scoring - only filter if spread is truly excessive
+                    # This allows technical signals to be evaluated first
+                    if spread is not None and not self._is_spread_acceptable(pair, spread):
+                        print(f"[SCANNER] ⚠️ {pair} {direction}: Technically valid (score {opportunity.score:.1f}) but spread too wide: {spread:.5f} (max: {self.config.get_max_spread(pair):.5f})")
+                        # Still include if score is very strong (≥60), as high edge can offset spread cost
+                        if opportunity.score < 60:
+                            continue
+                        else:
+                            print(f"[SCANNER] ✅ {pair} {direction}: High score ({opportunity.score:.1f}) overrides spread concern")
                     opportunities.append(opportunity)
             
             return opportunities
@@ -605,7 +614,10 @@ class MarketScanner:
             if abs(adjusted_score - original_score) > 2:
                 opp.score = adjusted_score
                 opp.reasons.append(f"Market sentiment: {reason}")
-                print(f"[SCANNER] 🔄 {opp.symbol} {opp.direction}: {original_score:.1f} → {adjusted_score:.1f} ({reason})")
+                adjustment = adjusted_score - original_score
+                print(f"[SCANNER] 🔄 {opp.symbol} {opp.direction}: {original_score:.1f} → {adjusted_score:.1f} (sentiment {adjustment:+.1f} pts: {reason})")
+            else:
+                print(f"[SCANNER] ⚪ {opp.symbol} {opp.direction}: Sentiment impact minimal ({original_score:.1f} unchanged)")
     
     def _filter_opportunities(self, opportunities: List[MarketOpportunity]) -> List[MarketOpportunity]:
         """Filter opportunities by quality and correlation"""
@@ -613,12 +625,16 @@ class MarketScanner:
         
         for opp in opportunities:
             # Adjust score based on correlation risk
-            adjusted_score = opp.score * (1 - opp.correlation_risk * 0.5)
+            # Note: Original score preserved for logging, correlation adjustment is lighter
+            adjusted_score = opp.score * (1 - opp.correlation_risk * 0.3)  # Reduced from 0.5 to 0.3
             
-            # Minimum adjusted score threshold
-            if adjusted_score >= 55:
+            # Lower minimum threshold to 48 (down from 55) to allow more valid setups
+            # Technical signals take precedence, correlation is a modifier not a veto
+            if adjusted_score >= 48:
                 opp.score = adjusted_score
                 filtered.append(opp)
+            else:
+                print(f"[SCANNER] ❌ {opp.symbol} {opp.direction}: Filtered out - correlation-adjusted score {adjusted_score:.1f} < 48 (original: {opp.score:.1f})")
         
         return filtered
     
