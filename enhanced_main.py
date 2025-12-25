@@ -34,6 +34,9 @@ load_dotenv()
 # Import centralized DRY_RUN configuration
 from trading_config import get_dry_run
 
+# Import score constants from trading_config for consistency
+from trading_config import BASE_MIN_SCORE, FREQUENCY_MIN_SCORE
+
 class EnhancedTradingSession:
     """Enhanced trading session with market scanning"""
     
@@ -58,10 +61,13 @@ class EnhancedTradingSession:
         mode = "LIVE TRADING"
         logger.warning(f"[STARTUP MODE] Bot running in: {mode}")
         self.max_concurrent_trades = int(os.getenv("MAX_CONCURRENT_TRADES", "3"))
-        # Lower threshold to allow more trades while preserving quality
-        # Technical signals validated first, sentiment/correlation applied as modifiers
-        self.min_opportunity_score = float(os.getenv("MIN_OPPORTUNITY_SCORE", "40.0"))  # Reduced from 45.0 to 40.0
-        self.max_trades_per_session = int(os.getenv("MAX_TRADES_PER_SESSION", "5"))  # Increased from 3 to 5
+        # Use BASE_MIN_SCORE as the default minimum opportunity score for consistency
+        self.min_opportunity_score = BASE_MIN_SCORE  # Always use BASE_MIN_SCORE constant
+        self.max_trades_per_session = int(os.getenv("MAX_TRADES_PER_SESSION", "3"))  # Cap at 3 for frequency-first mode
+        # Track trades executed this session for frequency-first mode
+        self.trades_executed_this_session = 0
+        # Track pairs traded this session to prevent duplicate trades per pair
+        self.pairs_traded_this_session = set()
         self.session_stats = {
             "opportunities_found": 0,
             "trades_executed": 0,
@@ -174,10 +180,12 @@ class EnhancedTradingSession:
                     print(f"[ENHANCED] 📭 User {user.user_id}: No opportunities after position filtering ({len(filtered_opportunities)} available but all conflict with existing positions)")
                     continue
                 
+                # Initialize max_new_for_user safely before any print statements or execution logic
+                max_new_for_user = max(0, self.max_concurrent_trades - len(user_positions))
+                
                 print(f"[ENHANCED] 🎯 User {user.user_id}: {len(user_filtered_opps)} opportunities available (user has {len(user_positions)}/{self.max_concurrent_trades} positions, capacity for {max_new_for_user} new trades)")
                 
                 # Execute trades for this user
-                max_new_for_user = self.max_concurrent_trades - len(user_positions)
                 user_trades_executed = 0
                 
                 # Check circuit breaker status for frequency control
@@ -198,6 +206,40 @@ class EnhancedTradingSession:
                             continue
                     
                     print(f"\n[ENHANCED] 🎯 User {user.user_id}: Processing opportunity {i+1}/{len(user_filtered_opps)}")
+                    
+                    # Mandatory guardrails - apply in all modes including frequency-first
+                    guardrail_result = self._check_mandatory_guardrails(opportunity, user_client)
+                    if not guardrail_result["allowed"]:
+                        print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Guardrail: {guardrail_result['reason']}")
+                        self.session_stats["trades_skipped"] += 1
+                        continue
+                    
+                    # Frequency-first mode: check if we need to use lower threshold for first trade
+                    frequency_first_mode = (self.trades_executed_this_session == 0)
+                    effective_min_score = FREQUENCY_MIN_SCORE if frequency_first_mode else BASE_MIN_SCORE
+                    
+                    # Check score threshold (using effective min score)
+                    if opportunity.score < effective_min_score:
+                        mode_str = "frequency-first" if frequency_first_mode else "normal"
+                        print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Score {opportunity.score:.1f} < {effective_min_score} (mode: {mode_str})")
+                        self.session_stats["trades_skipped"] += 1
+                        continue
+                    
+                    # Frequency-first mode: ignore sentiment for first trade only
+                    if frequency_first_mode:
+                        print(f"[ENHANCED] 🔄 Frequency-first mode: Using FREQUENCY_MIN_SCORE ({FREQUENCY_MIN_SCORE}) for first trade, ignoring sentiment adjustments")
+                        # Note: Sentiment is already applied in scanner, but for first trade we proceed anyway
+                        # The lower threshold (FREQUENCY_MIN_SCORE) compensates for any negative sentiment
+                    else:
+                        # After first trade, use normal threshold and sentiment is already applied (clamped to max 3 points)
+                        print(f"[ENHANCED] ✅ Normal mode: Using BASE_MIN_SCORE ({BASE_MIN_SCORE}), sentiment already applied (max ±3 pts)")
+                    
+                    # Check if we've already traded this pair this session (mandatory guardrail)
+                    symbol_clean = opportunity.symbol.replace("_", "")
+                    if symbol_clean in self.pairs_traded_this_session:
+                        print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Already traded this pair this session")
+                        self.session_stats["trades_skipped"] += 1
+                        continue
                     
                     # Pre-entry revalidation (same as before, but per-user)
                     rechecks = int(os.getenv("PRE_ENTRY_RECHECKS", "2"))
@@ -236,11 +278,23 @@ class EnhancedTradingSession:
                         continue
                     
                     # Execute trade for this user
+                    mode_used = "frequency-first" if frequency_first_mode else "normal"
+                    print(f"[ENHANCED] ✅ User {user.user_id}: {opportunity.symbol} {opportunity.direction}: APPROVED - Score {opportunity.score:.1f} >= {effective_min_score} (mode: {mode_used})")
                     trade_result = self._execute_opportunity_for_user(opportunity, user, user_client)
                     if trade_result:
                         all_executed_trades.append(trade_result)
                         self.session_stats["trades_executed"] += 1
+                        self.trades_executed_this_session += 1
                         user_trades_executed += 1
+                        # Track pair to prevent duplicate trades per session
+                        self.pairs_traded_this_session.add(symbol_clean)
+                        
+                        print(f"[ENHANCED] ✅ Trade executed (session total: {self.trades_executed_this_session}/3, mode: {mode_used})")
+                        
+                        # Hard cap: never exceed 3 trades per session
+                        if self.trades_executed_this_session >= 3:
+                            print(f"[ENHANCED] ⚠️ Session trade cap reached (3 trades) - stopping execution")
+                            break
                         
                         # Add delay between trades
                         if i < len(user_filtered_opps) - 1:
@@ -276,6 +330,64 @@ class EnhancedTradingSession:
                 continue
         
         return self._get_session_summary("completed", all_executed_trades)
+    
+    def _check_mandatory_guardrails(self, opportunity: MarketOpportunity, user_client) -> Dict:
+        """Check mandatory guardrails that apply in all modes including frequency-first.
+        Returns dict with 'allowed' (bool) and 'reason' (str)."""
+        symbol_clean = opportunity.symbol.replace("_", "")
+        
+        # Guardrail 1: Risk-reward ratio must be >= 1.3
+        if opportunity.direction == 'buy':
+            risk = opportunity.entry_price - opportunity.suggested_sl
+            reward = opportunity.suggested_tp - opportunity.entry_price
+        else:  # sell
+            risk = opportunity.suggested_sl - opportunity.entry_price
+            reward = opportunity.entry_price - opportunity.suggested_tp
+        
+        if risk <= 0:
+            return {"allowed": False, "reason": "Invalid risk calculation (risk <= 0)"}
+        
+        rr_ratio = reward / risk if risk > 0 else 0
+        if rr_ratio < 1.3:
+            return {"allowed": False, "reason": f"Risk-reward ratio {rr_ratio:.2f} < 1.3"}
+        
+        # Guardrail 2: RSI must not be between 45 and 55 (neutral zone)
+        if 45 <= opportunity.rsi <= 55:
+            return {"allowed": False, "reason": f"RSI {opportunity.rsi:.1f} in neutral zone (45-55)"}
+        
+        # Guardrail 3: Require at least one strong confirmation
+        strong_confirmations = []
+        
+        # RSI extremes
+        if opportunity.rsi < 35 or opportunity.rsi > 65:
+            strong_confirmations.append(f"RSI extreme ({opportunity.rsi:.1f})")
+        
+        # Strong trend alignment
+        if (opportunity.direction == 'buy' and opportunity.trend == 'bullish') or \
+           (opportunity.direction == 'sell' and opportunity.trend == 'bearish'):
+            strong_confirmations.append("Strong trend alignment")
+        
+        # Favorable range position
+        if opportunity.direction == 'buy' and opportunity.range_position < 0.30:
+            strong_confirmations.append(f"Range position {opportunity.range_position:.2f} < 0.30")
+        elif opportunity.direction == 'sell' and opportunity.range_position > 0.70:
+            strong_confirmations.append(f"Range position {opportunity.range_position:.2f} > 0.70")
+        
+        if not strong_confirmations:
+            return {"allowed": False, "reason": "No strong confirmation (need RSI extreme, trend alignment, or favorable range position)"}
+        
+        # Guardrail 4: Skip trades when volatility is abnormally low
+        # Check ATR% to determine if volatility is too low
+        try:
+            from validators import get_h4_trend_adx_atr_percent
+            trend, adx, atr_percent = get_h4_trend_adx_atr_percent(symbol_clean, oanda_client=user_client)
+            if atr_percent is not None and atr_percent < 0.15:  # Abnormally low volatility
+                return {"allowed": False, "reason": f"Volatility too low (ATR% {atr_percent:.2f} < 0.15)"}
+        except Exception as e:
+            # If we can't check volatility, log but don't block (defensive)
+            print(f"[ENHANCED] ⚠️ Could not check volatility guardrail: {e}")
+        
+        return {"allowed": True, "reason": f"Guardrails passed (RR: {rr_ratio:.2f}, Confirmations: {', '.join(strong_confirmations)})"}
     
     def _filter_opportunities_general(self, opportunities: List[MarketOpportunity]) -> List[MarketOpportunity]:
         """Filter opportunities by general criteria (score, confidence, correlation, session timing).
@@ -317,14 +429,7 @@ class EnhancedTradingSession:
                     continue
                 print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: Low confidence but score sufficient ({opp.score:.1f} ≥ {required_score:.1f})")
             
-            # Correlation risk check (enhanced)
-            if opp.correlation_risk > 0.7:
-                required_score = self.min_opportunity_score + 15
-                if opp.score < required_score:
-                    print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - High correlation risk ({opp.correlation_risk:.2f}) requires score ≥{required_score:.1f}, got {opp.score:.1f}")
-                    continue
-                print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: High correlation risk ({opp.correlation_risk:.2f}) but score sufficient ({opp.score:.1f} ≥ {required_score:.1f})")
-            
+            # Correlation no longer reduces scores - it's handled as exposure-based blocking in user filtering
             # Session timing check (soft gate on 4H)
             if opp.session_strength < 0.4:
                 penalty = 3.0  # small soft penalty instead of hard skip
@@ -344,8 +449,12 @@ class EnhancedTradingSession:
                                       user_active_pairs: List[str],
                                       user_client,
                                       user_account_id: str) -> List[MarketOpportunity]:
-        """Filter opportunities for a specific user based on their open positions."""
+        """Filter opportunities for a specific user based on their open positions.
+        Includes exposure-based correlation blocking (only when user has open positions)."""
         filtered = []
+        
+        # Skip correlation checks entirely when user has zero open positions
+        has_open_positions = len(user_positions) > 0
         
         for opp in opportunities:
             symbol_clean = opp.symbol.replace("_", "")
@@ -359,6 +468,30 @@ class EnhancedTradingSession:
             if symbol_clean in user_active_pairs:
                 print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - User already has active position on {symbol_clean} (any direction)")
                 continue
+            
+            # Exposure-based correlation blocking (only when user has open positions)
+            if has_open_positions:
+                base_currency = opp.symbol[:3]
+                quote_currency = opp.symbol[4:7] if len(opp.symbol) > 6 else opp.symbol[3:6]
+                
+                # Check if this opportunity shares base or quote currency with existing positions
+                has_correlation_exposure = False
+                for position in user_positions:
+                    pos_instrument = position.get("instrument", "").replace("_", "")
+                    if len(pos_instrument) >= 6:
+                        pos_base = pos_instrument[:3]
+                        pos_quote = pos_instrument[3:6]
+                        
+                        # Check for currency overlap
+                        if (base_currency == pos_base or quote_currency == pos_quote or
+                            base_currency == pos_quote or quote_currency == pos_base):
+                            has_correlation_exposure = True
+                            break
+                
+                # Block only if correlation risk >= 0.7 and there's exposure
+                if has_correlation_exposure and opp.correlation_risk >= 0.7:
+                    print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - Correlation exposure (risk {opp.correlation_risk:.2f} >= 0.7) with existing positions")
+                    continue
             
             filtered.append(opp)
         

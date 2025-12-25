@@ -454,17 +454,19 @@ def adjust_opportunity_for_sentiment(opportunity_score: float, symbol: str,
         if "JPY" in symbol and direction == "buy":
             adjustment += 5; reason += "High VIX favors JPY safe haven; "
     
-    # Reduced cap from ±15 to ±10 to prevent sentiment from overpowering technical signals
-    # Sentiment is a confidence modifier, not a hard blocker
-    adjustment = max(-10.0, min(10.0, adjustment))
-    
-    # Ensure sentiment doesn't push a technically valid trade (≥40) below minimum threshold
-    # If original score is strong (≥48), sentiment can only reduce by max 8 points
-    # This prevents sentiment from vetoing technically valid setups
-    if opportunity_score >= 48 and adjustment < 0:
-        adjustment = max(adjustment, -8.0)
+    # Sentiment is a soft modifier only - clamp to maximum absolute value of 3 points
+    # This ensures sentiment never overpowers technical signals
+    adjustment = max(-3.0, min(3.0, adjustment))
     
     adjusted_score = opportunity_score + adjustment
+    
+    # Ensure sentiment alone can never push a trade below execution thresholds
+    # If adjusted score would be below BASE_MIN_SCORE due to sentiment, cap the adjustment
+    from trading_config import BASE_MIN_SCORE
+    if adjusted_score < BASE_MIN_SCORE and opportunity_score >= BASE_MIN_SCORE:
+        # Only allow sentiment to reduce score to BASE_MIN_SCORE minimum
+        adjustment = BASE_MIN_SCORE - opportunity_score
+        adjusted_score = BASE_MIN_SCORE
     
     if abs(adjustment) > 2:
         reason = f"Sentiment adjustment: {adjustment:+.1f} points. " + reason.strip()

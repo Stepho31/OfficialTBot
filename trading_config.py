@@ -5,6 +5,10 @@ import os
 from dataclasses import dataclass
 from typing import Dict, List
 
+# Score constants for consistent execution thresholds across scanner, filters, and execution
+BASE_MIN_SCORE = 65  # Normal execution threshold
+FREQUENCY_MIN_SCORE = 55  # Used only when frequency-first mode is active
+
 @dataclass
 class RiskManagement:
     """Risk management configuration"""

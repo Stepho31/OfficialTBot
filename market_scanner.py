@@ -620,21 +620,17 @@ class MarketScanner:
                 print(f"[SCANNER] ⚪ {opp.symbol} {opp.direction}: Sentiment impact minimal ({original_score:.1f} unchanged)")
     
     def _filter_opportunities(self, opportunities: List[MarketOpportunity]) -> List[MarketOpportunity]:
-        """Filter opportunities by quality and correlation"""
+        """Filter opportunities by quality - correlation is handled separately as exposure-based blocking"""
         filtered = []
         
+        # Correlation no longer reduces scores - it's handled as binary allow/block in execution
+        # Only filter by base score threshold here
+        from trading_config import BASE_MIN_SCORE
         for opp in opportunities:
-            # Adjust score based on correlation risk
-            # Note: Original score preserved for logging, correlation adjustment is lighter
-            adjusted_score = opp.score * (1 - opp.correlation_risk * 0.3)  # Reduced from 0.5 to 0.3
-            
-            # Lower minimum threshold to 48 (down from 55) to allow more valid setups
-            # Technical signals take precedence, correlation is a modifier not a veto
-            if adjusted_score >= 48:
-                opp.score = adjusted_score
+            if opp.score >= BASE_MIN_SCORE:
                 filtered.append(opp)
             else:
-                print(f"[SCANNER] ❌ {opp.symbol} {opp.direction}: Filtered out - correlation-adjusted score {adjusted_score:.1f} < 48 (original: {opp.score:.1f})")
+                print(f"[SCANNER] ❌ {opp.symbol} {opp.direction}: Filtered out - score {opp.score:.1f} < {BASE_MIN_SCORE} (minimum threshold)")
         
         return filtered
     
