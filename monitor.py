@@ -10,6 +10,7 @@ from validators import get_momentum_signals, get_h4_trend_adx_atr_percent  # ADX
 # ^ added get_h4_trend_adx_atr_percent
 from db_persistence import update_trade_close_from_oanda_account
 from datetime import datetime, timezone
+from typing import Dict
 
 CACHE_FILE = "active_trades.json"
 
