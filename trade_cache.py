@@ -1,33 +1,56 @@
 import json
 import os
+import fcntl
+import threading
 from datetime import datetime
 from typing import List, Dict, Optional
 
 CACHE_FILE = "active_trades.json"
+# Thread-local lock to prevent deadlocks within same process
+_cache_lock = threading.Lock()
 
 def load_trades():
-    """Load active trades from cache file"""
+    """Load active trades from cache file with file locking"""
     if os.path.exists(CACHE_FILE):
         try:
             with open(CACHE_FILE, "r") as f:
-                trades = json.load(f)
-                # Ensure trades is a list
-                return trades if isinstance(trades, list) else []
+                # Apply file lock (non-blocking read lock)
+                try:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_SH)  # Shared lock for reading
+                    trades = json.load(f)
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)  # Release lock
+                    # Ensure trades is a list
+                    return trades if isinstance(trades, list) else []
+                except (IOError, OSError):
+                    # File locking not supported on this system (Windows), fall back to no lock
+                    trades = json.load(f)
+                    return trades if isinstance(trades, list) else []
         except (json.JSONDecodeError, FileNotFoundError):
             print("[CACHE] Warning: Could not load trades cache, starting fresh")
             return []
     return []
 
 def save_trades(trades):
-    try:
-        if not isinstance(trades, list):
-            trades = []
-        tmp = CACHE_FILE + ".tmp"
-        with open(tmp, "w") as f:
-            json.dump(trades, f, indent=2)
-        os.replace(tmp, CACHE_FILE)  # atomic on posix/nt
-    except Exception as e:
-        print(f"[CACHE] Error saving trades: {e}")
+    """Save trades with atomic write and file locking"""
+    with _cache_lock:  # Thread-level lock first
+        try:
+            if not isinstance(trades, list):
+                trades = []
+            tmp = CACHE_FILE + ".tmp"
+            with open(tmp, "w") as f:
+                # Apply exclusive lock for writing
+                try:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)  # Exclusive lock
+                    json.dump(trades, f, indent=2)
+                    f.flush()  # Ensure data is written
+                    os.fsync(f.fileno())  # Force write to disk
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)  # Release lock
+                except (IOError, OSError):
+                    # File locking not supported, just write
+                    json.dump(trades, f, indent=2)
+            os.replace(tmp, CACHE_FILE)  # atomic on posix/nt
+        except Exception as e:
+            print(f"[CACHE] Error saving trades: {e}")
 
 
 # Legacy function names for backward compatibility
@@ -40,6 +63,10 @@ def save_cache(trades):
 def add_trade(symbol, direction, entry_price, trade_id, **additional_data):
     trades = load_trades()
     clean_symbol = symbol.replace("_", "")
+
+    # SAFETY ASSERTION: Validate trade_id is not empty or "unknown"
+    if not trade_id or trade_id == "unknown":
+        raise ValueError(f"Cannot add trade with invalid trade_id: {trade_id}")
 
     # If we already have this trade_id, skip
     if any(str(t.get("trade_id")) == str(trade_id) for t in trades if t.get("trade_id")):
@@ -184,6 +211,7 @@ def get_cache_stats() -> Dict:
 def sync_cache_with_broker(client, account_id) -> int:
     """
     Validate cache against live broker state and remove any closed trades.
+    Uses atomic file operations to prevent race conditions.
     
     Args:
         client: OANDA API client instance
@@ -192,37 +220,41 @@ def sync_cache_with_broker(client, account_id) -> int:
     Returns:
         Number of trades removed from cache
     """
-    try:
-        import oandapyV20
-        from oandapyV20.endpoints.trades import TradesList
+    with _cache_lock:  # Thread-level lock
+        try:
+            import oandapyV20
+            from oandapyV20.endpoints.trades import TradesList
+            
+            # Get current trades from OANDA
+            r = TradesList(accountID=account_id)
+            client.request(r)
+            live_trades = {trade["id"]: trade for trade in r.response.get("trades", [])}
+            
+            # Get cached trades atomically (within lock)
+            cached_trades = load_trades()  # Load with lock
+            removed_trade_ids = []
+            
+            # Find trades that exist in cache but not in live account
+            for cached_trade in cached_trades:
+                trade_id = cached_trade.get("trade_id")
+                if trade_id and trade_id not in live_trades:
+                    removed_trade_ids.append(trade_id)
+                    print(f"[CACHE] 🔍 Trade {trade_id} not found in broker - marking for removal")
+            
+            # Remove all closed trades in one atomic operation
+            if removed_trade_ids:
+                updated_trades = [t for t in cached_trades if str(t.get("trade_id")) not in removed_trade_ids]
+                save_trades(updated_trades)  # Save with lock
+                removed_count = len(removed_trade_ids)
+                print(f"[CACHE] ✅ Synced cache with broker: removed {removed_count} closed trade(s)")
+                return removed_count
+            else:
+                print(f"[CACHE] ✅ Cache sync complete: all cached trades are still active")
+                return 0
         
-        # Get current trades from OANDA
-        r = TradesList(accountID=account_id)
-        client.request(r)
-        live_trades = {trade["id"]: trade for trade in r.response.get("trades", [])}
-        
-        # Get cached trades
-        cached_trades = get_active_trades()
-        removed_count = 0
-        
-        # Find trades that exist in cache but not in live account
-        for cached_trade in cached_trades[:]:  # Create copy to iterate over
-            trade_id = cached_trade.get("trade_id")
-            if trade_id and trade_id not in live_trades:
-                print(f"[CACHE] 🔍 Trade {trade_id} not found in broker - removing from cache")
-                if remove_trade(trade_id):
-                    removed_count += 1
-        
-        if removed_count > 0:
-            print(f"[CACHE] ✅ Synced cache with broker: removed {removed_count} closed trade(s)")
-        else:
-            print(f"[CACHE] ✅ Cache sync complete: all cached trades are still active")
-        
-        return removed_count
-        
-    except Exception as e:
-        print(f"[CACHE] ⚠️ Error syncing cache with broker: {e}")
-        return 0
+        except Exception as e:
+            print(f"[CACHE] ⚠️ Error syncing cache with broker: {e}")
+            return 0
 
 def validate_and_cleanup_cache(client=None, account_id=None):
     """

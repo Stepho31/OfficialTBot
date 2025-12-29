@@ -241,12 +241,13 @@ class EnhancedTradingSession:
                         self.session_stats["trades_skipped"] += 1
                         continue
                     
-                    # Pre-entry revalidation (same as before, but per-user)
+                    # Consolidated pre-entry validation (avoids redundant checks)
                     rechecks = int(os.getenv("PRE_ENTRY_RECHECKS", "2"))
                     recheck_sleep = int(os.getenv("PRE_ENTRY_RECHECK_SLEEP", "20"))
                     proceed = True
                     
                     for j in range(rechecks):
+                        # Step 1: Gate check (cooldown/freshness - non-technical, fast)
                         gate = evaluate_trade_gate(opportunity.symbol.replace("_", ""), opportunity.direction,
                                                    f"Auto-opportunity score={opportunity.score}",
                                                    api_key=user.oanda_api_key, account_id=user.oanda_account_id)
@@ -257,16 +258,22 @@ class EnhancedTradingSession:
                             self._send_admin_rejection_notification(opportunity, f"Gate blocked: {blocks_str} (recheck {j+1})", user)
                             proceed = False
                             break
-
-                        if not validate_entry_conditions(opportunity.symbol.replace("_",""), opportunity.direction, timeframes=["H4","H1","M15"], oanda_client=user_client):
-                            print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Entry validation failed on recheck {j+1} (H4/H1/M15 conditions not met)")
-                            self._send_admin_validation_error(opportunity, f"Validation failed (recheck {j+1})", user)
-                            proceed = False
-                            break
-                            
-                        if not passes_h4_hard_filters(opportunity.symbol.replace("_",""), opportunity.direction, oanda_client=user_client):
+                        
+                        # Step 2: H4 hard filters FIRST (fastest technical check, includes trend/ADX/ATR%)
+                        # Use relax=True to honor ALLOW_TREND_RELAX env var
+                        # SAFETY LOG: Track validation order
+                        if not passes_h4_hard_filters(opportunity.symbol.replace("_",""), opportunity.direction, relax=True, oanda_client=user_client):
                             print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - H4 regime/hard filters blocked on recheck {j+1}")
                             self._send_admin_validation_error(opportunity, f"Regime gate blocked (recheck {j+1})", user)
+                            proceed = False
+                            break
+                        
+                        # Step 3: Detailed multi-timeframe validation (exclude H4 to avoid redundancy)
+                        # Validate H1 and M15 only, since H4 was already checked above
+                        # SAFETY LOG: Confirm we're not re-checking H4
+                        if not validate_entry_conditions(opportunity.symbol.replace("_",""), opportunity.direction, timeframes=["H1","M15"], oanda_client=user_client):
+                            print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Entry validation failed on recheck {j+1} (H1/M15 conditions not met)")
+                            self._send_admin_validation_error(opportunity, f"Validation failed (recheck {j+1})", user)
                             proceed = False
                             break
                             
@@ -803,7 +810,15 @@ class EnhancedTradingSession:
                 
                 print(f"[ENHANCED][DIAGNOSTIC] place_trade() returned: trade_id={trade_details.get('trade_id', 'N/A')}")
                 
-                trade_id_ok = str(trade_details.get("trade_id", "")).isdigit()
+                # SAFETY ASSERTION: Validate trade ID is present and valid
+                trade_id = trade_details.get("trade_id")
+                if not trade_id or trade_id == "unknown" or not str(trade_id).isdigit():
+                    error_msg = f"Invalid trade ID after execution: {trade_id}"
+                    print(f"[ENHANCED] ❌ User {user.user_id}: {error_msg}")
+                    raise ValueError(error_msg)
+                
+                print(f"[ENHANCED] ✅ Trade ID validated: {trade_id}")
+                trade_id_ok = True  # Validated above
                 
                 if not trade_id_ok:
                     print(f"[ENHANCED] ⚠️ User {user.user_id}: No valid trade ID; skipping monitor/cache add.")

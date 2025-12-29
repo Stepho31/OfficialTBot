@@ -48,6 +48,79 @@ def calculate_trailing_stop(entry_price, current_price, side, trail_distance):
         return round_price_by_pair("", current_price + trail_distance)
 
 
+def _classify_close_reason(trade_details: Dict, td: Dict, current_units: int, side: str, instrument: str) -> str:
+    """
+    Determine actual close reason by analyzing trade state.
+    Returns: CLOSED_TP, CLOSED_SL, CLOSED_PARTIAL, CLOSED_TRAILING, CLOSED_EXTERNALLY
+    """
+    sl = float(trade_details.get("sl_price", 0))
+    tp = float(trade_details.get("tp_price", 0))
+    entry = float(trade_details.get("entry_price", 0))
+    original_position_size = trade_details.get("position_size", current_units)
+    
+    # Check if partial close (monitor initiated)
+    if current_units < original_position_size and current_units > 0:
+        return "CLOSED_PARTIAL"
+    
+    # Try to get final close price
+    final_price = None
+    try:
+        avg_close_price = td.get("averageClosePrice")
+        if avg_close_price:
+            final_price = float(avg_close_price)
+    except (ValueError, TypeError):
+        pass
+    
+    # If we have final price, check proximity to TP/SL
+    if final_price and sl > 0 and tp > 0:
+        pip_value = 0.01 if "JPY" in instrument else 0.0001
+        tolerance = 3 * pip_value  # 3 pip tolerance for TP/SL detection
+        
+        if side == "buy":
+            tp_distance = abs(final_price - tp)
+            sl_distance = abs(final_price - sl)
+            # Check if price moved toward TP (positive P/L)
+            moved_toward_tp = final_price > entry
+        else:  # sell
+            tp_distance = abs(tp - final_price)
+            sl_distance = abs(sl - final_price)
+            moved_toward_tp = final_price < entry
+        
+        # Determine if closed at TP or SL
+        if tp_distance < tolerance and moved_toward_tp:
+            return "CLOSED_TP"
+        elif sl_distance < tolerance:
+            return "CLOSED_SL"
+        
+        # Check if trailing stop might have been hit (price moved toward TP then reversed)
+        # This is a heuristic - if final price is between entry and TP, might be trailing stop
+        if side == "buy":
+            in_profit_zone = entry < final_price < tp
+        else:
+            in_profit_zone = tp < final_price < entry
+        
+        if in_profit_zone and abs(final_price - entry) > (abs(tp - entry) * 0.3):
+            # Price was at least 30% toward TP, likely trailing stop
+            return "CLOSED_TRAILING"
+    
+    # Check realized P/L to infer outcome
+    try:
+        realized_pl = td.get("realizedPL")
+        if realized_pl is not None:
+            pnl = float(realized_pl)
+            if pnl > 0:
+                # Profit - likely TP or trailing stop
+                return "CLOSED_TP"  # Default to TP for profitable closes
+            else:
+                # Loss - likely SL
+                return "CLOSED_SL"
+    except (ValueError, TypeError):
+        pass
+    
+    # Default: truly external (manual or broker action not initiated by system)
+    return "CLOSED_EXTERNALLY"
+
+
 def update_trailing_stop(client, account_id, trade_id, new_sl_price):
     """Update the stop loss for a trade"""
     try:
@@ -167,22 +240,42 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
                 current_units = abs(int(trade_check.response["trade"]["currentUnits"]))
                 unrealized_pl = float(td.get("unrealizedPL", "0") or 0.0)
             except oandapyV20.exceptions.V20Error:
-                print(f"[MONITOR] Trade {trade_id} no longer exists. Removing from cache.")
+                print(f"[MONITOR] Trade {trade_id} no longer exists. Classifying close reason...")
                 # Try to get final trade details before it's gone
+                exit_price = None
+                pnl_net = None
+                close_reason = "CLOSED_EXTERNALLY"
+                
                 try:
-                    # Get the last known price as exit price
-                    r = pricing.PricingInfo(accountID=account_id, params={"instruments": instrument})
-                    client.request(r)
-                    exit_price = _safe_price_from_pricing(r.response, side, instrument)
+                    # Try to get trade details one more time (might still be in history)
+                    try:
+                        trade_check = TradeDetails(accountID=account_id, tradeID=trade_id)
+                        client.request(trade_check)
+                        td = trade_check.response.get("trade", {})
+                        
+                        # Classify close reason
+                        close_reason = _classify_close_reason(trade_details, td, 0, side, instrument)
+                        
+                        # Get exit price and P/L
+                        avg_close_price = td.get("averageClosePrice")
+                        if avg_close_price:
+                            exit_price = float(avg_close_price)
+                        realized_pl = td.get("realizedPL")
+                        if realized_pl is not None:
+                            pnl_net = float(realized_pl)
+                    except:
+                        # Trade details not available, use current price
+                        r = pricing.PricingInfo(accountID=account_id, params={"instruments": instrument})
+                        client.request(r)
+                        exit_price = _safe_price_from_pricing(r.response, side, instrument)
                     
-                    # Calculate P/L estimate (we don't have the actual realized P/L anymore)
-                    if exit_price and entry_price:
+                    # Calculate P/L estimate if needed
+                    if pnl_net is None and exit_price and entry_price:
                         if side == "buy":
                             pnl_estimate = (exit_price - entry_price) * position_size
                         else:
                             pnl_estimate = (entry_price - exit_price) * position_size
-                    else:
-                        pnl_estimate = None
+                        pnl_net = pnl_estimate
                     
                     # Update database (persistence layer)
                     try:
@@ -190,18 +283,18 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
                             oanda_account_id=account_id,
                             external_id=str(trade_id),
                             exit_price=exit_price,
-                            pnl_net=pnl_estimate,
+                            pnl_net=pnl_net,
                             closed_at=datetime.now(timezone.utc),
-                            reason_close="CLOSED_EXTERNALLY",
+                            reason_close=close_reason,
                         )
-                        print(f"[DB] ✅ Trade {trade_id} closed status saved to database (externally)")
+                        print(f"[DB] ✅ Trade {trade_id} closed as {close_reason} - saved to database")
                     except Exception as db_error:
                         print(f"[DB] ❌ Error saving trade close to database: {db_error}")
                 except Exception as e:
                     print(f"[MONITOR] ⚠️ Could not get final trade details: {e}")
                 
                 remove_trade(trade_id)
-                return {"status": "CLOSED_EXTERNALLY", "message": "Trade was closed externally"}
+                return {"status": close_reason, "message": f"Trade closed: {close_reason}"}
 
             if current_units == 0:
                 print(f"[MONITOR] Trade {trade_id} closed (units=0). Removing from cache.")
@@ -242,6 +335,9 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
                         else:
                             pnl_net = (entry_price - exit_price) * position_size
                     
+                    # Classify close reason
+                    close_reason = _classify_close_reason(trade_details, td, 0, side, instrument)
+                    
                     # Update database (persistence layer)
                     try:
                         update_trade_close_from_oanda_account(
@@ -250,16 +346,16 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
                             exit_price=exit_price,
                             pnl_net=pnl_net,
                             closed_at=datetime.now(timezone.utc),
-                            reason_close="CLOSED",
+                            reason_close=close_reason,
                         )
-                        print(f"[DB] ✅ Trade {trade_id} closed status saved to database")
+                        print(f"[DB] ✅ Trade {trade_id} closed as {close_reason} - saved to database")
                     except Exception as db_error:
                         print(f"[DB] ❌ Error saving trade close to database: {db_error}")
                 except Exception as e:
                     print(f"[MONITOR] ⚠️ Could not update database for closed trade: {e}")
                 
                 remove_trade(trade_id)
-                return {"status": "CLOSED", "message": "Units zero; broker shows trade closed"}
+                return {"status": close_reason, "message": f"Trade closed: {close_reason}"}
 
             # 📈 Get current price
             r = pricing.PricingInfo(accountID=account_id, params={"instruments": instrument})
@@ -350,6 +446,20 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
             else:
                 pnl_net = (entry_price - exit_price) * position_size
         
+        # Classify close reason (use CLOSED_EXTERNALLY as fallback since we're exiting loop)
+        close_reason = "CLOSED_EXTERNALLY"  # Default for unexpected exit
+        try:
+            # Try to get final trade state for classification
+            try:
+                trade_check = TradeDetails(accountID=account_id, tradeID=trade_id)
+                client.request(trade_check)
+                td = trade_check.response.get("trade", {})
+                close_reason = _classify_close_reason(trade_details, td, 0, side, instrument)
+            except:
+                pass  # Use default if classification fails
+        except:
+            pass
+        
         # Update database (persistence layer)
         try:
             update_trade_close_from_oanda_account(
@@ -358,9 +468,9 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
                 exit_price=exit_price,
                 pnl_net=pnl_net,
                 closed_at=datetime.now(timezone.utc),
-                reason_close="CLOSED",
+                reason_close=close_reason,
             )
-            print(f"[DB] ✅ Trade {trade_id} closed status saved to database")
+            print(f"[DB] ✅ Trade {trade_id} closed as {close_reason} - saved to database")
         except Exception as db_error:
             print(f"[DB] ❌ Error saving trade close to database: {db_error}")
     except Exception as e:

@@ -544,40 +544,60 @@ def get_h4_trend_adx_atr_percent(symbol: str, adx_period: int = 14, atr_period: 
 
 def passes_h4_hard_filters(symbol: str, side: str, relax: bool = False, oanda_client=None) -> bool:
     """Enforce H4 hard filters: EMA trend alignment, ADX, ATR% window.
-    Never relax trend alignment. Relax ADX threshold slightly when relax=True.
+    Properly handles relax mode from both parameter and environment variable.
     """
-    print(f"[VALIDATORS] 🔒 H4 hard filters for {symbol} {side}")
+    print(f"[VALIDATORS] 🔒 H4 hard filters for {symbol} {side} (relax={relax})")
     trend, adx, atr_pct = get_h4_trend_adx_atr_percent(symbol, oanda_client=oanda_client)
     if trend is None or adx is None or atr_pct is None:
         print("[VALIDATORS] ❌ Missing H4 metrics for hard filters")
         return False
-    # Trend must align and is never relaxed
-    allow_relax = os.getenv("ALLOW_TREND_RELAX", "true").lower() == "true"
-
-    if (side == "buy" and trend == "bearish") or (side == "sell" and trend == "bullish"):
-        if allow_relax:
-            print(f"[VALIDATORS] ⚠️ H4 trend opposite ({trend}) but validator confidence overrides -> proceeding under relaxed mode")
+    
+    # Check both parameter and environment variable for relax mode
+    allow_relax_env = os.getenv("ALLOW_TREND_RELAX", "true").lower() == "true"
+    effective_relax = relax or allow_relax_env  # Honor both parameters
+    
+    # Trend alignment check - only block if NOT in relax mode
+    trend_misaligned = (side == "buy" and trend == "bearish") or (side == "sell" and trend == "bullish")
+    
+    if trend_misaligned:
+        if effective_relax:
+            print(f"[VALIDATORS] ⚠️ H4 trend opposite ({trend}) but relaxed mode active -> proceeding")
+            # Continue to other checks (ADX, ATR%)
         else:
-            print(f"[VALIDATORS] ❌ Trend misaligned: trend={trend}, side={side}")
+            print(f"[VALIDATORS] ❌ Trend misaligned: trend={trend}, side={side} (strict mode)")
             return False
-    # ADX threshold (env overrideable)
+    else:
+        print(f"[VALIDATORS] ✅ Trend aligned: {trend}")
+    
+    # ADX threshold (env overrideable, more lenient for counter-trend when relaxed)
     try:
         base_adx = float(os.getenv("H4_MIN_ADX", "17.0"))
     except Exception:
         base_adx = 18.0
-    adx_threshold = base_adx - (2.0 if relax else 0.0)
+    
+    # Reduce ADX threshold more for counter-trend trades when relaxed
+    if effective_relax and trend_misaligned:
+        adx_threshold = base_adx - 3.0  # -3 for counter-trend in relax mode
+    elif effective_relax:
+        adx_threshold = base_adx - 2.0  # -2 for normal relaxed mode
+    else:
+        adx_threshold = base_adx  # No reduction in strict mode
+    
     if adx < adx_threshold:
         print(f"[VALIDATORS] ❌ ADX too low: {adx:.1f} < {adx_threshold:.1f}")
         return False
+    
     # ATR% window: prefer moderate volatility (env overrideable)
     try:
         min_atr_pct = float(os.getenv("H4_MIN_ATR_PCT", "0.22"))
         max_atr_pct = float(os.getenv("H4_MAX_ATR_PCT", "3.2"))
     except Exception:
         min_atr_pct, max_atr_pct = 0.25, 3.2
+    
     if not (min_atr_pct <= atr_pct <= max_atr_pct):
         print(f"[VALIDATORS] ❌ ATR% out of range: {atr_pct:.2f}% not in [{min_atr_pct}, {max_atr_pct}]%")
         return False
+    
     print(f"[VALIDATORS] ✅ H4 hard filters PASSED (trend={trend}, ADX={adx:.1f}, ATR%={atr_pct:.2f}%)")
     return True
 

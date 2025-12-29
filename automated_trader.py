@@ -95,21 +95,46 @@ class AutomatedTrader:
             self.account_id = None
     
     def _load_state(self):
-        """Load previous trading state"""
+        """Load previous trading state with proper daily reset and trade counting"""
         try:
             if os.path.exists("automated_state.json"):
                 with open("automated_state.json", "r") as f:
                     data = json.load(f)
                     
                 self.state.active_pairs = data.get("active_pairs", [])
-                self.state.total_trades_today = data.get("total_trades_today", 0)
                 
-                # Reset daily counter if it's a new day
+                # Check if new day
                 last_reset = data.get("last_reset_date")
-                if last_reset != datetime.now().strftime("%Y-%m-%d"):
-                    self.state.total_trades_today = 0
+                today = datetime.now().strftime("%Y-%m-%d")
+                
+                if last_reset != today:
+                    # New day: count actual trades from broker/DB
+                    print(f"[AUTOMATED] 📅 New day detected (was {last_reset}, now {today}) - counting today's trades")
+                    try:
+                        if self.client and self.account_id:
+                            from oandapyV20.endpoints.trades import TradesList
+                            r = TradesList(accountID=self.account_id)
+                            self.client.request(r)
+                            # Count trades opened today
+                            today_trades = [
+                                t for t in r.response.get("trades", [])
+                                if t.get("openTime", "").startswith(today)
+                            ]
+                            self.state.total_trades_today = len(today_trades)
+                            print(f"[AUTOMATED] 📊 Found {len(today_trades)} trades opened today on broker")
+                        else:
+                            # No broker client available - start fresh for new day
+                            self.state.total_trades_today = 0
+                            print(f"[AUTOMATED] ⚠️ No broker client - starting trade count at 0 for new day")
+                    except Exception as e:
+                        print(f"[AUTOMATED] ⚠️ Error counting today's trades: {e} - starting at 0")
+                        self.state.total_trades_today = 0
+                    self.state.last_reset_date = today
+                else:
+                    # Same day: use cached count (may be stale, but safer than resetting to 0)
+                    self.state.total_trades_today = data.get("total_trades_today", 0)
+                    print(f"[AUTOMATED] 📥 State loaded (same day): {len(self.state.active_pairs)} active pairs, {self.state.total_trades_today} trades today")
                     
-                print(f"[AUTOMATED] 📥 State loaded: {len(self.state.active_pairs)} active pairs")
         except Exception as e:
             print(f"[AUTOMATED] ⚠️ Could not load previous state: {e}")
     

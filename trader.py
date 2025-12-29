@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import oandapyV20
 import oandapyV20.endpoints.orders as orders
 import oandapyV20.endpoints.pricing as pricing
@@ -662,17 +663,20 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
             sl_price = round_price(instrument, entry_price * (1 + base_sl_delta))
 
     # Optional: swing-based stop override if enabled
+    # IMPORTANT: Apply swing SL BEFORE TP adjustment to ensure proper R:R validation
     use_swing_sl = os.getenv("USE_SWING_SL", "true").lower() == "true"
     if use_swing_sl:
         recent_low, recent_high = _find_recent_swing_levels(instrument, side, lookback=30)
         if recent_low and recent_high:
             if side == "buy":
-                swing_sl = round_price(instrument, min(sl_price, recent_low))
-                if swing_sl < sl_price:
+                swing_sl = round_price(instrument, recent_low)
+                # Use tighter (lower) SL - swing SL should be <= ATR SL for buys
+                if swing_sl <= sl_price:
                     sl_price = swing_sl
             else:
-                swing_sl = round_price(instrument, max(sl_price, recent_high))
-                if swing_sl > sl_price:
+                swing_sl = round_price(instrument, recent_high)
+                # Use tighter (higher) SL - swing SL should be >= ATR SL for sells
+                if swing_sl >= sl_price:
                     sl_price = swing_sl
 
     # Calculate and validate risk-reward ratio
@@ -710,7 +714,7 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
     else:
         print(f"[RISK] ✅ Good risk-reward ratio: {rr_ratio:.2f}")
     
-    # Ensure SL distance is always less than TP distance
+    # SAFETY ASSERTION: Ensure SL distance is always less than TP distance
     if side == "buy":
         sl_distance_final = entry_price - sl_price
         tp_distance_final = tp_price - entry_price
@@ -718,8 +722,17 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
         sl_distance_final = sl_price - entry_price
         tp_distance_final = entry_price - tp_price
     
+    if sl_distance_final <= 0:
+        raise ValueError(f"Invalid setup: SL distance must be positive, got {sl_distance_final:.5f}")
+    
+    if tp_distance_final <= 0:
+        raise ValueError(f"Invalid setup: TP distance must be positive, got {tp_distance_final:.5f}")
+    
     if sl_distance_final >= tp_distance_final:
-        raise ValueError(f"Invalid setup: SL distance ({sl_distance_final:.5f}) >= TP distance ({tp_distance_final:.5f})")
+        raise ValueError(
+            f"Invalid setup: SL distance ({sl_distance_final:.5f}) >= TP distance ({tp_distance_final:.5f}). "
+            f"This should not occur after swing SL and TP adjustments."
+        )
     
     print(f"[RISK] 📏 SL distance: {sl_distance_final:.5f} | TP distance: {tp_distance_final:.5f}")
 
@@ -760,8 +773,30 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
         print(f"[OANDA][RESPONSE] API request completed successfully")
         print(f"[OANDA][RESPONSE] Full response: {r.response}")
         
-        trade_id = r.response.get("orderFillTransaction", {}).get("tradeOpened", {}).get("tradeID", "unknown")
-        fill_price = float(r.response.get("orderFillTransaction", {}).get("price", intended_entry_price))
+        # Extract trade ID with validation and fallback handling
+        order_fill = r.response.get("orderFillTransaction", {})
+        trade_id = None
+        
+        # Try primary path: tradeOpened
+        if "tradeOpened" in order_fill:
+            trade_id = order_fill["tradeOpened"].get("tradeID")
+        
+        # Fallback: tradesOpened (plural) for partial fills
+        if not trade_id and "tradesOpened" in order_fill:
+            trades_opened = order_fill["tradesOpened"]
+            if isinstance(trades_opened, list) and len(trades_opened) > 0:
+                trade_id = trades_opened[0].get("tradeID")
+        
+        # Final validation - fail if no trade ID found
+        if not trade_id:
+            error_msg = (
+                f"Trade execution succeeded but no tradeID returned. "
+                f"Response structure: {json.dumps(r.response, indent=2)[:1000]}"
+            )
+            print(f"[OANDA][ERROR] {error_msg}")
+            raise ValueError(error_msg)
+        
+        fill_price = float(order_fill.get("price", intended_entry_price))
         
         print(f"[OANDA][RESPONSE] Trade ID: {trade_id}, Fill Price: {fill_price:.5f}")
         print(f"[TRADE] ✅ Order filled at: {fill_price:.5f}")
