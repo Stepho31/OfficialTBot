@@ -314,7 +314,7 @@ def validate_entry_conditions(symbol, side, timeframes=["H4"], trigger_ok=None, 
     size_note = "full_size" if size_mult == 1.0 else "half_size" if size_mult == 0.5 else "skip"
     print(f"[VALIDATORS] 📊 4H Validation Score: {validation_score:.1f}/{max_score:.1f} ({validation_percentage:.1f}%) -> size={size_note}")
 
-    min_pct = float(os.getenv("H4_VALIDATION_MIN_PCT", "55"))
+    min_pct = float(os.getenv("H4_VALIDATION_MIN_PCT", "65"))  # Increased from 55 to 65 for 65-70% win rate
     is_valid = validation_percentage >= min_pct
     if is_valid:
         print(f"[VALIDATORS] ✅ Entry conditions PASSED for {side} {symbol} (recommended size: {size_note})")
@@ -569,17 +569,26 @@ def passes_h4_hard_filters(symbol: str, side: str, relax: bool = False, oanda_cl
     else:
         print(f"[VALIDATORS] ✅ Trend aligned: {trend}")
     
-    # ADX threshold (env overrideable, more lenient for counter-trend when relaxed)
+    # ADX threshold (env overrideable, stricter for 65-70% win rate)
     try:
-        base_adx = float(os.getenv("H4_MIN_ADX", "17.0"))
+        base_adx = float(os.getenv("H4_MIN_ADX", "20.0"))  # Increased from 17.0 to 20.0 for 65-70% win rate
     except Exception:
-        base_adx = 18.0
+        base_adx = 20.0
     
-    # Reduce ADX threshold more for counter-trend trades when relaxed
+    # Only allow counter-trend when H4 structure is VERY strong (ADX≥25) for 65-70% win rate
+    h4_very_strong = (adx is not None and adx >= 25 and 
+                     atr_pct is not None and 0.3 <= atr_pct <= 2.5)
+    
+    # Reduce ADX threshold only for very strong counter-trend setups
     if effective_relax and trend_misaligned:
-        adx_threshold = base_adx - 3.0  # -3 for counter-trend in relax mode
+        if h4_very_strong:
+            adx_threshold = base_adx - 2.0  # -2 for very strong counter-trend (ADX≥25)
+            print(f"[VALIDATORS] ⚠️ Counter-trend allowed (H4 very strong: ADX={adx:.1f}≥25)")
+        else:
+            adx_threshold = base_adx + 2.0  # +2 for weak counter-trend (effectively blocks)
+            print(f"[VALIDATORS] ❌ Counter-trend blocked (H4 not strong enough: ADX={adx:.1f}<25)")
     elif effective_relax:
-        adx_threshold = base_adx - 2.0  # -2 for normal relaxed mode
+        adx_threshold = base_adx - 1.0  # -1 for normal relaxed mode (was -2)
     else:
         adx_threshold = base_adx  # No reduction in strict mode
     

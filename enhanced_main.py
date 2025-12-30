@@ -28,6 +28,7 @@ import oandapyV20.endpoints.pricing as pricing
 from user_helpers import get_tier2_users_for_automation, Tier2User
 from oanda_helpers import create_oanda_client, get_user_open_positions, has_user_position_on_pair, get_user_active_pairs
 from autopip_client import AutopipClient
+from validators import get_oanda_data
 
 load_dotenv()
 
@@ -80,6 +81,105 @@ class EnhancedTradingSession:
         except Exception as e:
             print(f"[ENHANCED] ⚠️ Warning: Could not initialize AutopipClient: {e}")
             self.api_client = None
+    
+    def _confirm_h4_candle_state(self, symbol: str, oanda_client) -> bool:
+        """
+        Confirm H4 candle is >50% complete or M15 confirms structure.
+        Fix #2: Ensures entry aligns with H4 structure, not mid-candle noise.
+        
+        Returns:
+            True if entry should proceed, False if should wait for H4 candle to mature
+        """
+        try:
+            # Get current H4 candle
+            h4_candles = get_oanda_data(symbol, "H4", 2, oanda_client=oanda_client)
+            if not h4_candles or len(h4_candles) < 1:
+                print(f"[ENHANCED] ⚠️ H4 candle confirmation: No data available, allowing entry")
+                return True  # Default allow if data unavailable
+            
+            current_candle = h4_candles[-1]
+            candle_time_str = current_candle.get("time", "")
+            if not candle_time_str:
+                print(f"[ENHANCED] ⚠️ H4 candle confirmation: No time in candle, allowing entry")
+                return True
+            
+            # Parse candle time (OANDA format: "2024-01-01T00:00:00.000000000Z")
+            try:
+                # Remove nanoseconds and Z, then parse
+                clean_time = candle_time_str.replace("Z", "+00:00")
+                if "." in clean_time:
+                    # Remove fractional seconds
+                    clean_time = clean_time.split(".")[0] + "+00:00"
+                candle_time = datetime.fromisoformat(clean_time)
+            except:
+                # Fallback: try simpler format
+                try:
+                    candle_time = datetime.strptime(candle_time_str.split(".")[0], "%Y-%m-%dT%H:%M:%S")
+                except:
+                    print(f"[ENHANCED] ⚠️ Could not parse candle time: {candle_time_str}")
+                    return True  # Allow entry on parse error
+            
+            # Use UTC for comparison
+            now = datetime.utcnow()
+            if candle_time.tzinfo:
+                # Convert to UTC if timezone-aware
+                from datetime import timezone
+                candle_time_utc = candle_time.astimezone(timezone.utc).replace(tzinfo=None)
+            else:
+                candle_time_utc = candle_time
+            
+            # H4 candles: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC
+            hours_into_candle = (now - candle_time).total_seconds() / 3600.0
+            
+            # If >2 hours into 4-hour candle (>50%), allow entry
+            if hours_into_candle >= 2.0:
+                print(f"[ENHANCED] ✅ H4 candle confirmation: {hours_into_candle:.1f} hours into candle (>50%) - entry allowed")
+                return True
+            
+            # If <2 hours, require STRONGER M15 confirmation for 65-70% win rate
+            # Need H4 candle >60% complete OR very strong multi-timeframe confirmation
+            if hours_into_candle < 2.4:  # Require >60% into H4 candle (was 50%)
+                print(f"[ENHANCED] ⚠️ H4 candle confirmation: Only {hours_into_candle:.1f} hours into candle (<60%) - requiring strong M15 confirmation")
+                m15_candles = get_oanda_data(symbol, "M15", 12, oanda_client=oanda_client)
+                if m15_candles and len(m15_candles) >= 8:  # Need more candles for structure
+                    # Get H4 direction from current candle
+                    h4_current = float(h4_candles[-1]["mid"]["c"])
+                    h4_prev = float(h4_candles[-2]["mid"]["c"]) if len(h4_candles) >= 2 else h4_current
+                    h4_direction = "up" if h4_current > h4_prev else "down"
+                    
+                    # Check M15 structure alignment with H4
+                    closes = [float(c["mid"]["c"]) for c in m15_candles[-8:]]
+                    highs = [float(c["mid"]["h"]) for c in m15_candles[-8:]]
+                    lows = [float(c["mid"]["l"]) for c in m15_candles[-8:]]
+                    
+                    # Require: (1) Clear trend AND (2) Structure alignment with H4 direction
+                    m15_trend_up = all(closes[i] >= closes[i-1] for i in range(1, len(closes)))
+                    m15_trend_down = all(closes[i] <= closes[i-1] for i in range(1, len(closes)))
+                    
+                    # Require: M15 trend matches H4 direction AND no major wicks against trend
+                    if h4_direction == "up" and m15_trend_up:
+                        # Check for wicks against trend (highs should be increasing)
+                        recent_highs = highs[-4:]
+                        if all(recent_highs[i] >= recent_highs[i-1] for i in range(1, len(recent_highs))):
+                            print(f"[ENHANCED] ✅ H4 candle confirmation: Strong M15 structure confirms H4 direction ({hours_into_candle:.1f}h into H4 candle) - entry allowed")
+                            return True
+                    elif h4_direction == "down" and m15_trend_down:
+                        # Check for wicks against trend (lows should be decreasing)
+                        recent_lows = lows[-4:]
+                        if all(recent_lows[i] <= recent_lows[i-1] for i in range(1, len(recent_lows))):
+                            print(f"[ENHANCED] ✅ H4 candle confirmation: Strong M15 structure confirms H4 direction ({hours_into_candle:.1f}h into H4 candle) - entry allowed")
+                            return True
+                
+                # Default: wait for H4 candle to mature (>60%)
+                print(f"[ENHANCED] ⚠️ H4 candle confirmation: Only {hours_into_candle:.1f} hours into candle (<60%) and M15 not strongly confirming - delaying entry")
+                return False
+            
+            # Default: wait for H4 candle to mature
+            print(f"[ENHANCED] ⚠️ H4 candle confirmation: Only {hours_into_candle:.1f} hours into candle (<50%) and M15 not confirming - delaying entry")
+            return False
+        except Exception as e:
+            print(f"[ENHANCED] ⚠️ H4 candle confirmation error: {e} - allowing entry as fallback")
+            return True  # Default allow on error
         
     def execute_trading_session(self) -> Dict:
         """
@@ -281,6 +381,13 @@ class EnhancedTradingSession:
                             time.sleep(recheck_sleep)
                     
                     if not proceed:
+                        self.session_stats["trades_skipped"] += 1
+                        continue
+                    
+                    # Fix #2: Confirm H4 candle state before execution
+                    symbol_clean = opportunity.symbol.replace("_", "")
+                    if not self._confirm_h4_candle_state(symbol_clean, user_client):
+                        print(f"[ENHANCED] ⚠️ User {user.user_id}: {opportunity.symbol} {opportunity.direction}: DELAYED - H4 candle not mature, will re-evaluate next cycle")
                         self.session_stats["trades_skipped"] += 1
                         continue
                     

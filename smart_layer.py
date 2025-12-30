@@ -199,14 +199,43 @@ def position_size_from_score(score: float, ctx: TradeContext) -> float:
 # Exits (ATR-based; BE + trail later in monitor)
 # ---------------------------
 
-def compute_smart_exits(symbol: str, side: str, entry_price: float, atr_price_units: float) -> Dict[str, float]:
+def compute_smart_exits(symbol: str, side: str, entry_price: float, atr_price_units: float, oanda_client=None) -> Dict[str, float]:
     """
-    - SL ≈ 1x ATR (min 8 pips)
+    - SL ≈ 1.5x H4 ATR OR 2.0x M15 ATR (whichever is larger) - accounts for execution noise
+    - Minimum 12 pips to handle M15/M10 execution timeframe volatility
     - TP1 = 1.2R, TP2 = 2R
     """
     pip = _pip_factor(symbol)
     atr_pips = atr_price_units / pip if pip > 0 else 10.0
-    sl_pips = max(atr_pips * 1.0, 8.0)
+    
+    # Get M15 ATR for execution-timeframe buffer
+    m15_atr_pips = None
+    try:
+        from validators import get_oanda_data, _calculate_true_ranges_from_hlc, _wilder_smooth
+        m15_candles = get_oanda_data(symbol, "M15", 30, oanda_client=oanda_client)
+        if m15_candles and len(m15_candles) >= 21:
+            highs = [float(c["mid"]["h"]) for c in m15_candles]
+            lows = [float(c["mid"]["l"]) for c in m15_candles]
+            closes = [float(c["mid"]["c"]) for c in m15_candles]
+            tr_list = _calculate_true_ranges_from_hlc(highs, lows, closes)
+            m15_atr_series = _wilder_smooth(tr_list, 14)
+            m15_atr = m15_atr_series[-1] if m15_atr_series else None
+            if m15_atr:
+                m15_atr_pips = (m15_atr / pip) if pip > 0 else None
+                print(f"[SMART] M15 ATR: {m15_atr_pips:.1f} pips (execution timeframe buffer)")
+    except Exception as e:
+        print(f"[SMART] ⚠️ Could not calculate M15 ATR: {e}")
+    
+    # Use larger of: 2.0x H4 ATR or 2.5x M15 ATR (ensures execution noise buffer for 65-70% win rate)
+    h4_sl_pips = atr_pips * 2.0  # Increased from 1.5x to 2.0x for better win rate
+    if m15_atr_pips:
+        m15_sl_pips = m15_atr_pips * 2.5  # Increased from 2.0x to 2.5x for better protection
+        sl_pips = max(h4_sl_pips, m15_sl_pips, 15.0)  # Minimum 15 pips (increased from 12 for 65-70% win rate)
+        print(f"[SMART] SL calculation: H4={h4_sl_pips:.1f} pips (2.0x), M15={m15_sl_pips:.1f} pips (2.5x) → Using {sl_pips:.1f} pips")
+    else:
+        sl_pips = max(h4_sl_pips, 15.0)  # Minimum 15 pips
+        print(f"[SMART] SL calculation: H4={h4_sl_pips:.1f} pips (2.0x) (M15 unavailable) → Using {sl_pips:.1f} pips")
+    
     tp1_pips = sl_pips * 1.2
     tp2_pips = sl_pips * 2.0
 
@@ -255,9 +284,23 @@ def build_trade_context(symbol: str, side: str, spread_pips: float = 0.8, oanda_
         return None
 
     trend, adx, atr_pct = get_h4_trend_adx_atr_percent(symbol, oanda_client=oanda_client)
-    m10_ok = validate_m10_entry(symbol, side, relax=True, oanda_client=oanda_client)
+    
+    # Determine M10 relax mode based on H4 strength (Fix #3: Selective M10 strictness)
+    # Only relax M10 if H4 is strong (ADX≥20) and aligned with trade direction
+    h4_strong = (trend and adx and 
+                 ((side == "buy" and trend == "bullish") or (side == "sell" and trend == "bearish")) and
+                 adx >= 20)  # Strong H4 trend
+    
+    # Only relax M10 if H4 is strong and aligned
+    m10_relax = h4_strong
+    if m10_relax:
+        print(f"[SMART] M10 validation: Relaxed mode (H4 strong: ADX={adx:.1f}, trend={trend}, aligned)")
+    else:
+        print(f"[SMART] M10 validation: Strict mode (H4 weak or misaligned: ADX={adx:.1f if adx else 'N/A'}, trend={trend})")
+    
+    m10_ok = validate_m10_entry(symbol, side, relax=m10_relax, oanda_client=oanda_client)
 
-    # Safe fallbacks so we don’t choke volume
+    # Safe fallbacks so we don't choke volume
     trend = trend or "bullish"
     adx = adx if adx is not None else 18.0
     atr_pct = atr_pct if atr_pct is not None else 1.0
@@ -300,7 +343,7 @@ def plan_trade(symbol: str, side: str, spread_pips: float = 0.8, oanda_client=No
 
     # Convert H4 ATR% to price units for exits
     atr_price_units = (ctx.atr_pct / 100.0) * ctx.price
-    exits = compute_smart_exits(ctx.symbol, ctx.side, ctx.price, atr_price_units)
+    exits = compute_smart_exits(ctx.symbol, ctx.side, ctx.price, atr_price_units, oanda_client=oanda_client)
 
     plan = {
         "symbol": ctx.symbol,

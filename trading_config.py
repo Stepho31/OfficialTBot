@@ -6,8 +6,9 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 # Score constants for consistent execution thresholds across scanner, filters, and execution
-BASE_MIN_SCORE = 65  # Normal execution threshold
-FREQUENCY_MIN_SCORE = 55  # Used only when frequency-first mode is active
+# TARGET: 65-70% win rate - stricter thresholds for quality over quantity
+BASE_MIN_SCORE = 68  # Normal execution threshold (increased from 65 for 65-70% win rate)
+FREQUENCY_MIN_SCORE = 62  # Used only when frequency-first mode is active (increased from 55)
 
 @dataclass
 class RiskManagement:
@@ -26,7 +27,7 @@ class RiskManagement:
 @dataclass 
 class EntryValidation:
     """Entry validation configuration for 4H trading"""
-    min_validation_score: float = 60.0  # Loosened ~10–15% to raise frequency
+    min_validation_score: float = 65.0  # Increased for 65-70% win rate target (was 60.0)
     max_spread_regular: float = 0.00030   # Slightly tighter to improve execution
     max_spread_jpy: float = 0.050        # Increased for JPY pairs (was 0.030) - allows normal spreads on volatile pairs like GBP_JPY
     max_spread_metals: float = 0.060      # Tighter for precious metals
