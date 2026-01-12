@@ -874,8 +874,15 @@ class EnhancedTradingSession:
                 if self.api_client:
                     try:
                         settings = self.api_client.get_user_settings(user.user_id)
+                        # Handle both camelCase and snake_case field names for robustness
                         trade_allocation = settings.get("tradeAllocation")
-                        print(f"[ENHANCED] 📊 User {user.user_id}: Using trade_allocation={trade_allocation}%")
+                        if trade_allocation is None:
+                            trade_allocation = settings.get("trade_allocation")
+                        if trade_allocation is not None:
+                            trade_allocation = float(trade_allocation)
+                            print(f"[ENHANCED] 📊 User {user.user_id}: Using trade_allocation={trade_allocation}%")
+                        else:
+                            print(f"[ENHANCED] ⚠️ User {user.user_id}: trade_allocation is None in API response, falling back to default sizing")
                     except Exception as e:
                         print(f"[ENHANCED] ⚠️ Could not fetch user settings for user {user.user_id}: {e}")
                         print(f"[ENHANCED] ⚠️ Falling back to default trade sizing logic")
@@ -900,6 +907,7 @@ class EnhancedTradingSession:
                 print(f"[ENHANCED][DIAGNOSTIC]   - direction: {direction}")
                 print(f"[ENHANCED][DIAGNOSTIC]   - sl_price: {exits['sl']}")
                 print(f"[ENHANCED][DIAGNOSTIC]   - tp_price: {exits['tp1']}")
+                print(f"[ENHANCED][DIAGNOSTIC]   - trade_allocation: {trade_allocation} (None means will use fallback sizing)")
                 
                 # Place the actual trade using user's client and account
                 trade_details = place_trade(
