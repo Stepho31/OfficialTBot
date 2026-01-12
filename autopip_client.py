@@ -98,3 +98,17 @@ class AutopipClient:
         resp.raise_for_status()
         return resp.json()
 
+    def get_weekly_trades(self, from_dt: str, to_dt: str) -> List[Dict[str, Any]]:
+        """
+        Fetch all closed trades for a date range (for weekly reports).
+        Returns trades from the database instead of file system.
+        """
+        resp = requests.get(
+            f"{self.base_url}/v1/internal/weekly-trades",
+            params={"from_dt": from_dt, "to_dt": to_dt},
+            headers={"x-bot-key": self.bot_key},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        return resp.json()
+

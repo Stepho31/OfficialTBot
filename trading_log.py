@@ -332,6 +332,69 @@ def _get_week_period(end_dt: Optional[datetime] = None) -> Dict[str, datetime]:
     return {"start": week_start, "end": week_end}
 
 def _get_trades_in_range(start_dt: datetime, end_dt: datetime) -> List[Dict]:
+    """
+    Get trades from file system (legacy) or database (new).
+    Fix: Query database via API instead of file system for accurate trade data.
+    """
+    # Try to get trades from database via API
+    try:
+        from autopip_client import AutopipClient
+        client = AutopipClient()
+        api_trades = client.get_weekly_trades(
+            from_dt=start_dt.isoformat(),
+            to_dt=end_dt.isoformat()
+        )
+        
+        # Convert database format to expected format
+        results = []
+        for trade in api_trades:
+            instrument = trade.get("instrument", "")
+            entry_price = trade.get("entry_price")
+            exit_price = trade.get("exit_price")
+            side = trade.get("side", "").lower()
+            pnl_net = trade.get("pnl_net", 0) or 0
+            
+            # Calculate pips from entry/exit prices if available
+            pips_profit = 0.0
+            if entry_price and exit_price and instrument:
+                # Determine pip multiplier (JPY pairs use 100, others use 10000)
+                pip_multiplier = 100 if "JPY" in instrument.upper() else 10000
+                if side == "buy":
+                    pips_profit = (exit_price - entry_price) * pip_multiplier
+                else:
+                    pips_profit = (entry_price - exit_price) * pip_multiplier
+            
+            # Convert to expected format
+            # Fix: API returns ISO format strings, but handle both strings and datetime objects
+            timestamp = trade.get("closed_at") or trade.get("opened_at")
+            if timestamp:
+                if hasattr(timestamp, "isoformat"):  # datetime object
+                    timestamp = timestamp.isoformat()
+                # If it's already a string, use as-is
+            else:
+                timestamp = start_dt.isoformat()  # Fallback to week start
+            
+            trade_dict = {
+                "symbol": instrument,
+                "side": side,
+                "entry_price": entry_price,
+                "exit_price": exit_price,
+                "pips_profit": pips_profit,
+                "profit_amount": float(pnl_net),
+                "timestamp": timestamp,
+                "position_size": trade.get("units"),
+                "result": {"status": trade.get("status", "CLOSED")}
+            }
+            results.append(trade_dict)
+        
+        print(f"[LOG] ✅ Retrieved {len(results)} trades from database for weekly report")
+        return results
+    except ImportError:
+        print("[LOG] ⚠️ AutopipClient not available, falling back to file system")
+    except Exception as e:
+        print(f"[LOG] ⚠️ Failed to get trades from database: {e}, falling back to file system")
+    
+    # Fallback to file system (legacy)
     log_data = load_log()
     results: List[Dict] = []
     for entry in log_data:
