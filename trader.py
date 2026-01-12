@@ -919,7 +919,9 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                 try:
                     from autopip_client import AutopipClient
                     autopip_client = AutopipClient()
-                    autopip_client.post_trade({
+                    
+                    # Build payload with all required fields
+                    trade_payload = {
                         "userId": user_id,
                         "externalTradeId": str(trade_id),
                         "symbol": instrument,
@@ -934,7 +936,13 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                         "closedAt": None,
                         "timeframe": meta.get("timeframe") if meta else None,
                         "oandaAccountId": account_id,
-                    })
+                    }
+                    
+                    print(f"[DB] 🔄 Attempting API sync for trade {trade_id} (user {user_id}, account {account_id})...")
+                    print(f"[DB] 📤 Payload: userId={user_id}, externalTradeId={trade_id}, symbol={instrument}, side={side.upper()}, size={abs(int(units))}, entry={fill_price}")
+                    
+                    autopip_client.post_trade(trade_payload)
+                    
                     print(f"[DB] ✅ Trade {trade_id} saved to database via API sync for user {user_id}")
                     persistence_succeeded = True
                 except ImportError as e:
@@ -944,13 +952,18 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                 except Exception as api_error:
                     # API sync failed - fall through to direct DB
                     persistence_error = f"API sync failed: {api_error}"
-                    print(f"[DB] ⚠️ API trade sync failed for trade {trade_id}, user {user_id}, account {account_id}")
-                    print(f"[DB] ⚠️ Error: {persistence_error}")
+                    print(f"[DB] ❌ API trade sync failed for trade {trade_id}, user {user_id}, account {account_id}")
+                    print(f"[DB] ❌ Error type: {type(api_error).__name__}")
+                    print(f"[DB] ❌ Error message: {str(api_error)}")
+                    import traceback
+                    print(f"[DB] ❌ Traceback:")
+                    traceback.print_exc()
                     print(f"[DB] 🔄 Falling back to direct DB persistence...")
             
             # Fallback to direct DB persistence if API sync failed or user_id not provided
             if not persistence_succeeded:
                 try:
+                    print(f"[DB] 🔄 Attempting direct DB persistence for trade {trade_id} (OANDA account {account_id})...")
                     save_trade_from_oanda_account(
                         oanda_account_id=account_id,
                         external_id=str(trade_id),
@@ -974,7 +987,9 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                     print(f"[DB] ❌ CRITICAL: All persistence paths failed for trade {trade_id}")
                     print(f"[DB] ❌ Trade executed on OANDA but NOT saved to database")
                     print(f"[DB] ❌ Final error: {persistence_error}")
+                    print(f"[DB] ❌ Error type: {type(db_error).__name__}")
                     import traceback
+                    print(f"[DB] ❌ Traceback:")
                     traceback.print_exc()
                     # Log critical failure - trade exists on OANDA but not in DB
                     # This will require reconciliation to fix
@@ -983,6 +998,7 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                 # This is a critical failure - trade exists on OANDA but not persisted
                 print(f"[DB] 🚨 PERSISTENCE FAILURE: Trade {trade_id} on OANDA account {account_id} was NOT saved to database")
                 print(f"[DB] 🚨 This trade will not appear in the dashboard until reconciliation runs")
+                print(f"[DB] 🚨 Last error: {persistence_error}")
         except Exception as db_error:
             # Log error but don't fail the trade execution
             print(f"[DB] ❌ Error saving trade to database: {db_error}")

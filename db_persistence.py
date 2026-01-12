@@ -228,9 +228,12 @@ def save_trade_open(
         trade.commission = Decimal(str(commission)) if commission is not None else None
         trade.spread_cost = Decimal(str(spread_cost)) if spread_cost is not None else None
         trade.slippage_cost = Decimal(str(slippage_cost)) if slippage_cost is not None else None
+        # CRITICAL: Set status to "OPEN" so dashboard queries can find it
+        trade.status = "OPEN"
+        trade.closed_at = None  # Ensure closed_at is None for open trades
         
         db.commit()
-        logger.info(f"Trade {external_id} saved successfully (opened)")
+        logger.info(f"Trade {external_id} saved successfully (opened) - user_id={user_id}, account_id={account_id}, status=OPEN")
         return True
         
     except SQLAlchemyError as e:
