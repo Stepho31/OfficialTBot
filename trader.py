@@ -360,7 +360,8 @@ def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_
         is_spike, atr_pct = _check_volatility_spike(instrument, oanda_client=client)
         if is_spike:
             # Allow only high-quality setups during volatility spikes (require higher score)
-            print(f"[VALIDATION] ⚠️ Volatility spike detected (ATR%={atr_pct:.2f}%), requiring exceptional setup quality")
+            atr_pct_str = f"{atr_pct:.2f}" if atr_pct is not None else "N/A"
+            print(f"[VALIDATION] ⚠️ Volatility spike detected (ATR%={atr_pct_str}%), requiring exceptional setup quality")
             # This will be checked by the enhanced validation layer (higher score threshold)
             # For now, we just log a warning but don't block (let enhanced layer decide)
         
@@ -553,14 +554,16 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
     # 🔒 Position sizing: use user trade_allocation if provided, otherwise use allocation-based or risk-based
     if trade_allocation is not None:
         # Use user's trade_allocation setting directly
+        # Ensure trade_allocation is a float for formatting (might be string from API/user settings)
+        trade_allocation_float = float(trade_allocation)
         position_size = calculate_units_by_allocation(
             balance=balance,
-            allocation_percent=trade_allocation,
+            allocation_percent=trade_allocation_float,
             instrument=instrument,
             entry_price=entry_price,
             account_currency=account_currency,
         )
-        sizing_mode = f"user allocation {trade_allocation:.2f}%"
+        sizing_mode = f"user allocation {trade_allocation_float:.2f}%"
     else:
         # Fallback to existing system logic
         use_allocation_percent = os.getenv("USE_ALLOCATION_PERCENT", "false").lower() == "true"
@@ -645,7 +648,8 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                 if m15_atr:
                     m15_atr_price_units = m15_atr
                     m15_atr_pips = (m15_atr / pip_val) if pip_val > 0 else None
-                    print(f"[TRADER] M15 ATR: {m15_atr_pips:.1f} pips (execution timeframe buffer)")
+                    if m15_atr_pips is not None:
+                        print(f"[TRADER] M15 ATR: {m15_atr_pips:.1f} pips (execution timeframe buffer)")
         except Exception as e:
             print(f"[TRADER] ⚠️ Could not calculate M15 ATR: {e}")
         
