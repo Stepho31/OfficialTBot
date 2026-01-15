@@ -473,10 +473,21 @@ def calculate_units_by_allocation(balance, allocation_percent, instrument, entry
         else:
             # Conservative fallback for cross-currency where neither leg matches account currency
             units = int(allocated_value_in_acct_ccy / max(entry_price, 1e-9))
-        # Enforce reasonable bounds
-        units = max(1000, min(units, 100000))
+        # Store original calculated value for logging
+        calculated_units = units
+        # Enforce reasonable bounds (minimum only applied when user config is missing - see place_trade)
+        # For user-defined allocations, use calculated value even if below 1000 (but cap at 100000)
+        units = min(units, 100000)
+        # Only enforce minimum if calculated value would be 0 or negative (safety check)
+        if units <= 0:
+            print(f"[SIZING] ⚠️ Calculated units ({calculated_units}) <= 0, using minimum 1000")
+            units = 1000
         return units
-    except Exception:
+    except Exception as e:
+        # Log the exception for debugging
+        print(f"[SIZING] ❌ Exception in calculate_units_by_allocation: {e}")
+        import traceback
+        traceback.print_exc()
         # Fallback minimum if anything goes wrong
         return 1000
 
@@ -556,6 +567,8 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
         # Use user's trade_allocation setting directly
         # Ensure trade_allocation is a float for formatting (might be string from API/user settings)
         trade_allocation_float = float(trade_allocation)
+        print(f"[SIZING] 📊 User trade_allocation: {trade_allocation_float}%")
+        print(f"[SIZING] 📊 Balance: ${balance:.2f}, Instrument: {instrument}, Entry: {entry_price:.5f}, Account Currency: {account_currency}")
         position_size = calculate_units_by_allocation(
             balance=balance,
             allocation_percent=trade_allocation_float,
@@ -563,6 +576,7 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
             entry_price=entry_price,
             account_currency=account_currency,
         )
+        print(f"[SIZING] ✅ Calculated position_size: {position_size} units from {trade_allocation_float}% allocation")
         sizing_mode = f"user allocation {trade_allocation_float:.2f}%"
     else:
         # Fallback to existing system logic
@@ -597,6 +611,9 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
             sizing_mode = "fallback 2% of balance"
     
     units = str(position_size) if side == "buy" else str(-position_size)
+    
+    # CRITICAL DIAGNOSTIC: Log final units value before OANDA execution
+    print(f"[SIZING][FINAL] Position size: {position_size}, Units string: {units}, Side: {side}")
 
     # 📈 SL/TP logic with support for swing-based, fixed-percent, ATR-based, or explicit overrides
     use_fixed_sl_percent = os.getenv("USE_FIXED_SL_PERCENT", "false").lower() == "true"
@@ -779,6 +796,12 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
             "stopLossOnFill": {"price": str(sl_price)}
         }
     }
+    
+    # FINAL VALIDATION: Ensure units in order matches calculated position_size
+    order_units_value = int(units) if units.lstrip('-').isdigit() else None
+    if order_units_value is not None and abs(order_units_value) != position_size:
+        print(f"[SIZING][ERROR] ⚠️ MISMATCH: position_size={position_size} but order units={units} (abs={abs(order_units_value)})")
+    print(f"[SIZING][FINAL] Order units value (before OANDA API): {units} (position_size={position_size})")
 
     print(f"[TRADE] Placing {side.upper()} order on {instrument}")
     print(f"[TRADE] Balance: ${balance:.2f} | Position Size: {abs(int(units))} | Sizing: {sizing_mode}")
