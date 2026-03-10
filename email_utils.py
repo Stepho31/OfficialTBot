@@ -70,8 +70,10 @@ def send_email(subject, body, to=None):
             return False
 
     if not all([email_user, email_pass, email_to]):
-        print("[ERROR] Missing email credentials or recipient in environment variables.")
-        return
+        if not hasattr(send_email, "_warned_no_credentials"):
+            print("[EMAIL] Notifications disabled: missing EMAIL_USER, EMAIL_PASS, and/or EMAIL_TO.")
+            send_email._warned_no_credentials = True
+        return False
 
     try:
         msg = EmailMessage()

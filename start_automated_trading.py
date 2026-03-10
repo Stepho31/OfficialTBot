@@ -59,7 +59,7 @@ def check_environment():
         print(f"\n⚠️ Missing optional environment variables:")
         for var in missing_optional:
             print(f"   - {var}")
-        print("Some features (like email notifications) may not work.")
+        print("Email notifications will be disabled if EMAIL_USER, EMAIL_PASS, or EMAIL_TO are unset.")
     
     return True
 
@@ -96,24 +96,34 @@ def check_dependencies():
     return True
 
 def display_startup_info():
-    """Display startup information and configuration"""
+    """Display startup information and configuration (values actually used at runtime)."""
+    try:
+        from trading_config import get_config
+        _cfg = get_config()
+        _max_concurrent = os.getenv("MAX_CONCURRENT_TRADES")
+        max_concurrent = int(_max_concurrent) if _max_concurrent is not None else _cfg.risk_management.max_open_trades
+        max_daily = os.getenv("MAX_TRADES_PER_DAY", "15")
+    except Exception:
+        max_concurrent = int(os.getenv("MAX_CONCURRENT_TRADES", "7"))
+        max_daily = os.getenv("MAX_TRADES_PER_DAY", "15")
     print("\n🤖 AUTOMATED 4H FOREX TRADING SYSTEM")
     print("=" * 50)
-    print("📊 Configuration:")
+    print("📊 Configuration (runtime values):")
+    print("  • Execution: Enhanced (scanner -> ranking -> portfolio risk -> execution)")
     print(f"  • Risk per trade: {os.getenv('RISK_PERCENT', '1.0')}%")
-    print(f"  • Max daily trades: 10")
-    print(f"  • Max concurrent trades: 3") 
-    print(f"  • ATR SL multiplier: {os.getenv('ATR_SL_MULTIPLIER', '1.8')}")
-    print(f"  • ATR TP multiplier: {os.getenv('ATR_TP_MULTIPLIER', '3.5')}")
+    print(f"  • Max daily trades: {max_daily}")
+    print(f"  • Max concurrent trades: {max_concurrent}")
+    print(f"  • ATR SL multiplier: {os.getenv('ATR_SL_MULTIPLIER', '2.0')}")
+    print(f"  • ATR TP multiplier: {os.getenv('ATR_TP_MULTIPLIER', '2.8')}")
     print(f"  • Minimum R:R ratio: 1.6:1")
     # DRY_RUN should always be False at this point due to startup abort check
     print(f"  • Dry run mode: false (enforced)")
     
     print("\n🕐 Trading Schedule:")
     print("  • European pairs: 06:00-18:00 UTC")
-    print("  • American pairs: 12:00-22:00 UTC") 
+    print("  • American pairs: 12:00-22:00 UTC")
     print("  • Asian pairs: 22:00-10:00 UTC")
-    print("  • Scan frequency: Every 30 minutes")
+    print("  • Scan frequency: Every 15 minutes (favorable hours)")
     
     print("\n📧 Notifications:")
     print("  • Weekly reports: Sundays at 23:00 UTC")
@@ -170,6 +180,13 @@ def main():
     print("\n🎬 Starting automated trading system...")
     print("Press Ctrl+C to stop the system gracefully (when running locally)")
     print("=" * 50)
+
+    # One-time DB persistence startup validation
+    try:
+        from db_persistence import validate_db_persistence_startup
+        validate_db_persistence_startup()
+    except Exception as e:
+        print("[DB] Startup validation error:", e)
     
     # Import and start the automated trader
     try:

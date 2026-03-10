@@ -2,8 +2,9 @@
 Database persistence module for saving bot trades to Postgres database.
 
 This module provides a thin persistence layer that saves trade data
-to the same Postgres database used by OfficialTBot-api, without
-modifying any trading logic or strategy.
+to the same Postgres database used by OfficialTBot-api. It uses
+local db_models (mirror of API schema) so the bot works without
+the API package on the path.
 """
 
 import os
@@ -12,37 +13,22 @@ from datetime import datetime, timezone
 from typing import Optional, Tuple
 from decimal import Decimal
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, text
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import SQLAlchemyError
 
-# Import models from the API (optional - will gracefully degrade if unavailable)
-# We need to add the API directory to the Python path
-import sys
-from pathlib import Path
-
-# Get the workspace root (parent of both OfficialTBot and OfficialTBot-api)
-workspace_root = Path(__file__).parent.parent
-api_path = workspace_root / "OfficialTBot-api"
-
-# Add API path to sys.path if not already there
-if str(api_path) not in sys.path:
-    sys.path.insert(0, str(api_path))
-
-# Try to import models, but don't crash if unavailable
+# Use local ORM models (same schema as OfficialTBot-api app.models)
 _models_available = False
+_import_error = None
 try:
-    from app.models import Trade, Account, BrokerCredential, User
+    from db_models import Trade, Account, BrokerCredential, User
     _models_available = True
 except ImportError as e:
-    # Log but don't raise - this module will gracefully degrade
-    logging.warning(f"Database persistence models not available: {e}")
-    logging.warning("Database persistence features will be disabled. Continuing without syncing trades to database.")
-    # Create dummy classes to prevent NameError
     Trade = None
     Account = None
     BrokerCredential = None
     User = None
+    _import_error = e
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -51,30 +37,74 @@ logger = logging.getLogger(__name__)
 # Database connection
 _engine = None
 _SessionLocal = None
+_startup_validated = False
 
 
 def get_db_connection():
     """Initialize database connection using DATABASE_URL from environment."""
     global _engine, _SessionLocal
-    
+
     if not _models_available:
-        logger.warning("Database models not available, cannot initialize connection")
+        logger.warning("Database models not available: %s", _import_error)
         return None
-    
+
     if _engine is None:
         database_url = os.getenv("DATABASE_URL")
         if not database_url:
-            raise ValueError("DATABASE_URL environment variable is not set")
-        
+            logger.error("DATABASE_URL environment variable is not set")
+            return None
+
         try:
             _engine = create_engine(database_url, pool_pre_ping=True)
             _SessionLocal = sessionmaker(bind=_engine, autocommit=False, autoflush=False)
             logger.info("Database connection initialized")
         except Exception as e:
-            logger.error(f"Failed to initialize database connection: {e}")
-            raise
-    
+            logger.error("Failed to initialize database connection: %s", e)
+            return None
+
     return _SessionLocal
+
+
+def validate_db_persistence_startup() -> Tuple[bool, str]:
+    """
+    One-time startup validation: connect and run a trivial query.
+    Returns (success, message). Logs clearly whether DB persistence is ENABLED or FAILED.
+    """
+    global _startup_validated
+    if _startup_validated:
+        return True, "already validated"
+
+    if not _models_available:
+        msg = "DB persistence FAILED: models not available (%s)" % (_import_error or "unknown")
+        logger.error("[DB] %s", msg)
+        print("[DB]", msg)
+        _startup_validated = True
+        return False, msg
+
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        msg = "DB persistence FAILED: DATABASE_URL not set"
+        logger.error("[DB] %s", msg)
+        print("[DB]", msg)
+        _startup_validated = True
+        return False, msg
+
+    try:
+        engine = create_engine(database_url, pool_pre_ping=True)
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        engine.dispose()
+        msg = "DB persistence ENABLED and connected"
+        logger.info("[DB] %s", msg)
+        print("[DB]", msg)
+        _startup_validated = True
+        return True, msg
+    except Exception as e:
+        msg = "DB persistence FAILED: %s" % (e,)
+        logger.error("[DB] %s", msg)
+        print("[DB]", msg)
+        _startup_validated = True
+        return False, msg
 
 
 def get_db_session() -> Optional[Session]:
@@ -297,9 +327,10 @@ def save_trade_close(
         if pnl_net is not None:
             trade.pnl_net = Decimal(str(pnl_net))
         trade.closed_at = closed_at or datetime.now(timezone.utc)
+        trade.status = "CLOSED"
         if reason_close:
             trade.reason_close = reason_close
-        
+
         db.commit()
         logger.info(f"Trade {external_id} updated successfully (closed)")
         return True

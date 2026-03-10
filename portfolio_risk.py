@@ -207,7 +207,7 @@ def adjust_risk_for_portfolio(
         adjustments["skipped_reason"] = "correlation_exposure_above_threshold"
         adjustments["correlated_risk_pct"] = correlated_pct
         return None, adjustments
-    # If we have correlated open trades, reduce new trade risk by 30–50%
+    # If we have correlated open trades, reduce new trade risk by 30-50%
     if correlated_pct > 0 and get_correlation_group(symbol):
         mult = 1.0 - cfg.correlation_risk_reduction
         risk_pct *= mult
@@ -251,7 +251,3 @@ def adjust_risk_for_portfolio(
     adjustments["portfolio_risk_after_pct"] = portfolio_risk_pct + (risk_pct * 100.0)
     adjustments["adjusted_risk_pct"] = risk_pct * 100.0
     return risk_pct, adjustments
-</think>
-Fixing the correlation helper and completing the module.
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-StrReplace
