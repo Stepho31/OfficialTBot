@@ -575,9 +575,9 @@ class EnhancedTradingSession:
         if rr_ratio < min_rr:
             return {"allowed": False, "reason": f"Risk-reward ratio {rr_ratio:.2f} < {min_rr:.2f}"}
         
-        # Guardrail 2: RSI must not be between 45 and 55 (neutral zone)
-        if 45 <= opportunity.rsi <= 55:
-            return {"allowed": False, "reason": f"RSI {opportunity.rsi:.1f} in neutral zone (45-55)"}
+        # Guardrail 2: RSI must not be in tight neutral zone (48-52); relaxed from 45-55 to allow more valid trend continuation near RSI 50 while still blocking flat markets
+        if 48 <= opportunity.rsi <= 52:
+            return {"allowed": False, "reason": f"RSI {opportunity.rsi:.1f} in neutral zone (48-52)"}
         
         # Guardrail 3: Require at least one strong confirmation
         strong_confirmations = []
