@@ -314,8 +314,9 @@ def validate_entry_conditions(symbol, side, timeframes=["H4"], trigger_ok=None, 
     size_note = "full_size" if size_mult == 1.0 else "half_size" if size_mult == 0.5 else "skip"
     print(f"[VALIDATORS] 📊 4H Validation Score: {validation_score:.1f}/{max_score:.1f} ({validation_percentage:.1f}%) -> size={size_note}")
 
-    min_pct = float(os.getenv("H4_VALIDATION_MIN_PCT", "65"))  # Increased from 55 to 65 for 65-70% win rate
-    is_valid = validation_percentage >= min_pct
+    # Pass threshold: minimum raw score (e.g. 6.0/12) to allow trades with moderate confluence; multi-timeframe confirmation still required.
+    minimum_validation_score = float(os.getenv("MINIMUM_VALIDATION_SCORE", "6"))
+    is_valid = validation_score >= minimum_validation_score
     if is_valid:
         print(f"[VALIDATORS] ✅ Entry conditions PASSED for {side} {symbol} (recommended size: {size_note})")
     else:
