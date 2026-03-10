@@ -6,8 +6,17 @@ Uses comprehensive market analysis instead of external trade ideas
 import os
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Optional
+
+
+def _safe_fmt(value, fmt: str = ".2f", default: str = "N/A"):
+    """Format only numeric values; return default for None or non-numeric to avoid Invalid format specifier."""
+    if value is None:
+        return default
+    if isinstance(value, (int, float)):
+        return f"{value:{fmt}}"
+    return str(value)
 
 from market_scanner import get_market_opportunities, MarketOpportunity
 from trader import place_trade
@@ -144,22 +153,20 @@ class EnhancedTradingSession:
                     # Remove fractional seconds
                     clean_time = clean_time.split(".")[0] + "+00:00"
                 candle_time = datetime.fromisoformat(clean_time)
-            except:
-                # Fallback: try simpler format
+            except Exception:
+                # Fallback: try simpler format (parsed time is naive)
                 try:
                     candle_time = datetime.strptime(candle_time_str.split(".")[0], "%Y-%m-%dT%H:%M:%S")
-                except:
+                except Exception:
                     print(f"[ENHANCED] ⚠️ Could not parse candle time: {candle_time_str}")
                     return True  # Allow entry on parse error
             
-            # Use UTC for comparison
-            now = datetime.utcnow()
-            if candle_time.tzinfo:
-                # Convert to UTC if timezone-aware
-                from datetime import timezone
-                candle_time_utc = candle_time.astimezone(timezone.utc).replace(tzinfo=None)
+            # Ensure both are timezone-aware (UTC) before subtraction to avoid "can't subtract offset-naive and offset-aware datetimes"
+            now = datetime.now(timezone.utc)
+            if candle_time.tzinfo is None:
+                candle_time = candle_time.replace(tzinfo=timezone.utc)
             else:
-                candle_time_utc = candle_time
+                candle_time = candle_time.astimezone(timezone.utc)
             
             # H4 candles: 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC
             hours_into_candle = (now - candle_time).total_seconds() / 3600.0
@@ -1065,18 +1072,28 @@ class EnhancedTradingSession:
                         print(f"[ENHANCED] ⛔ Portfolio risk engine: skip trade (reason={reason})")
                         print(f"[ANALYTICS] Rejected {symbol} {direction.upper()} | reason=portfolio_cap | detail={reason}")
                         record_rejection(symbol, direction, "portfolio_cap", reason)
-                        print(f"[ENHANCED] 📊 Portfolio risk before={adj.get('portfolio_risk_before_pct', 0):.2f}% | original_risk_pct={adj.get('original_risk_pct', 0):.2f}%")
+                        p_before = _safe_fmt(adj.get("portfolio_risk_before_pct"), ".2f", "0")
+                        p_orig = _safe_fmt(adj.get("original_risk_pct"), ".2f", "0")
+                        print(f"[ENHANCED] 📊 Portfolio risk before={p_before}% | original_risk_pct={p_orig}%")
                         return None
                     risk_pct = adjusted_risk_pct
+                    p_orig = _safe_fmt(adj.get("original_risk_pct"), ".2f", "0")
+                    p_adj = _safe_fmt(adj.get("adjusted_risk_pct"), ".2f", "0")
+                    p_before = _safe_fmt(adj.get("portfolio_risk_before_pct"), ".2f", "0")
+                    p_after = _safe_fmt(adj.get("portfolio_risk_after_pct"), ".2f", "0")
                     print(
-                        f"[ENHANCED] 📊 Portfolio risk: original_risk_pct={adj.get('original_risk_pct', 0):.2f}% → adjusted_risk_pct={adj.get('adjusted_risk_pct', 0):.2f}% | "
-                        f"portfolio_before={adj.get('portfolio_risk_before_pct', 0):.2f}% → after={adj.get('portfolio_risk_after_pct', 0):.2f}%"
+                        f"[ENHANCED] 📊 Portfolio risk: original_risk_pct={p_orig}% → adjusted_risk_pct={p_adj}% | "
+                        f"portfolio_before={p_before}% → after={p_after}%"
                     )
                     if adj.get("correlation_reduction") or adj.get("portfolio_cap_reduction") or adj.get("volatility_adjustment") or adj.get("equity_adjustment"):
+                        cap_r = _safe_fmt(adj.get("portfolio_cap_reduction"), ".2f", "0")
+                        corr_r = _safe_fmt(adj.get("correlation_reduction"), ".2f", "0")
+                        vol_a = _safe_fmt(adj.get("volatility_adjustment"), ".2f", "0")
+                        eq_a = _safe_fmt(adj.get("equity_adjustment"), ".2f", "0")
                         print(
-                            f"[ENHANCED] 📊 Adjustments: cap_reduction={adj.get('portfolio_cap_reduction', 0):.2f}% "
-                            f"correlation_reduction={adj.get('correlation_reduction', 0):.2f}% "
-                            f"volatility={adj.get('volatility_adjustment', 0):.2f}% equity={adj.get('equity_adjustment', 0):.2f}%"
+                            f"[ENHANCED] 📊 Adjustments: cap_reduction={cap_r}% "
+                            f"correlation_reduction={corr_r}% "
+                            f"volatility={vol_a}% equity={eq_a}%"
                         )
                 
                 # Build meta dict with strategy metadata and ranking for performance tracking
@@ -1440,19 +1457,18 @@ class EnhancedTradingSession:
             pass
     
     def _create_trade_idea_text(self, opportunity: MarketOpportunity) -> str:
-        """Create trade idea text for compatibility with existing system"""
+        """Create trade idea text for compatibility with existing system. Safe formatting for numeric fields."""
         direction_text = "buy" if opportunity.direction == "buy" else "sell"
-        
+        reasons = (opportunity.reasons or [])[:3]
         idea_text = (
             f"{direction_text.upper()} {opportunity.symbol} - "
-            f"4H Analysis Score: {opportunity.score:.1f}. "
-            f"RSI: {opportunity.rsi:.1f}, Trend: {opportunity.trend}, "
-            f"Range Position: {opportunity.range_position:.2f}. "
-            f"Reasons: {', '.join(opportunity.reasons[:3])}. "
-            f"Session strength: {opportunity.session_strength:.2f}, "
-            f"Volatility: {opportunity.volatility:.2f}%"
+            f"4H Analysis Score: {_safe_fmt(opportunity.score, '.1f', 'N/A')}. "
+            f"RSI: {_safe_fmt(opportunity.rsi, '.1f', 'N/A')}, Trend: {opportunity.trend}, "
+            f"Range Position: {_safe_fmt(opportunity.range_position, '.2f', 'N/A')}. "
+            f"Reasons: {', '.join(reasons)}. "
+            f"Session strength: {_safe_fmt(opportunity.session_strength, '.2f', 'N/A')}, "
+            f"Volatility: {_safe_fmt(opportunity.volatility, '.2f', 'N/A')}%"
         )
-        
         return idea_text
     
     def _send_trade_notification(self, opportunity: MarketOpportunity, 
@@ -1579,38 +1595,40 @@ class EnhancedTradingSession:
     
     def _format_execution_email(self, opportunity: MarketOpportunity, 
                               trade_details: Dict) -> str:
-        """Format execution email"""
-        rr_ratio = trade_details.get("risk_reward_ratio", 0)
+        """Format execution email. Uses safe formatting to avoid Invalid format specifier on None/non-numeric values."""
+        rr_ratio = trade_details.get("risk_reward_ratio")
         plain = self._build_plain_summary(opportunity, trade_details)
-        
+        entry = trade_details.get("entry_price")
+        sl = trade_details.get("sl_price")
+        tp = trade_details.get("tp_price")
+        pos_size = trade_details.get("position_size")
         body = (
             f"Trade executed successfully!\n\n"
             f"In simple terms: {plain}\n\n"
             f"📊 OPPORTUNITY ANALYSIS:\n"
             f"Symbol: {opportunity.symbol}\n"
             f"Direction: {opportunity.direction.upper()}\n"
-            f"Score: {opportunity.score:.1f}/100 ({opportunity.confidence} confidence)\n"
-            f"Correlation Risk: {opportunity.correlation_risk:.2f}\n\n"
+            f"Score: {_safe_fmt(opportunity.score, '.1f', 'N/A')}/100 ({opportunity.confidence} confidence)\n"
+            f"Correlation Risk: {_safe_fmt(opportunity.correlation_risk, '.2f', 'N/A')}\n\n"
             f"💰 TRADE DETAILS:\n"
-            f"Entry Price: {trade_details.get('entry_price', 'N/A'):.5f}\n"
-            f"Stop Loss: {trade_details.get('sl_price', 'N/A'):.5f}\n"
-            f"Take Profit: {trade_details.get('tp_price', 'N/A'):.5f}\n"
-            f"Position Size: {trade_details.get('position_size', 'N/A')}\n"
-            f"Risk:Reward: 1:{rr_ratio:.2f}\n\n"
+            f"Entry Price: {_safe_fmt(entry, '.5f', 'N/A')}\n"
+            f"Stop Loss: {_safe_fmt(sl, '.5f', 'N/A')}\n"
+            f"Take Profit: {_safe_fmt(tp, '.5f', 'N/A')}\n"
+            f"Position Size: {pos_size if pos_size is not None else 'N/A'}\n"
+            f"Risk:Reward: 1:{_safe_fmt(rr_ratio, '.2f', 'N/A')}\n\n"
             f"📈 TECHNICAL ANALYSIS:\n"
-            f"RSI: {opportunity.rsi:.1f}\n"
+            f"RSI: {_safe_fmt(opportunity.rsi, '.1f', 'N/A')}\n"
             f"Trend: {opportunity.trend}\n"
-            f"Range Position: {opportunity.range_position:.2f}\n"
-            f"Volatility: {opportunity.volatility:.2f}%\n"
-            f"Session Strength: {opportunity.session_strength:.2f}\n\n"
+            f"Range Position: {_safe_fmt(opportunity.range_position, '.2f', 'N/A')}\n"
+            f"Volatility: {_safe_fmt(opportunity.volatility, '.2f', 'N/A')}%\n"
+            f"Session Strength: {_safe_fmt(opportunity.session_strength, '.2f', 'N/A')}\n\n"
             f"🎯 REASONS:\n"
-            + "\n".join(f"• {reason}" for reason in opportunity.reasons)
+            + "\n".join(f"• {reason}" for reason in (opportunity.reasons or []))
         )
-        
         return body
     
     def _format_dry_run_email(self, opportunity: MarketOpportunity) -> str:
-        """Format dry run email"""
+        """Format dry run email. Uses safe formatting to avoid Invalid format specifier on None/non-numeric values."""
         plain = self._build_plain_summary(opportunity, None, is_dry_run=True)
         body = (
             f"Dry run trade simulation:\n\n"
@@ -1618,20 +1636,19 @@ class EnhancedTradingSession:
             f"📊 OPPORTUNITY ANALYSIS:\n"
             f"Symbol: {opportunity.symbol}\n"
             f"Direction: {opportunity.direction.upper()}\n"
-            f"Score: {opportunity.score:.1f}/100 ({opportunity.confidence} confidence)\n\n"
+            f"Score: {_safe_fmt(opportunity.score, '.1f', 'N/A')}/100 ({opportunity.confidence} confidence)\n\n"
             f"💰 SUGGESTED LEVELS:\n"
-            f"Entry Price: {opportunity.entry_price:.5f}\n"
-            f"Stop Loss: {opportunity.suggested_sl:.5f}\n"
-            f"Take Profit: {opportunity.suggested_tp:.5f}\n\n"
+            f"Entry Price: {_safe_fmt(opportunity.entry_price, '.5f', 'N/A')}\n"
+            f"Stop Loss: {_safe_fmt(opportunity.suggested_sl, '.5f', 'N/A')}\n"
+            f"Take Profit: {_safe_fmt(opportunity.suggested_tp, '.5f', 'N/A')}\n\n"
             f"📈 TECHNICAL ANALYSIS:\n"
-            f"RSI: {opportunity.rsi:.1f}\n"
+            f"RSI: {_safe_fmt(opportunity.rsi, '.1f', 'N/A')}\n"
             f"Trend: {opportunity.trend}\n"
-            f"Range Position: {opportunity.range_position:.2f}\n"
-            f"Session Strength: {opportunity.session_strength:.2f}\n\n"
+            f"Range Position: {_safe_fmt(opportunity.range_position, '.2f', 'N/A')}\n"
+            f"Session Strength: {_safe_fmt(opportunity.session_strength, '.2f', 'N/A')}\n\n"
             f"🎯 REASONS:\n"
-            + "\n".join(f"• {reason}" for reason in opportunity.reasons)
+            + "\n".join(f"• {reason}" for reason in (opportunity.reasons or []))
         )
-        
         return body
     
     def _build_plain_summary(self, opportunity: MarketOpportunity, 
@@ -1653,7 +1670,7 @@ class EnhancedTradingSession:
         else:
             alignment_text = "meets our quality rules"
 
-        score_text = f"{opportunity.score:.1f}/100"
+        score_text = f"{_safe_fmt(opportunity.score, '.1f', 'N/A')}/100"
 
         def _fmt_price(val: Optional[float]) -> str:
             try:

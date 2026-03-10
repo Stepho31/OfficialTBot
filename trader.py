@@ -34,6 +34,15 @@ CORRELATION_GROUPS = [
 def _normalize_symbol(symbol: str) -> str:
     return symbol.upper().replace("_", "")
 
+
+def _safe_fmt(value, fmt: str = ".2f", default: str = "N/A"):
+    """Format only numeric values to avoid Invalid format specifier on None/non-numeric."""
+    if value is None:
+        return default
+    if isinstance(value, (int, float)):
+        return f"{value:{fmt}}"
+    return str(value)
+
 def _is_correlated_with_open(symbol: str, user_id=None, allow_low_risk_increment: bool = True) -> bool:
     """Return True if symbol belongs to a correlation group with any active trade symbol.
     If user_id is provided, only checks trades for that user's account.
@@ -845,23 +854,23 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
     }
 
     print(f"[TRADE] Placing {side.upper()} order on {instrument}")
-    print(f"[TRADE] Balance: ${balance:.2f} | Position Size: {abs(int(units))} | Sizing: {sizing_mode}")
-    print(f"[TRADE] Intended Entry: {intended_entry_price:.5f} | TP: {tp_price:.5f} | SL: {sl_price:.5f}")
-    print(f"[TRADE] Risk/Reward Ratio: {rr_ratio:.2f}")
+    print(f"[TRADE] Balance: ${_safe_fmt(balance, '.2f', 'N/A')} | Position Size: {abs(int(units))} | Sizing: {sizing_mode}")
+    print(f"[TRADE] Intended Entry: {_safe_fmt(intended_entry_price, '.5f', 'N/A')} | TP: {_safe_fmt(tp_price, '.5f', 'N/A')} | SL: {_safe_fmt(sl_price, '.5f', 'N/A')}")
+    print(f"[TRADE] Risk/Reward Ratio: {_safe_fmt(rr_ratio, '.2f', 'N/A')}")
     if atr:
-        print(f"[TRADE] ATR: {atr:.5f} | {'SL fixed %' if use_fixed_sl_percent else 'ATR-based SL' if atr else 'fixed % fallback'}")
+        print(f"[TRADE] ATR: {_safe_fmt(atr, '.5f', 'N/A')} | {'SL fixed %' if use_fixed_sl_percent else 'ATR-based SL' if atr else 'fixed % fallback'}")
 
     # DIAGNOSTIC LOGGING: Pre-API call validation
     print(f"[OANDA][PRE-CALL] Preparing to send order to OANDA API")
     print(f"[OANDA][PRE-CALL] Account ID: {account_id}")
     print(f"[OANDA][PRE-CALL] Client initialized: {client is not None}")
     print(f"[OANDA][PRE-CALL] Order details: side={side}, units={units}, instrument={instrument}")
-    print(f"[OANDA][PRE-CALL] Entry price: {intended_entry_price:.5f}, TP: {tp_price:.5f}, SL: {sl_price:.5f}")
+    print(f"[OANDA][PRE-CALL] Entry price: {_safe_fmt(intended_entry_price, '.5f', 'N/A')}, TP: {_safe_fmt(tp_price, '.5f', 'N/A')}, SL: {_safe_fmt(sl_price, '.5f', 'N/A')}")
     print(f"[OANDA][PRE-CALL] Order payload: {order}")
 
     try:
         # DIAGNOSTIC LOGGING: Before API call
-        print(f"[OANDA][PRE-CALL] Sending order → side={side}, units={units}, price={intended_entry_price:.5f}, account={account_id}")
+        print(f"[OANDA][PRE-CALL] Sending order → side={side}, units={units}, price={_safe_fmt(intended_entry_price, '.5f', 'N/A')}, account={account_id}")
         
         r = orders.OrderCreate(accountID=account_id, data=order)
         print(f"[OANDA][PRE-CALL] OrderCreate object created, making API request...")
@@ -893,10 +902,13 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
             print(f"[OANDA][ERROR] {error_msg}")
             raise ValueError(error_msg)
         
-        fill_price = float(order_fill.get("price", intended_entry_price))
-        
-        print(f"[OANDA][RESPONSE] Trade ID: {trade_id}, Fill Price: {fill_price:.5f}")
-        print(f"[TRADE] ✅ Order filled at: {fill_price:.5f}")
+        raw_fill = order_fill.get("price", intended_entry_price)
+        try:
+            fill_price = float(raw_fill) if raw_fill is not None else float(intended_entry_price)
+        except (TypeError, ValueError):
+            fill_price = float(intended_entry_price)
+        print(f"[OANDA][RESPONSE] Trade ID: {trade_id}, Fill Price: {_safe_fmt(fill_price, '.5f', 'N/A')}")
+        print(f"[TRADE] ✅ Order filled at: {_safe_fmt(fill_price, '.5f', 'N/A')}")
 
     except oandapyV20.exceptions.V20Error as e:
         print(f"[OANDA][ERROR] V20Error occurred during trade execution")
