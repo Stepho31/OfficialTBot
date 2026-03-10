@@ -633,6 +633,12 @@ class MarketScanner:
                 filtered.append(opp)
             else:
                 print(f"[SCANNER] ❌ {opp.symbol} {opp.direction}: Filtered out - score {opp.score:.1f} < {BASE_MIN_SCORE} (minimum threshold)")
+                print(f"[ANALYTICS] Rejected {opp.symbol} {opp.direction.upper()} | reason=score_threshold | score={opp.score:.1f}")
+                try:
+                    from performance_analytics import record_rejection
+                    record_rejection(opp.symbol, opp.direction, "score_threshold", f"score={opp.score:.1f}")
+                except Exception:
+                    pass
         
         return filtered
     

@@ -569,11 +569,11 @@ def passes_h4_hard_filters(symbol: str, side: str, relax: bool = False, oanda_cl
     else:
         print(f"[VALIDATORS] ✅ Trend aligned: {trend}")
     
-    # ADX threshold (env overrideable, stricter for 65-70% win rate)
+    # ADX threshold (env overrideable). Relaxed slightly to increase signal throughput while keeping trend filter.
     try:
-        base_adx = float(os.getenv("H4_MIN_ADX", "20.0"))  # Increased from 17.0 to 20.0 for 65-70% win rate
+        base_adx = float(os.getenv("H4_MIN_ADX", "18.0"))  # Reduced from 20 to 18 for controlled profitability improvement
     except Exception:
-        base_adx = 20.0
+        base_adx = 18.0
     
     # Only allow counter-trend when H4 structure is VERY strong (ADX≥25) for 65-70% win rate
     h4_very_strong = (adx is not None and adx >= 25 and 
@@ -596,12 +596,12 @@ def passes_h4_hard_filters(symbol: str, side: str, relax: bool = False, oanda_cl
         print(f"[VALIDATORS] ❌ ADX too low: {adx:.1f} < {adx_threshold:.1f}")
         return False
     
-    # ATR% window: prefer moderate volatility (env overrideable)
+    # ATR% window: prefer moderate volatility (env overrideable). Expanded slightly to allow more valid setups.
     try:
-        min_atr_pct = float(os.getenv("H4_MIN_ATR_PCT", "0.22"))
-        max_atr_pct = float(os.getenv("H4_MAX_ATR_PCT", "3.2"))
+        min_atr_pct = float(os.getenv("H4_MIN_ATR_PCT", "0.18"))  # 0.22 -> 0.18 for controlled profitability improvement
+        max_atr_pct = float(os.getenv("H4_MAX_ATR_PCT", "3.5"))   # 3.2 -> 3.5
     except Exception:
-        min_atr_pct, max_atr_pct = 0.25, 3.2
+        min_atr_pct, max_atr_pct = 0.18, 3.5
     
     if not (min_atr_pct <= atr_pct <= max_atr_pct):
         print(f"[VALIDATORS] ❌ ATR% out of range: {atr_pct:.2f}% not in [{min_atr_pct}, {max_atr_pct}]%")

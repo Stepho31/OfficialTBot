@@ -104,7 +104,7 @@ def display_startup_info():
         max_concurrent = int(_max_concurrent) if _max_concurrent is not None else _cfg.risk_management.max_open_trades
         max_daily = os.getenv("MAX_TRADES_PER_DAY", "15")
     except Exception:
-        max_concurrent = int(os.getenv("MAX_CONCURRENT_TRADES", "7"))
+        max_concurrent = int(os.getenv("MAX_CONCURRENT_TRADES", "10"))
         max_daily = os.getenv("MAX_TRADES_PER_DAY", "15")
     print("\n🤖 AUTOMATED 4H FOREX TRADING SYSTEM")
     print("=" * 50)
@@ -112,7 +112,7 @@ def display_startup_info():
     print("  • Execution: Enhanced (scanner -> ranking -> portfolio risk -> execution)")
     print(f"  • Risk per trade: {os.getenv('RISK_PERCENT', '1.0')}%")
     print(f"  • Max daily trades: {max_daily}")
-    print(f"  • Max concurrent trades: {max_concurrent}")
+    print(f"  • Max concurrent trades: {max_concurrent} (default 10)")
     print(f"  • ATR SL multiplier: {os.getenv('ATR_SL_MULTIPLIER', '2.0')}")
     print(f"  • ATR TP multiplier: {os.getenv('ATR_TP_MULTIPLIER', '2.8')}")
     print(f"  • Minimum R:R ratio: 1.6:1")
@@ -123,7 +123,7 @@ def display_startup_info():
     print("  • European pairs: 06:00-18:00 UTC")
     print("  • American pairs: 12:00-22:00 UTC")
     print("  • Asian pairs: 22:00-10:00 UTC")
-    print("  • Scan frequency: Every 15 minutes (favorable hours)")
+    print("  • Scan frequency: Every 10 minutes (favorable hours), 30 min (slow periods)")
     
     print("\n📧 Notifications:")
     print("  • Weekly reports: Sundays at 23:00 UTC")

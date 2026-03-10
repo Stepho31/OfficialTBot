@@ -24,6 +24,7 @@ from validators import validate_entry_conditions, passes_h4_hard_filters
 from smart_layer import plan_trade
 from circuit_breaker import get_circuit_breaker_status
 from portfolio_risk import adjust_risk_for_portfolio
+from performance_analytics import record_rejection
 from signal_ranking import (
     rank_and_sort_opportunities,
     get_risk_multiplier_by_ranking,
@@ -71,7 +72,7 @@ class EnhancedTradingSession:
 
         # Global per-user concurrency cap (all strategies combined).
         # Strategy-level caps are enforced inside this session object.
-        self.max_concurrent_trades = int(os.getenv("MAX_CONCURRENT_TRADES", "7"))
+        self.max_concurrent_trades = int(os.getenv("MAX_CONCURRENT_TRADES", "10"))  # Raised from 7 for controlled profitability; portfolio/correlation limits unchanged
 
         # Use BASE_MIN_SCORE as the default minimum opportunity score for consistency
         self.min_opportunity_score = BASE_MIN_SCORE
@@ -376,7 +377,7 @@ class EnhancedTradingSession:
                     if score >= BASE_MIN_SCORE:
                         pass
                     elif FREQUENCY_MIN_SCORE <= score < BASE_MIN_SCORE:
-                        # Tier-2 band (60-64): allow at most one per session with stronger risk filters
+                        # Tier-2 band (55-59): allow at most one per session with stronger risk filters
                         if self.tier2_taken:
                             print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Tier-2 slot already used")
                             self.session_stats["trades_skipped"] += 1
@@ -434,6 +435,8 @@ class EnhancedTradingSession:
                         if not gate.get("allow", False):
                             blocks = gate.get('blocks', [])
                             blocks_str = ', '.join(blocks) if blocks else 'unknown reason'
+                            print(f"[ANALYTICS] Rejected {opportunity.symbol} {opportunity.direction.upper()} | reason=idea_gate | blocks={blocks_str}")
+                            record_rejection(opportunity.symbol, opportunity.direction, "idea_gate", blocks_str)
                             print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Gate blocked on recheck {j+1} (blocks: {blocks_str})")
                             self._send_admin_rejection_notification(opportunity, f"Gate blocked: {blocks_str} (recheck {j+1})", user)
                             proceed = False
@@ -640,6 +643,8 @@ class EnhancedTradingSession:
             # Regular mode: Score threshold
             if opp.score < self.min_opportunity_score:
                 print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - Score {opp.score:.1f} below minimum threshold {self.min_opportunity_score:.1f}")
+                print(f"[ANALYTICS] Rejected {opp.symbol} {opp.direction.upper()} | reason=score_threshold | score={opp.score:.1f}")
+                record_rejection(opp.symbol, opp.direction, "score_threshold", f"score={opp.score:.1f}")
                 continue
             
             # Check confidence level
@@ -647,16 +652,21 @@ class EnhancedTradingSession:
                 required_score = self.min_opportunity_score + 5
                 if opp.score < required_score:
                     print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - Low confidence requires score ≥{required_score:.1f}, got {opp.score:.1f}")
+                    print(f"[ANALYTICS] Rejected {opp.symbol} {opp.direction.upper()} | reason=low_confidence | score={opp.score:.1f}")
+                    record_rejection(opp.symbol, opp.direction, "low_confidence", f"score={opp.score:.1f}")
                     continue
                 print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: Low confidence but score sufficient ({opp.score:.1f} ≥ {required_score:.1f})")
             
             # Correlation no longer reduces scores - it's handled as exposure-based blocking in user filtering
-            # Session timing check (soft gate on 4H)
-            if opp.session_strength < 0.4:
+            # Session timing check (soft gate on 4H). Relaxed from 0.4 to 0.35 to increase signal throughput.
+            SESSION_GATE = 0.35  # was 0.4; filters relaxed slightly to allow more valid opportunities
+            if opp.session_strength < SESSION_GATE:
                 penalty = 3.0  # small soft penalty instead of hard skip
                 effective_score = opp.score - penalty
                 if effective_score < self.min_opportunity_score:
                     print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - Poor session timing ({opp.session_strength:.2f}) reduces score to {effective_score:.1f} (below {self.min_opportunity_score:.1f})")
+                    print(f"[ANALYTICS] Rejected {opp.symbol} {opp.direction.upper()} | reason=session_filter | session_strength={opp.session_strength:.2f}")
+                    record_rejection(opp.symbol, opp.direction, "session_filter", f"session_strength={opp.session_strength:.2f}")
                     continue  # only skip if still below floor after penalty cushion
                 print(f"[ENHANCED] ⚠️ {opp.symbol} {opp.direction}: Poor session timing ({opp.session_strength:.2f}) but score sufficient after penalty")
             
@@ -683,11 +693,15 @@ class EnhancedTradingSession:
             # Check if user already has a position on this pair
             if has_user_position_on_pair(user_client, user_account_id, opp.symbol, opp.direction):
                 print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - User already has open {opp.direction} position on this pair")
+                print(f"[ANALYTICS] Rejected {opp.symbol} {opp.direction.upper()} | reason=existing_position")
+                record_rejection(opp.symbol, opp.direction, "existing_position", None)
                 continue
             
             # Check if user has this pair active (any direction)
             if symbol_clean in user_active_pairs:
                 print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - User already has active position on {symbol_clean} (any direction)")
+                print(f"[ANALYTICS] Rejected {opp.symbol} {opp.direction.upper()} | reason=existing_position")
+                record_rejection(opp.symbol, opp.direction, "existing_position", None)
                 continue
             
             # Exposure-based correlation blocking (only when user has open positions)
@@ -712,6 +726,8 @@ class EnhancedTradingSession:
                 # Block only if correlation risk >= 0.7 and there's exposure
                 if has_correlation_exposure and opp.correlation_risk >= 0.7:
                     print(f"[ENHANCED] ❌ {opp.symbol} {opp.direction}: REJECTED - Correlation exposure (risk {opp.correlation_risk:.2f} >= 0.7) with existing positions")
+                    print(f"[ANALYTICS] Rejected {opp.symbol} {opp.direction.upper()} | reason=correlation_exposure | correlation_risk={opp.correlation_risk:.2f}")
+                    record_rejection(opp.symbol, opp.direction, "correlation_exposure", f"correlation_risk={opp.correlation_risk:.2f}")
                     continue
             
             filtered.append(opp)
@@ -1047,6 +1063,8 @@ class EnhancedTradingSession:
                     if adjusted_risk_pct is None:
                         reason = adj.get("skipped_reason", "unknown")
                         print(f"[ENHANCED] ⛔ Portfolio risk engine: skip trade (reason={reason})")
+                        print(f"[ANALYTICS] Rejected {symbol} {direction.upper()} | reason=portfolio_cap | detail={reason}")
+                        record_rejection(symbol, direction, "portfolio_cap", reason)
                         print(f"[ENHANCED] 📊 Portfolio risk before={adj.get('portfolio_risk_before_pct', 0):.2f}% | original_risk_pct={adj.get('original_risk_pct', 0):.2f}%")
                         return None
                     risk_pct = adjusted_risk_pct

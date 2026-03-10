@@ -73,10 +73,13 @@ def add_trade(symbol, direction, entry_price, trade_id, **additional_data):
         print(f"[CACHE] ⚠️ Duplicate trade_id {trade_id}; not adding.")
         return False
 
-    # Optional: prevent multiple positions same symbol+direction
-    if any(t.get("symbol") == clean_symbol and t.get("direction") == direction.lower() for t in trades):
-        print(f"[CACHE] ⚠️ Existing {clean_symbol} {direction.upper()} already active; not adding.")
-        return False
+    # Allow same symbol+direction when adding a pyramid child (parent_trade_id set)
+    is_pyramid_add = "parent_trade_id" in additional_data
+    if not is_pyramid_add:
+        # Optional: prevent multiple positions same symbol+direction (except pyramid adds)
+        if any(t.get("symbol") == clean_symbol and t.get("direction") == direction.lower() for t in trades):
+            print(f"[CACHE] ⚠️ Existing {clean_symbol} {direction.upper()} already active; not adding.")
+            return False
 
     trade = {
         "symbol": clean_symbol,

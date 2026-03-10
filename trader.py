@@ -479,14 +479,18 @@ def calculate_units_by_allocation(balance, allocation_percent, instrument, entry
         # Fallback minimum if anything goes wrong
         return 1000
 
-def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_price=None, meta=None, client=None, account_id=None, user_id=None, trade_allocation=None):
+def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_price=None, meta=None, client=None, account_id=None, user_id=None, trade_allocation=None,
+                units_override=None, strategy_id=None, instrument_override=None, direction_override=None):
     """
     Place a trade using the provided OANDA client and account_id.
     If client/account_id are not provided, falls back to environment variables (legacy behavior).
     NOTE: Per-user credentials should be passed explicitly via client and account_id parameters.
+
+    When strategy_id=="PYRAMID_ADD", instrument_override, direction_override, units_override are required;
+    sl_price and tp_price must be set (same as parent). Validation is skipped; used for adding to winning positions.
     
     Args:
-        trade_idea: Trade idea text
+        trade_idea: Trade idea text (or dict with instrument/side when strategy_id=PYRAMID_ADD)
         direction: Trade direction ('buy' or 'sell')
         risk_pct: Risk percentage (as fraction, e.g., 0.01 for 1%)
         sl_price: Stop loss price (optional)
@@ -496,6 +500,10 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
         account_id: OANDA account ID (optional, uses env if not provided - legacy only)
         user_id: User ID for database tracking (optional)
         trade_allocation: Trade allocation percentage from user settings (optional, defaults to system logic)
+        units_override: When strategy_id=PYRAMID_ADD, position size in units (no risk calc).
+        strategy_id: When "PYRAMID_ADD", use overrides and skip entry validation.
+        instrument_override: When strategy_id=PYRAMID_ADD, instrument (e.g. EUR_USD).
+        direction_override: When strategy_id=PYRAMID_ADD, 'buy' or 'sell'.
     """
     if account_id is None:
         account_id = os.getenv("OANDA_ACCOUNT_ID")
@@ -506,6 +514,66 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
         if not token:
             raise ValueError("OANDA_API_KEY must be provided via client parameter or set in environment (legacy mode)")
         client = oandapyV20.API(access_token=token, environment="live")
+
+    is_pyramid_add = strategy_id == "PYRAMID_ADD"
+    if is_pyramid_add:
+        if not all([instrument_override, direction_override is not None, units_override is not None, sl_price is not None, tp_price is not None]):
+            raise ValueError("PYRAMID_ADD requires instrument_override, direction_override, units_override, sl_price, tp_price")
+        instrument = instrument_override.replace(" ", "_") if isinstance(instrument_override, str) else instrument_override
+        side = direction_override.lower() if isinstance(direction_override, str) else str(direction_override).lower()
+        position_size = max(1000, int(units_override))
+        # Get current price for entry
+        current_price = get_current_price(client, account_id, instrument, side)
+        time.sleep(0.5)
+        stable_price = get_current_price(client, account_id, instrument, side)
+        if side == "buy":
+            intended_entry_price = min(current_price, stable_price)
+        else:
+            intended_entry_price = max(current_price, stable_price)
+        entry_price = float(intended_entry_price)
+        sl_price = round_price(instrument, float(sl_price))
+        tp_price = round_price(instrument, float(tp_price))
+        units = str(position_size) if side == "buy" else str(-position_size)
+        order = {
+            "order": {
+                "instrument": instrument,
+                "units": units,
+                "type": "MARKET",
+                "positionFill": "DEFAULT",
+                "takeProfitOnFill": {"price": str(tp_price)},
+                "stopLossOnFill": {"price": str(sl_price)}
+            }
+        }
+        print(f"[TRADE][PYRAMID] Placing add: {side.upper()} {instrument} units={position_size} (strategy_id=PYRAMID_ADD)")
+        try:
+            r = orders.OrderCreate(accountID=account_id, data=order)
+            client.request(r)
+            order_fill = r.response.get("orderFillTransaction", {})
+            new_trade_id = None
+            if "tradeOpened" in order_fill:
+                new_trade_id = order_fill["tradeOpened"].get("tradeID")
+            if not new_trade_id and "tradesOpened" in order_fill:
+                to_list = order_fill["tradesOpened"]
+                if isinstance(to_list, list) and to_list:
+                    new_trade_id = to_list[0].get("tradeID")
+            if not new_trade_id:
+                raise ValueError("Pyramid order filled but no tradeID in response")
+            trade_details = {
+                "trade_id": new_trade_id,
+                "instrument": instrument,
+                "side": side,
+                "entry_price": entry_price,
+                "position_size": position_size,
+                "sl_price": sl_price,
+                "tp_price": tp_price,
+                "strategy_id": "PYRAMID_ADD",
+            }
+            if meta:
+                trade_details["meta"] = meta
+            return trade_details
+        except Exception as e:
+            print(f"[TRADE][PYRAMID] Order failed: {e}")
+            raise
 
     side = direction.lower() if direction else infer_trade_direction(trade_idea)
     if not side:

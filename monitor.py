@@ -4,13 +4,16 @@ import json
 import oandapyV20
 import oandapyV20.endpoints.pricing as pricing
 from oandapyV20.endpoints.trades import TradeClose, TradeDetails, TradeCRCDO
-from trade_cache import remove_trade
+from trade_cache import remove_trade, add_trade, update_trade, load_trades, get_trade_by_id
 from trading_log import add_log_entry
+from trading_config import get_config
+from trader import place_trade
+from performance_analytics import record_completed_trade
 from validators import get_momentum_signals, get_h4_trend_adx_atr_percent  # ADX live
 # ^ added get_h4_trend_adx_atr_percent
 from db_persistence import update_trade_close_from_oanda_account
 from datetime import datetime, timezone
-from typing import Dict
+from typing import Dict, Optional
 
 CACHE_FILE = "active_trades.json"
 
@@ -39,6 +42,65 @@ def round_price_by_pair(pair, price):
         return round(price, 2)
     else:
         return round(price, 5)
+
+
+def _realized_pips_and_r(entry_price: float, exit_price: Optional[float], sl_price: float, side: str, instrument: str):
+    """Compute realized pips and R multiple for analytics (reporting only). Returns (realized_pips, risk_pips, r_multiple)."""
+    if exit_price is None:
+        return 0.0, 0.0, None
+    pip_val = 0.01 if "JPY" in instrument else 0.0001
+    mult = 100 if "JPY" in instrument else 10000
+    risk_pips = abs(entry_price - sl_price) / pip_val if pip_val else 0.0
+    if side == "buy":
+        realized_pips = (exit_price - entry_price) * mult
+    else:
+        realized_pips = (entry_price - exit_price) * mult
+    r_mult = (realized_pips / risk_pips) if risk_pips > 0 else None
+    return realized_pips, risk_pips, r_mult
+
+
+def _record_completed_trade_analytics(
+    trade_id,
+    instrument: str,
+    side: str,
+    entry_price: float,
+    sl_price: float,
+    exit_price: Optional[float],
+    pnl_net: Optional[float],
+    close_reason: str,
+    position_size: int,
+) -> None:
+    """Record one completed trade to performance analytics (reporting only). No strategy/exit logic changed."""
+    try:
+        cached = get_trade_by_id(str(trade_id))
+        if not cached:
+            return
+        realized_pips, _risk_pips, r_mult = _realized_pips_and_r(entry_price, exit_price, sl_price, side, instrument)
+        score = cached.get("ranking_score") or cached.get("quality_score")
+        score_band_60_64 = score is not None and 60 <= score < 65
+        pyramid_units = int(cached.get("pyramid_units_added") or 0)
+        record_completed_trade(
+            trade_id=str(trade_id),
+            instrument=instrument,
+            direction=side,
+            strategy=cached.get("strategy_id") or "4H_MAIN",
+            entry_time=cached.get("timestamp") or datetime.now(timezone.utc).isoformat(),
+            exit_time=datetime.now(timezone.utc).isoformat(),
+            score_at_entry=score,
+            score_band_60_64=score_band_60_64,
+            initial_units=int(cached.get("initial_units") or position_size),
+            realized_pips=realized_pips,
+            realized_r_multiple=r_mult,
+            hit_breakeven=bool(cached.get("moved_to_break_even", False)),
+            partial_taken=bool(cached.get("partial_profit_taken", False)),
+            trailing_closed=(close_reason == "CLOSED_TRAILING"),
+            had_pyramid_adds=(pyramid_units > 0),
+            pyramid_units_added=pyramid_units,
+            realized_pnl=pnl_net,
+            reason_exit=close_reason,
+        )
+    except Exception as e:
+        print(f"[ANALYTICS] ⚠️ Could not record completed trade: {e}")
 
 
 def calculate_trailing_stop(entry_price, current_price, side, trail_distance):
@@ -178,6 +240,17 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
     side = trade_details["side"].lower()
     trade_id = trade_details.get("trade_id", "manual")
     position_size = trade_details.get("position_size", 1000)
+    # Initial units for pyramid sizing (persist to cache if not set)
+    initial_units = trade_details.get("initial_units") or trade_details.get("position_size", 1000)
+    if "initial_units" not in trade_details:
+        try:
+            update_trade(str(trade_id), {"initial_units": initial_units})
+        except Exception:
+            pass
+    # Pyramiding: only parent trades can add; children have parent_trade_id
+    is_pyramid_child = bool(trade_details.get("parent_trade_id"))
+    pyramid_stage_1_complete = trade_details.get("pyramid_stage_1_complete", False)
+    pyramid_stage_2_complete = trade_details.get("pyramid_stage_2_complete", False)
     atr = trade_details.get("atr")
 
     # NEW: read smart meta if provided
@@ -293,7 +366,8 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
                         print(f"[DB] ❌ Error saving trade close to database: {db_error}")
                 except Exception as e:
                     print(f"[MONITOR] ⚠️ Could not get final trade details: {e}")
-                
+                # Performance analytics (reporting only)
+                _record_completed_trade_analytics(trade_id, instrument, side, entry_price, sl_price, exit_price, pnl_net, close_reason, position_size)
                 remove_trade(trade_id)
                 return {"status": close_reason, "message": f"Trade closed: {close_reason}"}
 
@@ -354,7 +428,8 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
                         print(f"[DB] ❌ Error saving trade close to database: {db_error}")
                 except Exception as e:
                     print(f"[MONITOR] ⚠️ Could not update database for closed trade: {e}")
-                
+                # Performance analytics (reporting only)
+                _record_completed_trade_analytics(trade_id, instrument, side, entry_price, sl_price, exit_price, pnl_net, close_reason, position_size)
                 remove_trade(trade_id)
                 return {"status": close_reason, "message": f"Trade closed: {close_reason}"}
 
@@ -380,31 +455,137 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
             # # (All your trailing stop, partial, and exit logic continues here...)
 
             # time.sleep(10)
-            # === Move SL to breakeven at 1.0R ===
-            # This gives trades more room to develop before locking risk
-            be_trigger_r = 1.0
+            # === Move SL to breakeven at 1.2R ===
+            # Allow profitable trades to run longer: trigger BE at 1.2R (was 1.0R) for controlled profitability improvement
+            be_trigger_r = 1.2
             if not moved_to_break_even and risk_pips > 0 and pips_profit >= be_trigger_r * risk_pips:
                 be_price = entry_price if side == "buy" else entry_price
                 if update_trailing_stop(client, account_id, trade_id, be_price):
                     moved_to_break_even = True
                     current_sl = be_price
+                    try:
+                        update_trade(str(trade_id), {"moved_to_break_even": True})
+                    except Exception:
+                        pass
                     print(f"[MONITOR] 🛡️ Moved SL to breakeven at {be_price} (triggered at {be_trigger_r}R = {pips_profit:.1f} pips)")
 
+            # === Pyramiding into winners: add positions at +0.5R and +1.0R (only parent trades, after BE) ===
+            # Explicit guard: do not pyramid unless SL has already been moved to breakeven (risk control).
+            if not moved_to_break_even:
+                pass  # skip pyramid block entirely until BE is reached
+            elif not is_pyramid_child and risk_pips > 0:
+                r_multiple = pips_profit / risk_pips
+                # Portfolio cap: do not add if at max concurrent trades
+                try:
+                    active_trades = load_trades()
+                    max_open = get_config().risk_management.max_open_trades
+                    if len(active_trades) >= max_open:
+                        pass  # skip pyramid this cycle
+                    else:
+                        atr_pct = trade_details.get("atr_pct")
+                        if atr_pct is not None and atr_pct > 2.5:
+                            pass  # volatility spike, skip pyramid
+                        elif not pyramid_stage_1_complete and r_multiple >= 0.5:
+                            second_units = max(1000, int(initial_units * 0.5))
+                            try:
+                                new_td = place_trade(
+                                    trade_details,
+                                    direction=side,
+                                    sl_price=sl_price,
+                                    tp_price=tp_price,
+                                    client=client,
+                                    account_id=account_id,
+                                    strategy_id="PYRAMID_ADD",
+                                    instrument_override=instrument,
+                                    direction_override=side,
+                                    units_override=second_units,
+                                )
+                                if new_td and new_td.get("trade_id"):
+                                    add_trade(
+                                        instrument.replace(" ", "_"),
+                                        side,
+                                        new_td["entry_price"],
+                                        new_td["trade_id"],
+                                        position_size=second_units,
+                                        sl_price=sl_price,
+                                        tp_price=tp_price,
+                                        atr=atr,
+                                        meta=meta,
+                                        parent_trade_id=str(trade_id),
+                                        pyramid_stage=1,
+                                        initial_units=second_units,
+                                    )
+                                    update_trade(str(trade_id), {"pyramid_stage_1_complete": True})
+                                    try:
+                                        parent = get_trade_by_id(str(trade_id))
+                                        prev = int((parent or {}).get("pyramid_units_added", 0))
+                                        update_trade(str(trade_id), {"pyramid_units_added": prev + second_units})
+                                    except Exception:
+                                        pass
+                                    pyramid_stage_1_complete = True
+                                    print(f"[PYRAMID] Adding second position for {instrument} (0.5R reached) | +{second_units} units")
+                            except Exception as e:
+                                print(f"[PYRAMID] Could not add second position: {e}")
+                        elif pyramid_stage_1_complete and not pyramid_stage_2_complete and r_multiple >= 1.0:
+                            third_units = max(1000, int(initial_units * 0.3))
+                            try:
+                                new_td = place_trade(
+                                    trade_details,
+                                    direction=side,
+                                    sl_price=sl_price,
+                                    tp_price=tp_price,
+                                    client=client,
+                                    account_id=account_id,
+                                    strategy_id="PYRAMID_ADD",
+                                    instrument_override=instrument,
+                                    direction_override=side,
+                                    units_override=third_units,
+                                )
+                                if new_td and new_td.get("trade_id"):
+                                    add_trade(
+                                        instrument.replace(" ", "_"),
+                                        side,
+                                        new_td["entry_price"],
+                                        new_td["trade_id"],
+                                        position_size=third_units,
+                                        sl_price=sl_price,
+                                        tp_price=tp_price,
+                                        atr=atr,
+                                        meta=meta,
+                                        parent_trade_id=str(trade_id),
+                                        pyramid_stage=2,
+                                        initial_units=third_units,
+                                    )
+                                    update_trade(str(trade_id), {"pyramid_stage_2_complete": True})
+                                    try:
+                                        parent = get_trade_by_id(str(trade_id))
+                                        prev = int((parent or {}).get("pyramid_units_added", 0))
+                                        update_trade(str(trade_id), {"pyramid_units_added": prev + third_units})
+                                    except Exception:
+                                        pass
+                                    pyramid_stage_2_complete = True
+                                    print(f"[PYRAMID] Adding third position for {instrument} (1R reached) | +{third_units} units")
+                            except Exception as e:
+                                print(f"[PYRAMID] Could not add third position: {e}")
+                except Exception as e:
+                    print(f"[PYRAMID] Check failed: {e}")
+
             # === Progressive trailing: loose early, tighten as profit expands ===
+            # Widened slightly to allow more room for trend continuation (controlled profitability improvement)
             if moved_to_break_even and atr:
                 # Calculate progressive trailing distance based on profit multiple
                 profit_r = pips_profit / risk_pips if risk_pips > 0 else 0
                 
-                # Progressive trailing: loose early, tighten as profit grows
+                # Progressive trailing: slightly wider bands to let trends run (was 1.5 / 1.2 / 1.0)
                 if profit_r < 1.5:
-                    # Early stage: loose trailing (1.5x ATR) before 1.5R
-                    progressive_trail_mult = 1.5
+                    # Early stage: loose trailing (1.65x ATR) before 1.5R
+                    progressive_trail_mult = 1.65
                 elif profit_r < 2.0:
-                    # Mid stage: moderate trailing (1.2x ATR) between 1.5R and 2R
-                    progressive_trail_mult = 1.2
+                    # Mid stage: moderate trailing (1.3x ATR) between 1.5R and 2R
+                    progressive_trail_mult = 1.3
                 else:
-                    # Late stage: tight trailing (1.0x ATR) beyond 2R
-                    progressive_trail_mult = 1.0
+                    # Late stage: tight trailing (1.1x ATR) beyond 2R
+                    progressive_trail_mult = 1.1
                 
                 progressive_trail_distance = atr * progressive_trail_mult
                 step_price = calculate_trailing_stop(entry_price, current_price, side, progressive_trail_distance)
@@ -414,14 +595,17 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
                         current_sl = step_price
                         print(f"[MONITOR] 🔧 Progressive trailing SL moved to {step_price} (mult={progressive_trail_mult:.1f}x, profit={profit_r:.1f}R)")
                         
-                        # === Reduced partial profit taking: 25% instead of 40%, higher threshold ===
-                        # This preserves more position for trend continuation
-                if not partial_profit_taken and pips_profit >= max(40 if "JPY" in instrument else 45, risk_pips * 1.5):
+                        # === Partial profit: 25% at 2.0R (was 1.5R) to allow profitable trades to run longer ===
+                if not partial_profit_taken and pips_profit >= max(40 if "JPY" in instrument else 45, risk_pips * 2.0):
                     try:
                         partial_size = max(1, int(current_units * 0.25))  # Reduced from 0.4 (40%) to 0.25 (25%)
                         close_req = TradeClose(accountID=account_id, tradeID=trade_id, data={"units": str(partial_size)})
                         client.request(close_req)
                         partial_profit_taken = True
+                        try:
+                            update_trade(str(trade_id), {"partial_profit_taken": True})
+                        except Exception:
+                            pass
                         print(f"[MONITOR] 💰 Partial close {partial_size} units (25% of position) at {current_price} ({pips_profit:.1f} pips)")
                     except Exception as e:
                         print(f"[MONITOR] ❌ Partial close failed: {e}")
@@ -477,6 +661,8 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
     except Exception as e:
         print(f"[MONITOR] ⚠️ Could not update database before exit: {e}")
 
+    # Performance analytics (reporting only)
+    _record_completed_trade_analytics(trade_id, instrument, side, entry_price, sl_price, exit_price, pnl_net, close_reason, position_size)
     remove_trade(trade_id)
     return {"status": "DONE"}
 

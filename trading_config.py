@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 # Score constants for consistent execution thresholds across scanner, filters, and execution
-# TARGET: 65-70% win rate with slightly higher frequency
-# Primary trades: score >= 65
-# Tier-2 trades: 60 <= score <= 64 (tightly controlled, at most one per session)
-BASE_MIN_SCORE = 65
-FREQUENCY_MIN_SCORE = 60  # Lower bound for Tier-2 / secondary opportunities
+# Relaxed slightly to increase signal throughput while maintaining discipline (controlled profitability improvement).
+# Primary trades: score >= 60
+# Tier-2 trades: 55 <= score < 60 (tightly controlled, at most one per session)
+BASE_MIN_SCORE = 60
+FREQUENCY_MIN_SCORE = 55  # Lower bound for Tier-2 / secondary opportunities
 
 @dataclass
 class RiskManagement:
@@ -21,17 +21,24 @@ class RiskManagement:
     max_position_size: int = 100000    # Maximum position size
     # Global per-user concurrent trade cap (all strategies combined).
     # Strategy-level caps (e.g. 5 main, 2 scalp) are enforced in the orchestrator.
-    max_open_trades: int = 7
+    # Raised to 10 for controlled profitability improvement; portfolio/correlation/drawdown limits unchanged.
+    max_open_trades: int = 10
     
     # ATR-based settings
     atr_sl_multiplier: float = 1.6     # Tuned SL distance in ATR (1.5–1.8)
     atr_tp_multiplier: float = 2.8     # Tuned TP distance in ATR (2.5–3.2)
     atr_trail_multiplier: float = 1.1  # Trail distance in ATR (1.0–1.2)
 
+@dataclass
+class ScanTiming:
+    """Scan frequency (seconds). Increased scan frequency to capture more trade opportunities without increasing portfolio risk."""
+    active_scan_interval_sec: int = 600   # 10 minutes during active trading windows
+    slow_scan_interval_sec: int = 1800   # 30 minutes during slow periods
+
 @dataclass 
 class EntryValidation:
     """Entry validation configuration for 4H trading"""
-    min_validation_score: float = 65.0  # Increased for 65-70% win rate target (was 60.0)
+    min_validation_score: float = 60.0  # Relaxed slightly to increase signal throughput (was 65.0)
     max_spread_regular: float = 0.00030   # Slightly tighter to improve execution
     max_spread_jpy: float = 0.050        # Increased for JPY pairs (was 0.030) - allows normal spreads on volatile pairs like GBP_JPY
     max_spread_metals: float = 0.060      # Tighter for precious metals
@@ -117,6 +124,7 @@ class TradingConfig:
         self.exit_management = ExitManagement()
         self.trading_hours = TradingHours()
         self.gpt_config = GPTConfig()
+        self.scan_timing = ScanTiming()
         
         # Load environment overrides
         self._load_env_overrides()
@@ -137,7 +145,18 @@ class TradingConfig:
         # Max concurrent trades
         try:
             self.risk_management.max_open_trades = int(
-                os.getenv("MAX_CONCURRENT_TRADES", self.risk_management.max_open_trades)
+                os.getenv("MAX_CONCURRENT_TRADES", str(self.risk_management.max_open_trades))
+            )
+        except Exception:
+            pass
+
+        # Scan timing overrides (increased scan frequency to capture more opportunities without increasing portfolio risk)
+        try:
+            self.scan_timing.active_scan_interval_sec = int(
+                os.getenv("ACTIVE_SCAN_INTERVAL", str(self.scan_timing.active_scan_interval_sec))
+            )
+            self.scan_timing.slow_scan_interval_sec = int(
+                os.getenv("SLOW_SCAN_INTERVAL", str(self.scan_timing.slow_scan_interval_sec))
             )
         except Exception:
             pass

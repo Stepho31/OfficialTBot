@@ -19,6 +19,7 @@ from monitor import monitor_trade, monitor_open_trades
 from email_utils import send_email
 from trade_cache import get_active_trades, is_trade_active, add_trade, remove_trade, sync_cache_with_broker, validate_and_cleanup_cache
 from trading_log import add_log_entry, get_weekly_performance, generate_and_save_weekly_snapshot
+from trading_config import get_config
 from validators import validate_entry_conditions
 from db_persistence import update_trade_close_from_oanda_account
 import oandapyV20
@@ -34,7 +35,7 @@ class TradingState:
     weekly_stats: Dict = None
     total_trades_today: int = 0
     max_trades_per_day: int = 15  # Increased from 10 to allow more daily activity
-    max_concurrent_trades: int = 7  # Align with trading_config.risk_management.max_open_trades
+    max_concurrent_trades: int = 10  # Align with trading_config.risk_management.max_open_trades (controlled profitability improvement)
     
     def __post_init__(self):
         if self.active_pairs is None:
@@ -517,7 +518,13 @@ Weekly Performance Report (Snapshot-backed)
         
         # Schedule health checks (every hour)
         schedule.every().hour.do(self.health_check)
-        
+        # Performance analytics reports (reporting only; no strategy change)
+        try:
+            from performance_analytics import print_daily_report, print_weekly_report
+            schedule.every().day.at("00:05").do(print_daily_report)
+            schedule.every().sunday.at("23:05").do(print_weekly_report)
+        except ImportError:
+            pass
         # Main automation loop
         try:
             while self.state.is_running:
@@ -536,11 +543,12 @@ Weekly Performance Report (Snapshot-backed)
                 
                 if favorable_time:
                     self.execute_automated_trading_cycle()
-                    # Run the main cycle every 15 minutes to increase opportunity capture
-                    sleep_duration = 900
+                    # Increased scan frequency to capture more trade opportunities without increasing portfolio risk
+                    sleep_duration = get_config().scan_timing.active_scan_interval_sec  # default 600 (10 min)
                 else:
                     print("[AUTOMATED] 😴 Outside favorable trading hours, extended sleep...")
-                    sleep_duration = 3600  # 1 hour
+                    # Slow period: 30 min (configurable via SLOW_SCAN_INTERVAL)
+                    sleep_duration = get_config().scan_timing.slow_scan_interval_sec  # default 1800
                 
                 # Sleep with interruption check every minute
                 for _ in range(sleep_duration // 60):
