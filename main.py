@@ -461,7 +461,9 @@ def main():
 
     # Enhanced technical validation
     from validators import validate_entry_conditions
-    if not validate_entry_conditions(symbol, direction):
+    val_result = validate_entry_conditions(symbol, direction)
+    validation_passed = val_result[0] if isinstance(val_result, tuple) else val_result
+    if not validation_passed:
         print(f"[BOT] ❌ Technical conditions not favorable for {direction} {symbol}")
         # Send admin notification for validation failure
         try:

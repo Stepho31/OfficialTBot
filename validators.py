@@ -223,12 +223,12 @@ def validate_entry_conditions(symbol, side, timeframes=["H4"], trigger_ok=None, 
 
     if trigger_ok is False:
         print(f"[VALIDATORS] ❌ External trigger alignment failed (H1 trigger misaligned)")
-        return False
+        return (False, 0.0)
 
     signals = get_momentum_signals(symbol, timeframes, oanda_client=oanda_client)
     if not signals:
         print("[VALIDATORS] ❌ Could not get market data for validation")
-        return False
+        return (False, 0.0)
 
     validation_score = 0.0
     max_score = 0.0
@@ -321,7 +321,8 @@ def validate_entry_conditions(symbol, side, timeframes=["H4"], trigger_ok=None, 
         print(f"[VALIDATORS] ✅ Entry conditions PASSED for {side} {symbol} (recommended size: {size_note})")
     else:
         print(f"[VALIDATORS] ❌ Entry conditions FAILED for {side} {symbol} (recommended size: {size_note})")
-    return is_valid
+    # Return (passed, raw_score) so callers can use score for H4 maturity override etc.
+    return (is_valid, validation_score)
 
 
 def get_rsi(symbol, interval="4h", oanda_client=None):

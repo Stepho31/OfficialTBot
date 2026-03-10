@@ -124,10 +124,11 @@ class EnhancedTradingSession:
             print(f"[ENHANCED] ⚠️ Warning: Could not initialize AutopipClient: {e}")
             self.api_client = None
     
-    def _confirm_h4_candle_state(self, symbol: str, oanda_client) -> bool:
+    def _confirm_h4_candle_state(self, symbol: str, oanda_client, validation_score: Optional[float] = None) -> bool:
         """
         Confirm H4 candle is >50% complete or M15 confirms structure.
         Fix #2: Ensures entry aligns with H4 structure, not mid-candle noise.
+        High validation_score (>= 7) allows early entry when candle < 60% complete.
         
         Returns:
             True if entry should proceed, False if should wait for H4 candle to mature
@@ -176,10 +177,12 @@ class EnhancedTradingSession:
                 print(f"[ENHANCED] ✅ H4 candle confirmation: {hours_into_candle:.1f} hours into candle (>50%) - entry allowed")
                 return True
             
-            # If <2 hours, require STRONGER M15 confirmation for 65-70% win rate
-            # Need H4 candle >60% complete OR very strong multi-timeframe confirmation
-            if hours_into_candle < 2.4:  # Require >60% into H4 candle (was 50%)
-                print(f"[ENHANCED] ⚠️ H4 candle confirmation: Only {hours_into_candle:.1f} hours into candle (<60%) - requiring strong M15 confirmation")
+            # If <60% into H4 candle: allow if validation_score >= 7, else require strong M15 or delay
+            if hours_into_candle < 2.4:  # 0.60 * 4h = 2.4 hours
+                if validation_score is not None and isinstance(validation_score, (int, float)) and validation_score >= 7:
+                    print(f"[ENHANCED] ⚡ H4 maturity override: validation_score={_safe_fmt(validation_score, '.1f', 'N/A')} allowing early entry")
+                    return True
+                print(f"[ENHANCED] ⚠️ H4 candle confirmation: Only {_safe_fmt(hours_into_candle, '.1f', 'N/A')} hours into candle (<60%) - requiring strong M15 confirmation")
                 m15_candles = get_oanda_data(symbol, "M15", 12, oanda_client=oanda_client)
                 if m15_candles and len(m15_candles) >= 8:  # Need more candles for structure
                     # Get H4 direction from current candle
@@ -433,6 +436,7 @@ class EnhancedTradingSession:
                     rechecks = int(os.getenv("PRE_ENTRY_RECHECKS", "2"))
                     recheck_sleep = int(os.getenv("PRE_ENTRY_RECHECK_SLEEP", "20"))
                     proceed = True
+                    last_validation_score = None
                     
                     for j in range(rechecks):
                         # Step 1: Gate check (cooldown/freshness - non-technical, fast)
@@ -461,7 +465,10 @@ class EnhancedTradingSession:
                         # Step 3: Detailed multi-timeframe validation (exclude H4 to avoid redundancy)
                         # Validate H1 and M15 only, since H4 was already checked above
                         # SAFETY LOG: Confirm we're not re-checking H4
-                        if not validate_entry_conditions(opportunity.symbol.replace("_",""), opportunity.direction, timeframes=["H1","M15"], oanda_client=user_client):
+                        val_result = validate_entry_conditions(opportunity.symbol.replace("_",""), opportunity.direction, timeframes=["H1","M15"], oanda_client=user_client)
+                        validation_passed = val_result[0] if isinstance(val_result, tuple) else val_result
+                        last_validation_score = val_result[1] if isinstance(val_result, tuple) and len(val_result) > 1 else None
+                        if not validation_passed:
                             print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Entry validation failed on recheck {j+1} (H1/M15 conditions not met)")
                             self._send_admin_validation_error(opportunity, f"Validation failed (recheck {j+1})", user)
                             proceed = False
@@ -474,9 +481,9 @@ class EnhancedTradingSession:
                         self.session_stats["trades_skipped"] += 1
                         continue
                     
-                    # Fix #2: Confirm H4 candle state before execution
+                    # Fix #2: Confirm H4 candle state before execution (pass validation_score for high-score override)
                     symbol_clean = opportunity.symbol.replace("_", "")
-                    if not self._confirm_h4_candle_state(symbol_clean, user_client):
+                    if not self._confirm_h4_candle_state(symbol_clean, user_client, validation_score=last_validation_score):
                         print(f"[ENHANCED] ⚠️ User {user.user_id}: {opportunity.symbol} {opportunity.direction}: DELAYED - H4 candle not mature, will re-evaluate next cycle")
                         self.session_stats["trades_skipped"] += 1
                         continue
