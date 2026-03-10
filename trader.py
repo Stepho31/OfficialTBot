@@ -360,8 +360,7 @@ def validate_trade_entry(client, account_id, instrument, side, trade_idea, user_
         is_spike, atr_pct = _check_volatility_spike(instrument, oanda_client=client)
         if is_spike:
             # Allow only high-quality setups during volatility spikes (require higher score)
-            atr_pct_str = f"{atr_pct:.2f}" if atr_pct is not None else "N/A"
-            print(f"[VALIDATION] ⚠️ Volatility spike detected (ATR%={atr_pct_str}%), requiring exceptional setup quality")
+            print(f"[VALIDATION] ⚠️ Volatility spike detected (ATR%={atr_pct:.2f}%), requiring exceptional setup quality")
             # This will be checked by the enhanced validation layer (higher score threshold)
             # For now, we just log a warning but don't block (let enhanced layer decide)
         
@@ -473,21 +472,10 @@ def calculate_units_by_allocation(balance, allocation_percent, instrument, entry
         else:
             # Conservative fallback for cross-currency where neither leg matches account currency
             units = int(allocated_value_in_acct_ccy / max(entry_price, 1e-9))
-        # Store original calculated value for logging
-        calculated_units = units
-        # Enforce reasonable bounds (minimum only applied when user config is missing - see place_trade)
-        # For user-defined allocations, use calculated value even if below 1000 (but cap at 100000)
-        units = min(units, 100000)
-        # Only enforce minimum if calculated value would be 0 or negative (safety check)
-        if units <= 0:
-            print(f"[SIZING] ⚠️ Calculated units ({calculated_units}) <= 0, using minimum 1000")
-            units = 1000
+        # Enforce reasonable bounds
+        units = max(1000, min(units, 100000))
         return units
-    except Exception as e:
-        # Log the exception for debugging
-        print(f"[SIZING] ❌ Exception in calculate_units_by_allocation: {e}")
-        import traceback
-        traceback.print_exc()
+    except Exception:
         # Fallback minimum if anything goes wrong
         return 1000
 
@@ -565,19 +553,14 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
     # 🔒 Position sizing: use user trade_allocation if provided, otherwise use allocation-based or risk-based
     if trade_allocation is not None:
         # Use user's trade_allocation setting directly
-        # Ensure trade_allocation is a float for formatting (might be string from API/user settings)
-        trade_allocation_float = float(trade_allocation)
-        print(f"[SIZING] 📊 User trade_allocation: {trade_allocation_float}%")
-        print(f"[SIZING] 📊 Balance: ${balance:.2f}, Instrument: {instrument}, Entry: {entry_price:.5f}, Account Currency: {account_currency}")
         position_size = calculate_units_by_allocation(
             balance=balance,
-            allocation_percent=trade_allocation_float,
+            allocation_percent=trade_allocation,
             instrument=instrument,
             entry_price=entry_price,
             account_currency=account_currency,
         )
-        print(f"[SIZING] ✅ Calculated position_size: {position_size} units from {trade_allocation_float}% allocation")
-        sizing_mode = f"user allocation {trade_allocation_float:.2f}%"
+        sizing_mode = f"user allocation {trade_allocation:.2f}%"
     else:
         # Fallback to existing system logic
         use_allocation_percent = os.getenv("USE_ALLOCATION_PERCENT", "false").lower() == "true"
@@ -611,9 +594,6 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
             sizing_mode = "fallback 2% of balance"
     
     units = str(position_size) if side == "buy" else str(-position_size)
-    
-    # CRITICAL DIAGNOSTIC: Log final units value before OANDA execution
-    print(f"[SIZING][FINAL] Position size: {position_size}, Units string: {units}, Side: {side}")
 
     # 📈 SL/TP logic with support for swing-based, fixed-percent, ATR-based, or explicit overrides
     use_fixed_sl_percent = os.getenv("USE_FIXED_SL_PERCENT", "false").lower() == "true"
@@ -665,8 +645,7 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                 if m15_atr:
                     m15_atr_price_units = m15_atr
                     m15_atr_pips = (m15_atr / pip_val) if pip_val > 0 else None
-                    if m15_atr_pips is not None:
-                        print(f"[TRADER] M15 ATR: {m15_atr_pips:.1f} pips (execution timeframe buffer)")
+                    print(f"[TRADER] M15 ATR: {m15_atr_pips:.1f} pips (execution timeframe buffer)")
         except Exception as e:
             print(f"[TRADER] ⚠️ Could not calculate M15 ATR: {e}")
         
@@ -796,12 +775,6 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
             "stopLossOnFill": {"price": str(sl_price)}
         }
     }
-    
-    # FINAL VALIDATION: Ensure units in order matches calculated position_size
-    order_units_value = int(units) if units.lstrip('-').isdigit() else None
-    if order_units_value is not None and abs(order_units_value) != position_size:
-        print(f"[SIZING][ERROR] ⚠️ MISMATCH: position_size={position_size} but order units={units} (abs={abs(order_units_value)})")
-    print(f"[SIZING][FINAL] Order units value (before OANDA API): {units} (position_size={position_size})")
 
     print(f"[TRADE] Placing {side.upper()} order on {instrument}")
     print(f"[TRADE] Balance: ${balance:.2f} | Position Size: {abs(int(units))} | Sizing: {sizing_mode}")
@@ -946,9 +919,7 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                 try:
                     from autopip_client import AutopipClient
                     autopip_client = AutopipClient()
-                    
-                    # Build payload with all required fields
-                    trade_payload = {
+                    autopip_client.post_trade({
                         "userId": user_id,
                         "externalTradeId": str(trade_id),
                         "symbol": instrument,
@@ -963,13 +934,7 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                         "closedAt": None,
                         "timeframe": meta.get("timeframe") if meta else None,
                         "oandaAccountId": account_id,
-                    }
-                    
-                    print(f"[DB] 🔄 Attempting API sync for trade {trade_id} (user {user_id}, account {account_id})...")
-                    print(f"[DB] 📤 Payload: userId={user_id}, externalTradeId={trade_id}, symbol={instrument}, side={side.upper()}, size={abs(int(units))}, entry={fill_price}")
-                    
-                    autopip_client.post_trade(trade_payload)
-                    
+                    })
                     print(f"[DB] ✅ Trade {trade_id} saved to database via API sync for user {user_id}")
                     persistence_succeeded = True
                 except ImportError as e:
@@ -979,18 +944,13 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                 except Exception as api_error:
                     # API sync failed - fall through to direct DB
                     persistence_error = f"API sync failed: {api_error}"
-                    print(f"[DB] ❌ API trade sync failed for trade {trade_id}, user {user_id}, account {account_id}")
-                    print(f"[DB] ❌ Error type: {type(api_error).__name__}")
-                    print(f"[DB] ❌ Error message: {str(api_error)}")
-                    import traceback
-                    print(f"[DB] ❌ Traceback:")
-                    traceback.print_exc()
+                    print(f"[DB] ⚠️ API trade sync failed for trade {trade_id}, user {user_id}, account {account_id}")
+                    print(f"[DB] ⚠️ Error: {persistence_error}")
                     print(f"[DB] 🔄 Falling back to direct DB persistence...")
             
             # Fallback to direct DB persistence if API sync failed or user_id not provided
             if not persistence_succeeded:
                 try:
-                    print(f"[DB] 🔄 Attempting direct DB persistence for trade {trade_id} (OANDA account {account_id})...")
                     save_trade_from_oanda_account(
                         oanda_account_id=account_id,
                         external_id=str(trade_id),
@@ -1014,9 +974,7 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                     print(f"[DB] ❌ CRITICAL: All persistence paths failed for trade {trade_id}")
                     print(f"[DB] ❌ Trade executed on OANDA but NOT saved to database")
                     print(f"[DB] ❌ Final error: {persistence_error}")
-                    print(f"[DB] ❌ Error type: {type(db_error).__name__}")
                     import traceback
-                    print(f"[DB] ❌ Traceback:")
                     traceback.print_exc()
                     # Log critical failure - trade exists on OANDA but not in DB
                     # This will require reconciliation to fix
@@ -1025,7 +983,6 @@ def place_trade(trade_idea, direction=None, risk_pct=None, sl_price=None, tp_pri
                 # This is a critical failure - trade exists on OANDA but not persisted
                 print(f"[DB] 🚨 PERSISTENCE FAILURE: Trade {trade_id} on OANDA account {account_id} was NOT saved to database")
                 print(f"[DB] 🚨 This trade will not appear in the dashboard until reconciliation runs")
-                print(f"[DB] 🚨 Last error: {persistence_error}")
         except Exception as db_error:
             # Log error but don't fail the trade execution
             print(f"[DB] ❌ Error saving trade to database: {db_error}")

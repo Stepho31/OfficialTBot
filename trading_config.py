@@ -6,18 +6,22 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 # Score constants for consistent execution thresholds across scanner, filters, and execution
-# TARGET: 65-70% win rate - stricter thresholds for quality over quantity
-BASE_MIN_SCORE = 68  # Normal execution threshold (increased from 65 for 65-70% win rate)
-FREQUENCY_MIN_SCORE = 62  # Used only when frequency-first mode is active (increased from 55)
+# TARGET: 65-70% win rate with slightly higher frequency
+# Primary trades: score >= 65
+# Tier-2 trades: 60 <= score <= 64 (tightly controlled, at most one per session)
+BASE_MIN_SCORE = 65
+FREQUENCY_MIN_SCORE = 60  # Lower bound for Tier-2 / secondary opportunities
 
 @dataclass
 class RiskManagement:
     """Risk management configuration"""
-    default_risk_percent: float = 1.0  # Default risk per trade as % of account
+    default_risk_percent: float = 1.0  # Default risk per trade as % of account (main strategy)
     max_risk_percent: float = 3.0      # Maximum risk per trade
     min_position_size: int = 1000      # Minimum position size
     max_position_size: int = 100000    # Maximum position size
-    max_open_trades: int = 3           # Maximum concurrent trades
+    # Global per-user concurrent trade cap (all strategies combined).
+    # Strategy-level caps (e.g. 5 main, 2 scalp) are enforced in the orchestrator.
+    max_open_trades: int = 7
     
     # ATR-based settings
     atr_sl_multiplier: float = 1.6     # Tuned SL distance in ATR (1.5–1.8)
@@ -43,6 +47,22 @@ class EntryValidation:
     # 4H momentum thresholds
     momentum_long_threshold: float = 1.5  # 20-period momentum threshold
     momentum_short_threshold: float = 0.8 # 5-period momentum threshold
+
+@dataclass
+class PortfolioRisk:
+    """Portfolio-level risk budgeting (volatility-targeted)."""
+    min_risk_per_trade: float = 0.25       # Minimum risk per trade (% of balance)
+    max_risk_per_trade: float = 1.2        # Maximum risk per trade (% of balance)
+    max_portfolio_risk: float = 3.0        # Maximum total portfolio risk (% of balance)
+    correlation_risk_reduction: float = 0.40   # Reduce new trade risk by 40% when correlated (0.3–0.5)
+    correlation_exposure_skip_threshold: float = 0.50  # Skip if correlated exposure already >= 50% of portfolio risk
+    volatility_high_reduction: float = 0.30    # Reduce risk by 30% when volatility unusually high
+    volatility_low_increase: float = 0.15      # Increase risk by 15% when volatility unusually low
+    drawdown_reduction: float = 0.40       # Reduce risk by 40% when drawdown > 5%
+    drawdown_threshold_pct: float = 5.0    # Drawdown threshold (%)
+    winrate_increase: float = 0.15        # Increase risk by 15% when last 10 trades win rate > 60%
+    winrate_threshold: float = 60.0       # Win rate threshold (%)
+    last_n_trades_equity: int = 10        # Number of recent trades for equity curve metrics
 
 @dataclass
 class ExitManagement:
@@ -92,6 +112,7 @@ class TradingConfig:
     
     def __init__(self):
         self.risk_management = RiskManagement()
+        self.portfolio_risk = PortfolioRisk()
         self.entry_validation = EntryValidation()
         self.exit_management = ExitManagement()
         self.trading_hours = TradingHours()
@@ -120,6 +141,17 @@ class TradingConfig:
             )
         except Exception:
             pass
+
+        # Portfolio risk overrides
+        self.portfolio_risk.min_risk_per_trade = float(
+            os.getenv("PORTFOLIO_MIN_RISK_PCT", self.portfolio_risk.min_risk_per_trade)
+        )
+        self.portfolio_risk.max_risk_per_trade = float(
+            os.getenv("PORTFOLIO_MAX_RISK_PCT", self.portfolio_risk.max_risk_per_trade)
+        )
+        self.portfolio_risk.max_portfolio_risk = float(
+            os.getenv("MAX_PORTFOLIO_RISK_PCT", self.portfolio_risk.max_portfolio_risk)
+        )
         
         # GPT Config overrides
         self.gpt_config.min_score_threshold = float(

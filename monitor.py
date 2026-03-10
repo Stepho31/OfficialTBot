@@ -380,9 +380,9 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
             # # (All your trailing stop, partial, and exit logic continues here...)
 
             # time.sleep(10)
-            # === Move SL to breakeven earlier (at 0.7R instead of 1.0R) ===
-            # This protects winners earlier and reduces winner→loser reversals
-            be_trigger_r = 0.7  # Trigger break-even at 0.7R instead of 1.0R
+            # === Move SL to breakeven at 1.0R ===
+            # This gives trades more room to develop before locking risk
+            be_trigger_r = 1.0
             if not moved_to_break_even and risk_pips > 0 and pips_profit >= be_trigger_r * risk_pips:
                 be_price = entry_price if side == "buy" else entry_price
                 if update_trailing_stop(client, account_id, trade_id, be_price):
@@ -395,15 +395,15 @@ def monitor_trade(trade_details, api_key=None, account_id=None):
                 # Calculate progressive trailing distance based on profit multiple
                 profit_r = pips_profit / risk_pips if risk_pips > 0 else 0
                 
-                # Progressive trailing: loose early (1.5x ATR), tighten as profit grows
+                # Progressive trailing: loose early, tighten as profit grows
                 if profit_r < 1.5:
-                    # Early stage: loose trailing (1.5x ATR)
+                    # Early stage: loose trailing (1.5x ATR) before 1.5R
                     progressive_trail_mult = 1.5
-                elif profit_r < 2.5:
-                    # Mid stage: moderate trailing (1.2x ATR)
+                elif profit_r < 2.0:
+                    # Mid stage: moderate trailing (1.2x ATR) between 1.5R and 2R
                     progressive_trail_mult = 1.2
                 else:
-                    # Late stage: tight trailing (1.0x ATR)
+                    # Late stage: tight trailing (1.0x ATR) beyond 2R
                     progressive_trail_mult = 1.0
                 
                 progressive_trail_distance = atr * progressive_trail_mult

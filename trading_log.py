@@ -68,6 +68,46 @@ def get_weekly_performance(weeks_back: int = 1) -> List[Dict]:
     
     return weekly_trades
 
+def get_last_n_trades(n: int = 10) -> List[Dict]:
+    """Get the last N closed trades from the log (most recent last).
+    Used for equity curve metrics: win rate and drawdown over recent performance.
+    """
+    log_data = load_log()
+    if not log_data:
+        return []
+    # Filter to entries that look like closed trades (have result with status)
+    trades = [e for e in log_data if isinstance(e, dict) and e.get("result") and e.get("symbol")]
+    # Take last n (log is append-only, so last n are most recent)
+    return trades[-n:] if len(trades) >= n else trades
+
+
+def get_recent_equity_metrics(n: int = 10) -> Dict:
+    """Compute win rate and drawdown over the last n trades.
+    Returns: {"win_rate_pct": float, "recent_drawdown_pct": float, "n_trades": int}
+    """
+    trades = get_last_n_trades(n)
+    if not trades:
+        return {"win_rate_pct": 0.0, "recent_drawdown_pct": 0.0, "n_trades": 0}
+    wins = sum(1 for t in trades if (t.get("pips_profit") or 0) > 0)
+    win_rate_pct = (wins / len(trades)) * 100.0
+    # Cumulative PnL for drawdown (use profit_amount when available)
+    cumulative = 0.0
+    peak = 0.0
+    for t in trades:
+        cumulative += float(t.get("profit_amount") or 0)
+        peak = max(peak, cumulative)
+    # Drawdown from peak: (peak - current) / peak if peak > 0, else 0
+    if peak > 0 and cumulative < peak:
+        recent_drawdown_pct = ((peak - cumulative) / peak) * 100.0
+    else:
+        recent_drawdown_pct = 0.0
+    return {
+        "win_rate_pct": win_rate_pct,
+        "recent_drawdown_pct": recent_drawdown_pct,
+        "n_trades": len(trades),
+    }
+
+
 def get_daily_performance(days_back: int = 7) -> List[Dict]:
     """Get trading performance for the last N days"""
     log_data = load_log()

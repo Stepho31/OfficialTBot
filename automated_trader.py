@@ -183,7 +183,7 @@ class AutomatedTrader:
                     if trade_id and trade_id not in cached_trade_ids:
                         print(f"[AUTOMATED] 🔍 Detected closed trade: {trade_id}")
                         
-                        # Log the closure
+                        # Log the closure (include ranking_score and strategy_id for performance tracking)
                         add_log_entry({
                             "symbol": cached_trade.get("instrument", "UNKNOWN"),
                             "result": {"status": "CLOSED", "message": "Trade closed (detected via sync)"},
@@ -191,6 +191,8 @@ class AutomatedTrader:
                             "exit_price": "Unknown",
                             "side": cached_trade.get("side", "unknown"),
                             "trade_id": trade_id,
+                            "ranking_score": cached_trade.get("ranking_score"),
+                            "strategy_id": cached_trade.get("strategy_id"),
                         })
                         
                         # Update database for closed trade
@@ -534,7 +536,8 @@ Weekly Performance Report (Snapshot-backed)
                 
                 if favorable_time:
                     self.execute_automated_trading_cycle()
-                    sleep_duration = 1800  # 30 minutes
+                    # Run the main cycle every 15 minutes to increase opportunity capture
+                    sleep_duration = 900
                 else:
                     print("[AUTOMATED] 😴 Outside favorable trading hours, extended sleep...")
                     sleep_duration = 3600  # 1 hour

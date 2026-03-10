@@ -13,8 +13,9 @@ from validators import get_oanda_data
 REGISTRY_FILE = "idea_registry.json"
 
 # Environment-configurable parameters (with sensible defaults)
-# Reduced cooldown to allow same-day re-entry when signals remain valid
-COOLDOWN_HOURS = float(os.getenv("IDEA_COOLDOWN_HOURS", "6"))  # Reduced from 12 to 6 hours
+# Cooldown tuned to allow same-day re-entry when signals remain valid,
+# while still preventing rapid re-fire of identical ideas.
+COOLDOWN_HOURS = float(os.getenv("IDEA_COOLDOWN_HOURS", "4"))  # Further reduced from 6 to 4 hours
 COOLDOWN_ATR_MULT = float(os.getenv("IDEA_COOLDOWN_ATR_MULT", "0.8"))  # Reduced from 1.0 to 0.8
 COOLDOWN_PCT_MOVE = float(os.getenv("IDEA_COOLDOWN_PCT_MOVE", "0.6"))  # Reduced from 0.8% to 0.6%
 FRESHNESS_LOOKBACK_DAYS = int(os.getenv("FRESHNESS_LOOKBACK_DAYS", "14"))

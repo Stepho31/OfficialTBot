@@ -201,9 +201,9 @@ def position_size_from_score(score: float, ctx: TradeContext) -> float:
 
 def compute_smart_exits(symbol: str, side: str, entry_price: float, atr_price_units: float, oanda_client=None) -> Dict[str, float]:
     """
-    - SL ≈ 1.5x H4 ATR OR 2.0x M15 ATR (whichever is larger) - accounts for execution noise
-    - Minimum 12 pips to handle M15/M10 execution timeframe volatility
-    - TP1 = 1.2R, TP2 = 2R
+    - SL ≈ 2.0x H4 ATR OR 2.5x M15 ATR (whichever is larger) - accounts for execution noise
+    - Minimum 15 pips to handle M15/M10 execution timeframe volatility
+    - TP1 = 1.5R, TP2 = 2R by default
     """
     pip = _pip_factor(symbol)
     atr_pips = atr_price_units / pip if pip > 0 else 10.0
@@ -236,7 +236,8 @@ def compute_smart_exits(symbol: str, side: str, entry_price: float, atr_price_un
         sl_pips = max(h4_sl_pips, 15.0)  # Minimum 15 pips
         print(f"[SMART] SL calculation: H4={h4_sl_pips:.1f} pips (2.0x) (M15 unavailable) → Using {sl_pips:.1f} pips")
     
-    tp1_pips = sl_pips * 1.2
+    # Base 1R distance is sl_pips; TP1 set at 1.5R to increase average winner size.
+    tp1_pips = sl_pips * 1.5
     tp2_pips = sl_pips * 2.0
 
     sl_units  = sl_pips * pip

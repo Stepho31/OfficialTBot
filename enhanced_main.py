@@ -23,8 +23,15 @@ from idea_guard import evaluate_trade_gate, record_executed_idea
 from validators import validate_entry_conditions, passes_h4_hard_filters
 from smart_layer import plan_trade
 from circuit_breaker import get_circuit_breaker_status
+from portfolio_risk import adjust_risk_for_portfolio
+from signal_ranking import (
+    rank_and_sort_opportunities,
+    get_risk_multiplier_by_ranking,
+    log_ranking_decision,
+)
 from oandapyV20 import API as OandaAPI
 import oandapyV20.endpoints.pricing as pricing
+import oandapyV20.endpoints.accounts as oanda_accounts
 from user_helpers import get_tier2_users_for_automation, Tier2User
 from oanda_helpers import create_oanda_client, get_user_open_positions, has_user_position_on_pair, get_user_active_pairs
 from autopip_client import AutopipClient
@@ -61,14 +68,39 @@ class EnhancedTradingSession:
         logger = logging.getLogger(__name__)
         mode = "LIVE TRADING"
         logger.warning(f"[STARTUP MODE] Bot running in: {mode}")
-        self.max_concurrent_trades = int(os.getenv("MAX_CONCURRENT_TRADES", "3"))
+
+        # Global per-user concurrency cap (all strategies combined).
+        # Strategy-level caps are enforced inside this session object.
+        self.max_concurrent_trades = int(os.getenv("MAX_CONCURRENT_TRADES", "7"))
+
         # Use BASE_MIN_SCORE as the default minimum opportunity score for consistency
-        self.min_opportunity_score = BASE_MIN_SCORE  # Always use BASE_MIN_SCORE constant
-        self.max_trades_per_session = int(os.getenv("MAX_TRADES_PER_SESSION", "3"))  # Cap at 3 for frequency-first mode
-        # Track trades executed this session for frequency-first mode
-        self.trades_executed_this_session = 0
-        # Track pairs traded this session to prevent duplicate trades per pair
-        self.pairs_traded_this_session = set()
+        self.min_opportunity_score = BASE_MIN_SCORE
+
+        # Per-session caps (per user) by strategy_id
+        #  - 4H_MAIN: up to 5 trades
+        #  - SCALP:   up to 2 trades
+        #  - Other strategies: opt-in later (default 0)
+        self.strategy_caps = {
+            "4H_MAIN": 5,
+            "SCALP": 2,
+            "MOMENTUM": int(os.getenv("MAX_MOMENTUM_TRADES", "0")),
+            "PULLBACK": int(os.getenv("MAX_PULLBACK_TRADES", "0")),
+            "VOL_EXP": int(os.getenv("MAX_VOL_EXP_TRADES", "0")),
+        }
+        # Track executed trades per strategy for this session
+        self.strategy_trades_executed: Dict[str, int] = {k: 0 for k in self.strategy_caps.keys()}
+
+        # Overall per-session trade cap (all strategies)
+        self.max_trades_per_session = int(os.getenv("MAX_TRADES_PER_SESSION", "7"))
+        self.session_trade_count = 0
+
+        # Track per-pair session info for re-entry rules
+        # symbol_clean -> {"count": int, "direction": str, "entry_price": float, "sl_distance_price": float}
+        self.pair_trade_info: Dict[str, Dict] = {}
+
+        # Tier-2 (secondary) opportunity guard – allow at most one per session
+        self.tier2_taken = False
+
         self.session_stats = {
             "opportunities_found": 0,
             "trades_executed": 0,
@@ -262,7 +294,7 @@ class EnhancedTradingSession:
                 
                 print(f"[ENHANCED] 📊 User {user.user_id}: {len(user_positions)} open positions, {len(user_active_pairs)} active pairs")
                 
-                # Check if user has capacity for new trades
+                # Check if user has capacity for new trades (global concurrent cap per user)
                 if len(user_positions) >= self.max_concurrent_trades:
                     print(f"[ENHANCED] ⚠️ User {user.user_id}: SKIPPED - At max concurrent trades limit ({len(user_positions)}/{self.max_concurrent_trades})")
                     continue
@@ -280,21 +312,43 @@ class EnhancedTradingSession:
                     print(f"[ENHANCED] 📭 User {user.user_id}: No opportunities after position filtering ({len(filtered_opportunities)} available but all conflict with existing positions)")
                     continue
                 
+                # Opportunity collection + Signal Ranking: rank all opportunities, execute best first
+                ranked_list = rank_and_sort_opportunities(user_filtered_opps)
+                print(f"[ENHANCED] 📊 User {user.user_id}: Ranked {len(ranked_list)} opportunities by signal quality (top first)")
+                for idx, (opp, rs, _) in enumerate(ranked_list[:5]):
+                    print(f"[ENHANCED]   {idx+1}. {opp.symbol} {opp.direction.upper()} ranking_score={rs:.1f} (base={opp.score:.1f})")
+                if len(ranked_list) > 5:
+                    print(f"[ENHANCED]   ... and {len(ranked_list) - 5} more")
+                
                 # Initialize max_new_for_user safely before any print statements or execution logic
                 max_new_for_user = max(0, self.max_concurrent_trades - len(user_positions))
                 
-                print(f"[ENHANCED] 🎯 User {user.user_id}: {len(user_filtered_opps)} opportunities available (user has {len(user_positions)}/{self.max_concurrent_trades} positions, capacity for {max_new_for_user} new trades)")
+                print(f"[ENHANCED] 🎯 User {user.user_id}: {len(ranked_list)} opportunities available (user has {len(user_positions)}/{self.max_concurrent_trades} positions, capacity for {max_new_for_user} new trades)")
                 
-                # Execute trades for this user
+                # Execute trades for this user in ranking order (best first)
                 user_trades_executed = 0
                 
                 # Check circuit breaker status for frequency control
                 cb_status = get_circuit_breaker_status()
                 skip_count = 0
                 
-                for i, opportunity in enumerate(user_filtered_opps[:max_new_for_user]):
+                for i, (opportunity, ranking_score, ranking_components) in enumerate(ranked_list):
+                    # Global per-session cap (all strategies combined)
+                    if self.session_trade_count >= self.max_trades_per_session:
+                        print(f"[ENHANCED] ⚠️ Session trade cap reached ({self.session_trade_count}/{self.max_trades_per_session}) - stopping execution")
+                        not_executed = [(o.symbol, o.direction, rs) for o, rs, _ in ranked_list[i:]]
+                        if not_executed:
+                            print(f"[ENHANCED] 📊 Ranking: Not executed (limit): " + ", ".join(f"{s} {d}({r:.0f})" for s, d, r in not_executed[:5]))
+                        break
+
+                    # Per-user cap (for robustness; matches per-session cap by default)
                     if user_trades_executed >= self.max_trades_per_session:
                         print(f"[ENHANCED] ⚠️ User {user.user_id}: SKIPPED - Reached per-session trade cap ({user_trades_executed}/{self.max_trades_per_session})")
+                        break
+                    
+                    # Stop when user capacity for new trades is reached
+                    if user_trades_executed >= max_new_for_user:
+                        print(f"[ENHANCED] 🎯 User {user.user_id}: Capacity reached ({user_trades_executed} new trades)")
                         break
                     
                     # Circuit breaker frequency control: skip trades if active
@@ -305,41 +359,67 @@ class EnhancedTradingSession:
                             print(f"[ENHANCED] ⚠️ User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Circuit breaker active (frequency multiplier: {cb_status['frequency_multiplier']:.2f}x, reason: {cb_status.get('reason', 'N/A')})")
                             continue
                     
-                    print(f"\n[ENHANCED] 🎯 User {user.user_id}: Processing opportunity {i+1}/{len(user_filtered_opps)}")
+                    print(f"\n[ENHANCED] 🎯 User {user.user_id}: Processing opportunity {i+1}/{len(ranked_list)} (ranking_score={ranking_score:.1f}, base={opportunity.score:.1f})")
+
+                    # Determine strategy for this opportunity
+                    strategy_id = "SCALP" if getattr(opportunity, "scalp_mode", False) else "4H_MAIN"
+                    strategy_cap = self.strategy_caps.get(strategy_id, 0)
+                    executed_for_strategy = self.strategy_trades_executed.get(strategy_id, 0)
+                    if executed_for_strategy >= strategy_cap:
+                        print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Strategy {strategy_id} cap reached ({executed_for_strategy}/{strategy_cap})")
+                        self.session_stats["trades_skipped"] += 1
+                        continue
                     
-                    # Mandatory guardrails - apply in all modes including frequency-first
-                    guardrail_result = self._check_mandatory_guardrails(opportunity, user_client)
+                    # Determine tier classification based on score
+                    score = opportunity.score
+                    is_tier2 = False
+                    if score >= BASE_MIN_SCORE:
+                        pass
+                    elif FREQUENCY_MIN_SCORE <= score < BASE_MIN_SCORE:
+                        # Tier-2 band (60-64): allow at most one per session with stronger risk filters
+                        if self.tier2_taken:
+                            print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Tier-2 slot already used")
+                            self.session_stats["trades_skipped"] += 1
+                            continue
+                        is_tier2 = True
+                    else:
+                        print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Score {score:.1f} < {FREQUENCY_MIN_SCORE}")
+                        self.session_stats["trades_skipped"] += 1
+                        continue
+
+                    # Mandatory guardrails - apply to all trades (tier-1 and tier-2)
+                    guardrail_result = self._check_mandatory_guardrails(opportunity, user_client, is_tier2=is_tier2)
                     if not guardrail_result["allowed"]:
                         print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Guardrail: {guardrail_result['reason']}")
                         self.session_stats["trades_skipped"] += 1
                         continue
-                    
-                    # Frequency-first mode: check if we need to use lower threshold for first trade
-                    frequency_first_mode = (self.trades_executed_this_session == 0)
-                    effective_min_score = FREQUENCY_MIN_SCORE if frequency_first_mode else BASE_MIN_SCORE
-                    
-                    # Check score threshold (using effective min score)
-                    if opportunity.score < effective_min_score:
-                        mode_str = "frequency-first" if frequency_first_mode else "normal"
-                        print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Score {opportunity.score:.1f} < {effective_min_score} (mode: {mode_str})")
-                        self.session_stats["trades_skipped"] += 1
-                        continue
-                    
-                    # Frequency-first mode: ignore sentiment for first trade only
-                    if frequency_first_mode:
-                        print(f"[ENHANCED] 🔄 Frequency-first mode: Using FREQUENCY_MIN_SCORE ({FREQUENCY_MIN_SCORE}) for first trade, ignoring sentiment adjustments")
-                        # Note: Sentiment is already applied in scanner, but for first trade we proceed anyway
-                        # The lower threshold (FREQUENCY_MIN_SCORE) compensates for any negative sentiment
-                    else:
-                        # After first trade, use normal threshold and sentiment is already applied (clamped to max 3 points)
-                        print(f"[ENHANCED] ✅ Normal mode: Using BASE_MIN_SCORE ({BASE_MIN_SCORE}), sentiment already applied (max ±3 pts)")
-                    
-                    # Check if we've already traded this pair this session (mandatory guardrail)
+
+                    # Same-pair re-entry rules:
+                    # Allow one additional trade on the same pair if:
+                    #  - direction is different, OR
+                    #  - price has moved at least ~1 ATR from last entry (approx. 0.5 * SL distance)
                     symbol_clean = opportunity.symbol.replace("_", "")
-                    if symbol_clean in self.pairs_traded_this_session:
-                        print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Already traded this pair this session")
-                        self.session_stats["trades_skipped"] += 1
-                        continue
+                    pair_info = self.pair_trade_info.get(symbol_clean)
+                    if pair_info:
+                        # Enforce at most two trades per pair per session
+                        if pair_info.get("count", 1) >= 2:
+                            print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Pair session limit reached")
+                            self.session_stats["trades_skipped"] += 1
+                            continue
+
+                        last_dir = pair_info.get("direction")
+                        last_entry = pair_info.get("entry_price")
+                        last_sl_dist = abs(pair_info.get("sl_distance_price", 0.0))
+                        if last_dir and last_entry is not None and last_sl_dist > 0:
+                            if opportunity.direction == last_dir:
+                                # Require price to have moved ~1 ATR from last entry
+                                price_move = abs(opportunity.entry_price - last_entry)
+                                # Scanner SL is roughly 2x ATR; use 0.5 * SL distance as ≈ 1 ATR
+                                required_move = 0.5 * last_sl_dist
+                                if price_move < required_move:
+                                    print(f"[ENHANCED] 🚫 User {user.user_id}: {opportunity.symbol} {opportunity.direction}: REJECTED - Same direction re-entry too close to last entry (Δ={price_move:.5f} < {required_move:.5f})")
+                                    self.session_stats["trades_skipped"] += 1
+                                    continue
                     
                     # Consolidated pre-entry validation (avoids redundant checks)
                     rechecks = int(os.getenv("PRE_ENTRY_RECHECKS", "2"))
@@ -391,27 +471,51 @@ class EnhancedTradingSession:
                         self.session_stats["trades_skipped"] += 1
                         continue
                     
-                    # Execute trade for this user
-                    mode_used = "frequency-first" if frequency_first_mode else "normal"
-                    print(f"[ENHANCED] ✅ User {user.user_id}: {opportunity.symbol} {opportunity.direction}: APPROVED - Score {opportunity.score:.1f} >= {effective_min_score} (mode: {mode_used})")
-                    trade_result = self._execute_opportunity_for_user(opportunity, user, user_client)
+                    # Execute trade for this user (with ranking-based risk scaling)
+                    trade_result = self._execute_opportunity_for_user(
+                        opportunity, user, user_client,
+                        strategy_id=strategy_id, is_tier2=is_tier2,
+                        ranking_score=ranking_score, ranking_components=ranking_components,
+                    )
                     if trade_result:
                         all_executed_trades.append(trade_result)
                         self.session_stats["trades_executed"] += 1
-                        self.trades_executed_this_session += 1
                         user_trades_executed += 1
-                        # Track pair to prevent duplicate trades per session
-                        self.pairs_traded_this_session.add(symbol_clean)
-                        
-                        print(f"[ENHANCED] ✅ Trade executed (session total: {self.trades_executed_this_session}/3, mode: {mode_used})")
-                        
-                        # Hard cap: never exceed 3 trades per session
-                        if self.trades_executed_this_session >= 3:
-                            print(f"[ENHANCED] ⚠️ Session trade cap reached (3 trades) - stopping execution")
-                            break
+                        self.session_trade_count += 1
+
+                        # Structured ranking log: why this trade was chosen
+                        skipped_list = [(o.symbol, o.direction, rs) for o, rs, _ in ranked_list[i + 1:]]
+                        reason = "higher ranking score (trend, momentum, volatility, session, R:R)"
+                        log_ranking_decision(
+                            opportunity.symbol, opportunity.direction,
+                            ranking_score, opportunity.score, reason, skipped_list,
+                        )
+
+                        # Strategy counters
+                        self.strategy_trades_executed[strategy_id] = self.strategy_trades_executed.get(strategy_id, 0) + 1
+
+                        # Tier-2 slot consumed
+                        if is_tier2:
+                            self.tier2_taken = True
+
+                        # Update per-pair session info for re-entry logic
+                        trade_details = trade_result.get("trade_details") or {}
+                        entry_price = trade_details.get("entry_price", opportunity.entry_price)
+                        sl_price = trade_details.get("sl_price", opportunity.suggested_sl)
+                        sl_distance_price = abs(entry_price - sl_price) if entry_price is not None and sl_price is not None else 0.0
+                        existing = self.pair_trade_info.get(symbol_clean, {})
+                        new_count = existing.get("count", 0) + 1
+                        self.pair_trade_info[symbol_clean] = {
+                            "count": new_count,
+                            "direction": opportunity.direction,
+                            "entry_price": entry_price,
+                            "sl_distance_price": sl_distance_price,
+                        }
+
+                        print(f"[ENHANCED] ✅ Trade executed (session total: {self.session_trade_count}/{self.max_trades_per_session}, strategy={strategy_id}, tier2={is_tier2})")
                         
                         # Add delay between trades
-                        if i < len(user_filtered_opps) - 1:
+                        if i < len(ranked_list) - 1:
                             time.sleep(2)
                     else:
                         self.session_stats["trades_skipped"] += 1
@@ -445,8 +549,9 @@ class EnhancedTradingSession:
         
         return self._get_session_summary("completed", all_executed_trades)
     
-    def _check_mandatory_guardrails(self, opportunity: MarketOpportunity, user_client) -> Dict:
-        """Check mandatory guardrails that apply in all modes including frequency-first.
+    def _check_mandatory_guardrails(self, opportunity: MarketOpportunity, user_client, is_tier2: bool = False) -> Dict:
+        """Check mandatory guardrails that apply to all trades.
+        For Tier-2 (secondary) trades we enforce stricter risk-reward and session requirements.
         Returns dict with 'allowed' (bool) and 'reason' (str)."""
         symbol_clean = opportunity.symbol.replace("_", "")
         
@@ -462,8 +567,10 @@ class EnhancedTradingSession:
             return {"allowed": False, "reason": "Invalid risk calculation (risk <= 0)"}
         
         rr_ratio = reward / risk if risk > 0 else 0
-        if rr_ratio < 1.3:
-            return {"allowed": False, "reason": f"Risk-reward ratio {rr_ratio:.2f} < 1.3"}
+        # Tier-2 trades must meet a stricter minimum R:R
+        min_rr = 1.5 if is_tier2 else 1.3
+        if rr_ratio < min_rr:
+            return {"allowed": False, "reason": f"Risk-reward ratio {rr_ratio:.2f} < {min_rr:.2f}"}
         
         # Guardrail 2: RSI must not be between 45 and 55 (neutral zone)
         if 45 <= opportunity.rsi <= 55:
@@ -748,12 +855,14 @@ class EnhancedTradingSession:
                     self._send_trade_notification(opportunity, trade_details, "executed")  # still notify
                     return { ... }  # keep existing return but skip add_trade/record
 
-                # Add to trade cache
+                # Add to trade cache (position_size/sl_price for portfolio risk)
                 add_trade(
-                    symbol, 
-                    direction, 
-                    trade_details["entry_price"], 
-                    trade_details.get("trade_id", "manual")
+                    symbol,
+                    direction,
+                    trade_details["entry_price"],
+                    trade_details.get("trade_id", "manual"),
+                    position_size=trade_details.get("position_size"),
+                    sl_price=exits["sl"],
                 )
                 # Record executed idea in registry
                 record_executed_idea(symbol, direction, trade_idea, trade_details["entry_price"])
@@ -795,8 +904,22 @@ class EnhancedTradingSession:
             
             return None
     
-    def _execute_opportunity_for_user(self, opportunity: MarketOpportunity, user: Tier2User, user_client) -> Optional[Dict]:
-        """Execute a trading opportunity for a specific user."""
+    def _execute_opportunity_for_user(
+        self,
+        opportunity: MarketOpportunity,
+        user: Tier2User,
+        user_client,
+        strategy_id: str = "4H_MAIN",
+        is_tier2: bool = False,
+        ranking_score: Optional[float] = None,
+        ranking_components: Optional[Dict] = None,
+    ) -> Optional[Dict]:
+        """Execute a trading opportunity for a specific user.
+        strategy_id:
+          - '4H_MAIN' : primary 4H strategy
+          - 'SCALP'   : short-term scalp mode
+          - others    : reserved for future strategies
+        is_tier2: True when this trade comes from the 60-64 score band."""
         try:
             symbol = opportunity.symbol.replace("_", "")  # Convert to expected format
             direction = opportunity.direction
@@ -846,6 +969,21 @@ class EnhancedTradingSession:
                     return None
                 exits = plan["exits"]
                 risk_pct = plan["risk_pct"]
+
+                # Strategy-level risk scaling (e.g. smaller risk for scalps, tier-2)
+                #  - 4H_MAIN: keep smart_layer output
+                #  - SCALP:   target ~0.3% risk by scaling down
+                #  - Tier-2:  slightly reduced risk vs main (e.g. 70% of normal)
+                if strategy_id == "SCALP":
+                    risk_pct *= 0.3  # approximately 0.3% when max is 1.0%
+                if is_tier2:
+                    risk_pct *= 0.7
+                # Risk allocation by ranking quality (stays within portfolio engine limits)
+                if ranking_score is not None:
+                    risk_mult = get_risk_multiplier_by_ranking(ranking_score)
+                    risk_pct *= risk_mult
+                    if risk_mult != 1.0:
+                        print(f"[ENHANCED] 📊 Ranking risk scaling: ranking_score={ranking_score:.1f} → risk_pct × {risk_mult:.2f}")
                 
                 # Scalp Mode: Overwrite exits with tighter TP/SL if this is a scalp trade
                 if opportunity.scalp_mode:
@@ -887,7 +1025,43 @@ class EnhancedTradingSession:
                         print(f"[ENHANCED] ⚠️ Could not fetch user settings for user {user.user_id}: {e}")
                         print(f"[ENHANCED] ⚠️ Falling back to default trade sizing logic")
                 
-                # Build meta dict with scalp_mode flag
+                # Portfolio Risk Engine: adjust risk_pct for cap, correlation, volatility, equity; skip if engine says so
+                try:
+                    r_acc = oanda_accounts.AccountDetails(user.oanda_account_id)
+                    user_client.request(r_acc)
+                    balance = float(r_acc.response["account"]["balance"])
+                except Exception as e:
+                    print(f"[ENHANCED] ⚠️ Could not fetch balance for portfolio risk: {e}; using unadjusted risk_pct")
+                    balance = None
+                if balance is not None and balance > 0:
+                    diagnostics = plan.get("diagnostics") or {}
+                    adjusted_risk_pct, adj = adjust_risk_for_portfolio(
+                        risk_pct,
+                        symbol,
+                        balance,
+                        account_id=user.oanda_account_id,
+                        atr_pct=diagnostics.get("atr_pct"),
+                        sl_price=exits["sl"],
+                        entry_price=plan.get("entry_price"),
+                    )
+                    if adjusted_risk_pct is None:
+                        reason = adj.get("skipped_reason", "unknown")
+                        print(f"[ENHANCED] ⛔ Portfolio risk engine: skip trade (reason={reason})")
+                        print(f"[ENHANCED] 📊 Portfolio risk before={adj.get('portfolio_risk_before_pct', 0):.2f}% | original_risk_pct={adj.get('original_risk_pct', 0):.2f}%")
+                        return None
+                    risk_pct = adjusted_risk_pct
+                    print(
+                        f"[ENHANCED] 📊 Portfolio risk: original_risk_pct={adj.get('original_risk_pct', 0):.2f}% → adjusted_risk_pct={adj.get('adjusted_risk_pct', 0):.2f}% | "
+                        f"portfolio_before={adj.get('portfolio_risk_before_pct', 0):.2f}% → after={adj.get('portfolio_risk_after_pct', 0):.2f}%"
+                    )
+                    if adj.get("correlation_reduction") or adj.get("portfolio_cap_reduction") or adj.get("volatility_adjustment") or adj.get("equity_adjustment"):
+                        print(
+                            f"[ENHANCED] 📊 Adjustments: cap_reduction={adj.get('portfolio_cap_reduction', 0):.2f}% "
+                            f"correlation_reduction={adj.get('correlation_reduction', 0):.2f}% "
+                            f"volatility={adj.get('volatility_adjustment', 0):.2f}% equity={adj.get('equity_adjustment', 0):.2f}%"
+                        )
+                
+                # Build meta dict with strategy metadata and ranking for performance tracking
                 meta_dict = {
                     "quality_score": plan.get("quality_score"),
                     "smart_exits": True,
@@ -895,38 +1069,109 @@ class EnhancedTradingSession:
                     "trail_step_pips": exits.get("trail_step_pips"),
                     "plan_tp2": exits.get("tp2"),
                     "reasons": opportunity.reasons,
+                    "strategy_id": strategy_id,
+                    "is_tier2": is_tier2,
+                    "ranking_score": ranking_score,
+                    "ranking_components": ranking_components,
                 }
                 if opportunity.scalp_mode:
                     meta_dict["scalp_mode"] = True
                 
+                # High-quality multi-entry logic:
+                # For score >= 75, split into three legs:
+                #  - A: 40% risk, TP = 1R
+                #  - B: 30% risk, TP = 1.8R
+                #  - C: 30% risk, TP = 2.5R (runner with trailing)
+                # All share the same SL.
+                legs: List[Dict] = []
+                is_high_quality = opportunity.score >= 75.0
+
+                if is_high_quality and strategy_id == "4H_MAIN" and not opportunity.scalp_mode:
+                    print(f"[ENHANCED] 🌟 User {user.user_id}: High-quality signal detected (score={opportunity.score:.1f}) – using multi-entry structure")
+                    entry_price = plan["entry_price"]
+                    sl_price = exits["sl"]
+                    # 1R distance in price units
+                    r_price = abs(entry_price - sl_price)
+                    if r_price <= 0:
+                        print(f"[ENHANCED] ⚠️ User {user.user_id}: Invalid R distance, falling back to single-entry execution")
+                    else:
+                        # Define per-leg risk fractions and targets
+                        leg_specs = [
+                            ("A", 0.40, 1.0),   # 1R
+                            ("B", 0.30, 1.8),   # 1.8R
+                            ("C", 0.30, 2.5),   # 2.5R (runner with trail)
+                        ]
+                        for leg_id, frac, r_mult in leg_specs:
+                            leg_risk_pct = risk_pct * frac
+                            if direction.lower() == "buy":
+                                tp_price = entry_price + r_mult * r_price
+                            else:
+                                tp_price = entry_price - r_mult * r_price
+                            legs.append(
+                                {
+                                    "label": leg_id,
+                                    "risk_pct": leg_risk_pct,
+                                    "sl_price": sl_price,
+                                    "tp_price": tp_price,
+                                }
+                            )
+
+                # If multi-entry legs were not built, fall back to single-leg execution
+                if not legs:
+                    legs.append(
+                        {
+                            "label": "SINGLE",
+                            "risk_pct": risk_pct,
+                            "sl_price": exits["sl"],
+                            "tp_price": exits["tp1"],
+                        }
+                    )
+
                 # DIAGNOSTIC LOGGING: Before calling place_trade
-                print(f"[ENHANCED][DIAGNOSTIC] About to call place_trade() with:")
+                print(f"[ENHANCED][DIAGNOSTIC] About to call place_trade() with {len(legs)} leg(s)")
                 print(f"[ENHANCED][DIAGNOSTIC]   - client: {type(user_client).__name__} (not None: {user_client is not None})")
                 print(f"[ENHANCED][DIAGNOSTIC]   - account_id: {user.oanda_account_id}")
                 print(f"[ENHANCED][DIAGNOSTIC]   - user_id: {user.user_id}")
                 print(f"[ENHANCED][DIAGNOSTIC]   - direction: {direction}")
-                print(f"[ENHANCED][DIAGNOSTIC]   - sl_price: {exits['sl']}")
-                print(f"[ENHANCED][DIAGNOSTIC]   - tp_price: {exits['tp1']}")
+                print(f"[ENHANCED][DIAGNOSTIC]   - base_sl_price: {exits['sl']}")
                 print(f"[ENHANCED][DIAGNOSTIC]   - trade_allocation: {trade_allocation} (None means will use fallback sizing)")
+
+                executed_legs: List[Dict] = []
+                for leg in legs:
+                    leg_label = leg["label"]
+                    leg_risk_pct = leg["risk_pct"]
+                    leg_sl = leg["sl_price"]
+                    leg_tp = leg["tp_price"]
+
+                    print(
+                        f"[ENHANCED][DIAGNOSTIC]   - Leg {leg_label}: risk_pct={leg_risk_pct*100:.3f}%, sl={leg_sl}, tp={leg_tp}"
+                    )
+
+                    leg_meta = meta_dict.copy()
+                    leg_meta["multi_entry_leg"] = leg_label
+
+                    trade_details = place_trade(
+                        trade_idea,
+                        direction,
+                        risk_pct=leg_risk_pct,
+                        sl_price=leg_sl,
+                        tp_price=leg_tp,
+                        meta=leg_meta,
+                        client=user_client,
+                        account_id=user.oanda_account_id,
+                        user_id=user.user_id,
+                        trade_allocation=trade_allocation,
+                    )
+                    executed_legs.append(trade_details)
+
+                # Use the first leg as the canonical trade for reporting / cache grouping,
+                # but attach all leg details for downstream consumers.
+                primary = executed_legs[0]
                 
-                # Place the actual trade using user's client and account
-                trade_details = place_trade(
-                    trade_idea,
-                    direction,
-                    risk_pct=risk_pct,
-                    sl_price=exits["sl"],
-                    tp_price=exits["tp1"],
-                    meta=meta_dict,
-                    client=user_client,
-                    account_id=user.oanda_account_id,
-                    user_id=user.user_id,
-                    trade_allocation=trade_allocation
-                )
+                print(f"[ENHANCED][DIAGNOSTIC] place_trade() executed {len(executed_legs)} leg(s)")
                 
-                print(f"[ENHANCED][DIAGNOSTIC] place_trade() returned: trade_id={trade_details.get('trade_id', 'N/A')}")
-                
-                # SAFETY ASSERTION: Validate trade ID is present and valid
-                trade_id = trade_details.get("trade_id")
+                # SAFETY ASSERTION: Validate primary trade ID is present and valid
+                trade_id = primary.get("trade_id")
                 if not trade_id or trade_id == "unknown" or not str(trade_id).isdigit():
                     error_msg = f"Invalid trade ID after execution: {trade_id}"
                     print(f"[ENHANCED] ❌ User {user.user_id}: {error_msg}")
@@ -937,30 +1182,40 @@ class EnhancedTradingSession:
                 
                 if not trade_id_ok:
                     print(f"[ENHANCED] ⚠️ User {user.user_id}: No valid trade ID; skipping monitor/cache add.")
-                    self._send_trade_notification_for_user(opportunity, trade_details, "executed", user)
+                    self._send_trade_notification_for_user(opportunity, primary, "executed", user)
                     return {
                         "symbol": symbol,
                         "direction": direction,
                         "opportunity_score": opportunity.score,
-                        "trade_details": trade_details,
+                        "trade_details": primary,
                         "execution_time": datetime.now().isoformat(),
                         "user_id": user.user_id,
                     }
 
-                # Add to trade cache (with user_id for tracking)
+                # Add the primary leg to trade cache (with user_id for tracking).
+                # Store position_size and sl_price for portfolio risk calculation.
+                # All legs share the same SL; for multi-entry use total units across legs.
+                total_units = sum((d.get("position_size") or 0) for d in executed_legs) if executed_legs else (primary.get("position_size") or 0)
                 add_trade(
-                    symbol, 
-                    direction, 
-                    trade_details["entry_price"], 
-                    trade_details.get("trade_id", "manual"),
+                    symbol,
+                    direction,
+                    primary["entry_price"],
+                    primary.get("trade_id", "manual"),
                     user_id=user.user_id,
-                    account_id=user.oanda_account_id
+                    account_id=user.oanda_account_id,
+                    position_size=total_units,
+                    sl_price=exits["sl"],
+                    ranking_score=ranking_score,
+                    strategy_id=strategy_id,
                 )
                 # Record executed idea in registry
-                record_executed_idea(symbol, direction, trade_idea, trade_details["entry_price"])
+                record_executed_idea(symbol, direction, trade_idea, primary["entry_price"])
                 
                 # Send notification emails (simplified to user, full to admin)
-                self._send_trade_notification_for_user(opportunity, trade_details, "executed", user)
+                # Pass primary details plus multi-entry metadata
+                enriched_primary = primary.copy()
+                enriched_primary["legs"] = executed_legs
+                self._send_trade_notification_for_user(opportunity, enriched_primary, "executed", user)
                 
                 print(f"[ENHANCED] ✅ User {user.user_id}: Trade executed: {symbol} {direction.upper()}")
                 
@@ -968,7 +1223,7 @@ class EnhancedTradingSession:
                     "symbol": symbol,
                     "direction": direction,
                     "opportunity_score": opportunity.score,
-                    "trade_details": trade_details,
+                    "trade_details": enriched_primary,
                     "execution_time": datetime.now().isoformat(),
                     "user_id": user.user_id,
                 }

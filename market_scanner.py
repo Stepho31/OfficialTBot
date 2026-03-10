@@ -52,6 +52,8 @@ class MarketScanner:
         "EUR_USD", "GBP_USD", "USD_JPY", "USD_CHF",
         "AUD_USD", "USD_CAD", "NZD_USD", "EUR_GBP",
         "EUR_JPY", "GBP_JPY", "AUD_JPY",
+        # Additional crosses to increase opportunity set
+        "NZD_JPY", "CAD_JPY", "EUR_AUD",
         # Metals & indices (if tradable on account)
         "XAU_USD", "XAG_USD", "SPX500_USD", "NAS100_USD", "US30_USD"
     ]
